@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MDM Hub — Version Checker</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --bg2: #131316; --bg3: #1a1a1f; --bg4: #222228;
+    --border: #2a2a32; --border2: #363642;
+    --amber: #f5a623; --amber-dim: #b37318; --amber-bg: rgba(245,166,35,0.08);
+    --red: #e05252; --red-bg: rgba(224,82,82,0.08);
+    --green: #4caf82; --green-bg: rgba(76,175,130,0.08);
+    --blue: #5b8dd9; --blue-bg: rgba(91,141,217,0.08);
+    --text: #e8e8f0; --text2: #9191a4; --text3: #55556a;
+    --mono: 'JetBrains Mono', monospace; --sans: 'Syne', sans-serif;
+    --radius: 6px; --radius2: 10px;
+  }
+  body { background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 13px; line-height: 1.6; min-height: 100vh; }
+  .shell { max-width: 1100px; margin: 0 auto; padding: 0 24px 60px; }
+  header { display: flex; align-items: center; gap: 16px; padding: 28px 0 24px; border-bottom: 1px solid var(--border); margin-bottom: 28px; }
+  .logo-mark { width: 36px; height: 36px; background: var(--blue); border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: white; font-size: 18px;}
+  header h1 { font-family: var(--sans); font-size: 18px; font-weight: 600; }
+  .header-status { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text3); }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); }
+  .status-dot.ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .status-dot.warn { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+  .panel { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius2); margin-bottom: 16px; overflow: hidden; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--bg3); }
+  .panel-title { font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text2); }
+  .panel-body { padding: 16px; }
+  input[type="text"], input[type="password"], select { width: 100%; background: var(--bg); border: 1px solid var(--border2); border-radius: var(--radius); color: var(--text); font-family: var(--mono); font-size: 12px; padding: 9px 12px; outline: none; }
+  .btn { font-family: var(--mono); font-size: 12px; font-weight: 500; padding: 9px 16px; border-radius: var(--radius); border: 1px solid var(--border2); background: var(--bg3); color: var(--text2); cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-blue { background: var(--blue); border-color: var(--blue); color: #0d0d0f; font-weight: 600; }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .dropzone { border: 1.5px dashed var(--border2); border-radius: var(--radius); padding: 28px 20px; text-align: center; cursor: pointer; }
+  .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 12px; }
+  .stat-cell { background: var(--bg2); padding: 10px 12px; text-align: center; }
+  .stat-cell .val { font-size: 20px; font-family: var(--sans); font-weight: 700; margin-bottom: 3px; }
+  .stat-done .val { color: var(--green); }
+  .stat-fail .val { color: var(--red); }
+  .prog-wrap { height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; margin-bottom: 10px; }
+  .prog-fill { height: 100%; background: var(--blue); width: 0%; transition: width 0.4s ease; }
+  .queue-wrap { max-height: 380px; overflow-y: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { font-size: 10px; color: var(--text3); padding: 8px 12px; text-align: left; background: var(--bg2); position: sticky; top: 0; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  .badge { padding: 3px 8px; border-radius: 99px; font-size: 10px; font-weight: 500; }
+  .badge-done { background: var(--green-bg); color: var(--green); }
+  .badge-err { background: var(--red-bg); color: var(--red); }
+  .log-wrap { max-height: 150px; overflow-y: auto; background: var(--bg); padding: 10px; font-size: 11px; }
+  .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; }
+  .modal-bg.show { display: flex; }
+  .modal { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius2); padding: 24px; width: 450px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spin { display: inline-block; width: 10px; height: 10px; border: 1.5px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div class="logo-mark">📱</div>
+    <div>
+      <h1>MDM Hub — Version Checker</h1>
+      <div style="font-size:11px; color:var(--text3)">Consulta em lote da versão do MDM Service</div>
+    </div>
+    <div class="header-status">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">aguardando</span>
+    </div>
+  </header>
+
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title">Configurações</span></div>
+    <div class="panel-body">
+      <div style="display:grid; grid-template-columns: 1fr auto; gap:10px; margin-bottom: 15px;">
+        <input type="password" id="tokenInput" placeholder="Insira o Bearer Token..." />
+        <button class="btn btn-blue" onclick="validateToken()">Validar</button>
+      </div>
+      <div style="display:grid; grid-template-columns: 1fr; gap:10px;">
+        <div>
+          <label style="font-size: 11px; color: var(--text2); display:block; margin-bottom: 5px;">Package Name:</label>
+          <input type="text" id="packageInput" placeholder="Ex: com.mdmservice" value="com.mdmservice" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="filePanel" style="opacity: 0.5; pointer-events: none;">
+    <div class="panel-head"><span class="panel-title">Arquivo de Seriais</span></div>
+    <div class="panel-body">
+      <div class="dropzone" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" hidden onchange="handleFile(event)" accept=".xlsx,.xls,.csv" />
+        <p>Clique para selecionar a planilha (.xlsx ou .csv)</p>
+        <div id="fileStatus" style="margin-top:5px; color:var(--blue)"></div>
+      </div>
+      <div id="colSelectWrapper" style="display:none; margin-top: 15px;">
+        <label style="font-size: 11px; color: var(--text2); display:block; margin-bottom: 5px;">Selecione a coluna dos Seriais:</label>
+        <select id="colSelect" onchange="applyColumn()"></select>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <span class="panel-title">Execução</span>
+      <div>
+        <button class="btn" id="btnExport" style="display:none; margin-right: 8px;" onclick="exportExcel()">Baixar Planilha</button>
+        <button class="btn btn-blue" id="btnRun" onclick="startProcess()" disabled>Iniciar Consulta</button>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="stats-bar">
+        <div class="stat-cell"> <div class="val" id="stTotal">0</div> <div class="lbl">Total</div> </div>
+        <div class="stat-cell stat-done"> <div class="val" id="stDone">0</div> <div class="lbl">Sucesso</div> </div>
+        <div class="stat-cell stat-fail"> <div class="val" id="stFail">0</div> <div class="lbl">Erros/N.E.</div> </div>
+        <div class="stat-cell"> <div class="val" id="stProg">0%</div> <div class="lbl">Progresso</div> </div>
+      </div>
+      <div class="prog-wrap"><div class="prog-fill" id="progFill"></div></div>
+      <div class="queue-wrap">
+        <table id="mainTable">
+          <thead><tr><th>Serial Number</th><th>Nome</th><th id="thVersion">Versão MDM Service</th><th>Status</th><th>Ligado/Desligado</th><th>Ação</th></tr></thead>
+          <tbody id="queueBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title">Log de Eventos</span></div>
+    <div class="log-wrap" id="logBox"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="tokenModal">
+  <div class="modal">
+    <h2 style="color:var(--amber); margin-bottom:10px">Sessão Expirada</h2>
+    <p style="font-size:12px; margin-bottom:15px">O token expirou. O sistema tentou renovar automaticamente mas falhou. Insira um novo token para continuar.</p>
+    <input type="password" id="newTokenInput" placeholder="Novo Bearer Token..." style="margin-bottom:15px"/>
+    <button class="btn btn-blue" style="width:100%" onclick="resumeToken()">Retomar Consulta</button>
+  </div>
+</div>
+
+<script>
+  let token = ''; let rawData = []; let serials = []; let results = [];
+  let stats = { done:0, fail:0 };
+  const BASE = 'https://api.gateway.mdm-hub.com';
+  const TENANT = 'portal';
+  let tokenResolve = null;
+
+  function log(m, type='info') {
+    const box = document.getElementById('logBox');
+    const div = document.createElement('div');
+    div.style.color = type === 'err' ? 'var(--red)' : (type === 'warn' ? 'var(--amber)' : (type === 'ok' ? 'var(--green)' : 'var(--text2)'));
+    div.textContent = `[${new Date().toLocaleTimeString()}] ${m}`;
+    box.prepend(div);
+  }
+
+  async function validateToken() {
+    const val = document.getElementById('tokenInput').value.trim();
+    if(!val) return;
+    try {
+      const r = await fetch(`${BASE}/api-eqp/equipment?page=1&limit=1`, { headers: {'authorization': `Bearer ${val}`, 'x-tenant-code': TENANT} });
+      if(r.ok) { 
+        token = val; 
+        document.getElementById('statusDot').className = 'status-dot ok';
+        document.getElementById('statusText').textContent = 'autenticado';
+        document.getElementById('filePanel').style.opacity = '1';
+        document.getElementById('filePanel').style.pointerEvents = 'auto';
+        log('Token validado com sucesso.', 'ok');
+        checkReady();
+      } else { log('Token inválido.', 'err'); }
+    } catch(e) { log('Erro de conexão.', 'err'); }
+  }
+
+  function handleFile(e) {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const wb = XLSX.read(ev.target.result, {type:'binary'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      rawData = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+      
+      if(rawData.length < 2) { log('Planilha vazia ou sem dados.', 'err'); return; }
+      
+      const headers = rawData[0].map(String);
+      const colSel = document.getElementById('colSelect');
+      colSel.innerHTML = headers.map((h,i) => `<option value="${i}">${h || 'Coluna '+(i+1)}</option>`).join('');
+      
+      document.getElementById('colSelectWrapper').style.display = 'block';
+      applyColumn();
+    };
+    reader.readAsBinaryString(file);
+  }
+
+  function applyColumn() {
+    const colIdx = parseInt(document.getElementById('colSelect').value);
+    serials = rawData.slice(1).map(r => String(r[colIdx] || '').trim()).filter(Boolean);
+    document.getElementById('fileStatus').textContent = `${serials.length} seriais encontrados.`;
+    document.getElementById('stTotal').textContent = serials.length;
+    checkReady();
+  }
+
+  function checkReady() { if(token && serials.length > 0) document.getElementById('btnRun').disabled = false; }
+
+  async function autoRefreshToken() {
+    try {
+      log('Tentando renovar token automaticamente...', 'warn');
+      const r = await fetch(`${BASE}/api-acl/authentication/refresh-token`, {
+        method: 'POST',
+        headers: {'authorization': `Bearer ${token}`, 'x-tenant-code': TENANT, 'content-type': 'application/json'},
+        body: JSON.stringify({})
+      });
+      if(r.ok) {
+        const data = await r.json();
+        const newToken = data.access_token || data.token;
+        if(newToken) {
+          token = newToken;
+          document.getElementById('tokenInput').value = token;
+          log('Token renovado automaticamente!', 'ok');
+          return true;
+        }
+      }
+      return false;
+    } catch(e) { return false; }
+  }
+
+  async function fetchAPI(url, retries = 3, backoff = 1000) {
+    let r = await fetch(url, { headers: { 'authorization': `Bearer ${token}`, 'x-tenant-code': TENANT } });
+    
+    if(r.status === 401) {
+      const refreshed = await autoRefreshToken();
+      if(refreshed) {
+        r = await fetch(url, { headers: { 'authorization': `Bearer ${token}`, 'x-tenant-code': TENANT } });
+      } else {
+        log('Auto-refresh falhou. Aguardando token manual.', 'err');
+        await new Promise(res => { tokenResolve = res; document.getElementById('tokenModal').classList.add('show'); });
+        r = await fetch(url, { headers: { 'authorization': `Bearer ${token}`, 'x-tenant-code': TENANT } });
+      }
+    }
+    
+    // Tratamento de Rate Limit (Muitas requisições) com Exponential Backoff
+    if (r.status === 429 && retries > 0) {
+      log(`Rate limit da API atingido. Retentando em ${backoff/1000}s...`, 'warn');
+      await new Promise(res => setTimeout(res, backoff));
+      return fetchAPI(url, retries - 1, backoff * 2);
+    }
+
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    return await r.json();
+  }
+
+  function resumeToken() {
+    const val = document.getElementById('newTokenInput').value.trim();
+    if(!val) return;
+    token = val; document.getElementById('tokenInput').value = val;
+    document.getElementById('tokenModal').classList.remove('show');
+    if(tokenResolve) tokenResolve();
+  }
+
+
+
+  async function startProcess() {
+    document.getElementById('btnRun').disabled = true;
+    document.getElementById('statusDot').className = 'status-dot warn';
+    document.getElementById('statusText').textContent = 'processando...';
+    
+    const TARGET_PACKAGE = document.getElementById('packageInput').value.trim() || 'com.mdmservice';
+    const versionLabel = `Versão (${TARGET_PACKAGE})`;
+    document.getElementById('thVersion').textContent = versionLabel;
+
+    const body = document.getElementById('queueBody');
+    body.innerHTML = '';
+    results = [];
+    stats = { done:0, fail:0 };
+    
+    const CONCURRENCY_LIMIT = 5;
+    
+    const processSingleSerial = async (s, row) => {
+      try {
+        // 1. Get Equipment ID
+        const eqData = await fetchAPI(`${BASE}/api-eqp/equipment?page=1&limit=10&key=${encodeURIComponent(s)}`);
+        const items = eqData.data || eqData.items || (Array.isArray(eqData) ? eqData : []);
+        
+        let eqId = null;
+        let eqName = "-";
+        let eqStatus = "-";
+        let eqOnline = "-";
+
+        const serialFields = ["serialNumber", "serial", "serialnumber", "imei"];
+        
+        const processEquipmentData = (item) => {
+          eqId = item.id;
+          eqName = item.name || "-";
+          eqStatus = item.status !== undefined ? item.status : "-";
+          
+          const isPowerOn = item.powerOn === true;
+          const lastUpdate = item.lastUpdate ? new Date(item.lastUpdate) : new Date(0);
+          const tenMinsAgo = new Date(Date.now() - 10 * 60 * 1000);
+          
+          if (!isPowerOn) {
+            eqOnline = "Desligado";
+          } else if (lastUpdate < tenMinsAgo) {
+            eqOnline = "Sem conexão";
+          } else {
+            eqOnline = "Ligado";
+          }
+        };
+
+        for(let item of items) {
+          for(let field of serialFields) {
+            if(String(item[field] || "").trim() === s) { 
+              processEquipmentData(item);
+              break; 
+            }
+          }
+          if(eqId) break;
+        }
+        if(!eqId && items.length === 1) {
+          processEquipmentData(items[0]);
+        }
+
+        if(!eqId) {
+          row.cells[2].textContent = "ERRO: Serial não encontrado";
+          row.cells[5].innerHTML = '<span class="badge badge-err">N/E</span>';
+          results.push({"Serial Number": s, "Nome": "-", [versionLabel]: "ERRO: Serial não encontrado", "Status": "-", "Ligado/Desligado": "-"});
+          stats.fail++;
+        } else {
+          row.cells[1].textContent = eqName;
+          row.cells[3].textContent = eqStatus;
+          row.cells[4].textContent = eqOnline;
+
+          // 2. Get App Version
+          let version = null;
+          
+          // Busca sequencial: Primeiro em Aplicativos Instalados (false) e, se não encontrar, em Firmware (true)
+          for (const boSystem of [false, true]) {
+            let page = 1;
+            while(true) {
+              const appsData = await fetchAPI(`${BASE}/api-eqp/equipment-application-historic/${eqId}?page=${page}&limit=50&boSystem=${boSystem}`);
+              const appItems = appsData.data || appsData.items || (Array.isArray(appsData) ? appsData : []);
+              
+              const target = appItems.find(item => item.packageName === TARGET_PACKAGE);
+              if(target) { version = target.version || "versão não informada"; break; }
+              
+              const total = typeof appsData.total === 'number' ? appsData.total : 0;
+              if(!appItems.length || page * 50 >= total) break;
+              page++;
+            }
+            if (version) break;
+          }
+
+          if(version) {
+            row.cells[2].textContent = version;
+            row.cells[5].innerHTML = '<span class="badge badge-done">OK</span>';
+            results.push({"Serial Number": s, "Nome": eqName, [versionLabel]: version, "Status": eqStatus, "Ligado/Desligado": eqOnline});
+            stats.done++;
+          } else {
+            row.cells[2].textContent = "ERRO: App não encontrado";
+            row.cells[5].innerHTML = '<span class="badge badge-err">ERRO</span>';
+            results.push({"Serial Number": s, "Nome": eqName, [versionLabel]: "ERRO: App não encontrado", "Status": eqStatus, "Ligado/Desligado": eqOnline});
+            stats.fail++;
+          }
+        }
+      } catch(e) {
+        row.cells[2].textContent = `ERRO: ${e.message}`;
+        row.cells[5].innerHTML = '<span class="badge badge-err">FALHA</span>';
+        results.push({"Serial Number": s, "Nome": "-", [versionLabel]: `ERRO: ${e.message}`, "Status": "-", "Ligado/Desligado": "-"});
+        stats.fail++;
+      }
+    };
+
+    for (let i = 0; i < serials.length; i += CONCURRENCY_LIMIT) {
+      const chunk = serials.slice(i, i + CONCURRENCY_LIMIT);
+      
+      const promises = chunk.map(s => {
+        const row = body.insertRow();
+        row.innerHTML = `<td>${s}</td><td>-</td><td>-</td><td>-</td><td>-</td><td><span class="badge">buscando...</span></td>`;
+        return processSingleSerial(s, row);
+      });
+
+      await Promise.all(promises);
+
+      // Scroll to bottom after each chunk
+      body.lastElementChild?.scrollIntoView({ block: 'nearest' });
+
+      document.getElementById('stDone').textContent = stats.done;
+      document.getElementById('stFail').textContent = stats.fail;
+      const processados = Math.min(i + CONCURRENCY_LIMIT, serials.length);
+      const pct = Math.round((processados / serials.length) * 100);
+      document.getElementById('stProg').textContent = `${pct}%`;
+      document.getElementById('progFill').style.width = `${pct}%`;
+    }
+    
+    log('Processo finalizado.', 'ok');
+    document.getElementById('statusDot').className = 'status-dot ok';
+    document.getElementById('statusText').textContent = 'finalizado';
+    document.getElementById('btnExport').style.display = 'inline-flex';
+    document.getElementById('btnRun').textContent = 'Nova Consulta';
+    document.getElementById('btnRun').disabled = false;
+  }
+
+  function exportExcel() {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(results);
+    ws['!cols'] = [{wch:20}, {wch:25}, {wch:35}, {wch:15}, {wch:20}];
+    XLSX.utils.book_append_sheet(wb, ws, 'MDM Versions');
+    const ts = new Date().toISOString().replace(/[:.]/g,'-').slice(0,19);
+    XLSX.writeFile(wb, `mdm_versions_${ts}.xlsx`);
+    log('Planilha de resultados exportada.', 'ok');
+  }                               
+</script>                                                     
+</body>                                                                   
+</html>                                             

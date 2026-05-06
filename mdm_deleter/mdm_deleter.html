@@ -1,0 +1,267 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MDM Hub — Deleção v2</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0d0d0f; --bg2: #131316; --bg3: #1a1a1f; --bg4: #222228;
+    --border: #2a2a32; --border2: #363642;
+    --amber: #f5a623; --amber-dim: #b37318; --amber-bg: rgba(245,166,35,0.08);
+    --red: #e05252; --red-bg: rgba(224,82,82,0.08);
+    --green: #4caf82; --green-bg: rgba(76,175,130,0.08);
+    --blue: #5b8dd9; --blue-bg: rgba(91,141,217,0.08);
+    --text: #e8e8f0; --text2: #9191a4; --text3: #55556a;
+    --mono: 'JetBrains Mono', monospace; --sans: 'Syne', sans-serif;
+    --radius: 6px; --radius2: 10px;
+  }
+  body { background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 13px; line-height: 1.6; min-height: 100vh; }
+  .shell { max-width: 1100px; margin: 0 auto; padding: 0 24px 60px; }
+  header { display: flex; align-items: center; gap: 16px; padding: 28px 0 24px; border-bottom: 1px solid var(--border); margin-bottom: 28px; }
+  .logo-mark { width: 36px; height: 36px; background: var(--amber); border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  header h1 { font-family: var(--sans); font-size: 18px; font-weight: 600; }
+  .header-status { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--text3); }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text3); }
+  .status-dot.ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .status-dot.warn { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+  .panel { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius2); margin-bottom: 16px; overflow: hidden; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--bg3); }
+  .panel-title { font-family: var(--sans); font-size: 11px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text2); }
+  .panel-body { padding: 16px; }
+  input[type="text"], input[type="password"], select { width: 100%; background: var(--bg); border: 1px solid var(--border2); border-radius: var(--radius); color: var(--text); font-family: var(--mono); font-size: 12px; padding: 9px 12px; outline: none; }
+  .btn { font-family: var(--mono); font-size: 12px; font-weight: 500; padding: 9px 16px; border-radius: var(--radius); border: 1px solid var(--border2); background: var(--bg3); color: var(--text2); cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; }
+  .btn-amber { background: var(--amber); border-color: var(--amber); color: #0d0d0f; font-weight: 600; }
+  .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .dropzone { border: 1.5px dashed var(--border2); border-radius: var(--radius); padding: 28px 20px; text-align: center; cursor: pointer; }
+  .stats-bar { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 12px; }
+  .stat-cell { background: var(--bg2); padding: 10px 12px; text-align: center; }
+  .stat-cell .val { font-size: 20px; font-family: var(--sans); font-weight: 700; margin-bottom: 3px; }
+  .stat-done .val { color: var(--green); }
+  .stat-fail .val { color: var(--red); }
+  .prog-wrap { height: 3px; background: var(--border); border-radius: 99px; overflow: hidden; margin-bottom: 10px; }
+  .prog-fill { height: 100%; background: var(--amber); width: 0%; transition: width 0.4s ease; }
+  .queue-wrap { max-height: 380px; overflow-y: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  th { font-size: 10px; color: var(--text3); padding: 8px 12px; text-align: left; background: var(--bg2); position: sticky; top: 0; }
+  td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  .badge { padding: 3px 8px; border-radius: 99px; font-size: 10px; font-weight: 500; }
+  .badge-done { background: var(--green-bg); color: var(--green); }
+  .badge-err { background: var(--red-bg); color: var(--red); }
+  .log-wrap { max-height: 150px; overflow-y: auto; background: var(--bg); padding: 10px; font-size: 11px; }
+  .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 100; align-items: center; justify-content: center; }
+  .modal-bg.show { display: flex; }
+  .modal { background: var(--bg2); border: 1px solid var(--border2); border-radius: var(--radius2); padding: 24px; width: 450px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spin { display: inline-block; width: 10px; height: 10px; border: 1.5px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin 0.6s linear infinite; }
+</style>
+</head>
+<body>
+<div class="shell">
+  <header>
+    <div class="logo-mark">⚡</div>
+    <div>
+      <h1>MDM Hub — Deleção em Massa v2</h1>
+      <div style="font-size:11px; color:var(--text3)">Ferramenta interna de limpeza de inventário</div>
+    </div>
+    <div class="header-status">
+      <div class="status-dot" id="statusDot"></div>
+      <span id="statusText">aguardando</span>
+    </div>
+  </header>
+
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title">Configurações</span></div>
+    <div class="panel-body">
+      <div style="display:grid; grid-template-columns: 1fr auto; gap:10px">
+        <input type="password" id="tokenInput" placeholder="Insira o Bearer Token..." />
+        <button class="btn btn-amber" onclick="validateToken()">Validar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title">Arquivo de Seriais</span></div>
+    <div class="panel-body">
+      <div class="dropzone" onclick="document.getElementById('fileInput').click()">
+        <input type="file" id="fileInput" hidden onchange="handleFile(event)" />
+        <p>Clique para selecionar a planilha (.xlsx ou .csv)</p>
+        <div id="fileStatus" style="margin-top:5px; color:var(--amber)"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <span class="panel-title">Execução</span>
+      <button class="btn btn-amber" id="btnRun" onclick="startProcess()" disabled>Iniciar Processo</button>
+    </div>
+    <div class="panel-body">
+      <div class="stats-bar">
+        <div class="stat-cell"> <div class="val" id="stTotal">0</div> <div class="lbl">Total</div> </div>
+        <div class="stat-cell stat-done"> <div class="val" id="stDone">0</div> <div class="lbl">Sucesso</div> </div>
+        <div class="stat-cell stat-fail"> <div class="val" id="stFail">0</div> <div class="lbl">Falhas</div> </div>
+        <div class="stat-cell"> <div class="val" id="stSkip">0</div> <div class="lbl">N/E</div> </div>
+        <div class="stat-cell"> <div class="val" id="stRetry">0</div> <div class="lbl">Retries</div> </div>
+      </div>
+      <div class="prog-wrap"><div class="prog-fill" id="progFill"></div></div>
+      <div class="queue-wrap">
+        <table id="mainTable">
+          <thead><tr><th>Serial</th><th>ID</th><th>Status</th><th>Detalhe</th></tr></thead>
+          <tbody id="queueBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><span class="panel-title">Log de Eventos</span></div>
+    <div class="log-wrap" id="logBox"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="tokenModal">
+  <div class="modal">
+    <h2 style="color:var(--amber); margin-bottom:10px">Sessão Expirada</h2>
+    <p style="font-size:12px; margin-bottom:15px">O token expirou. Insira um novo para continuar o processo.</p>
+    <input type="password" id="newTokenInput" placeholder="Novo Bearer Token..." style="margin-bottom:15px"/>
+    <button class="btn btn-amber" style="width:100%" onclick="renewToken()">Retomar Deleção</button>
+  </div>
+</div>
+
+<script>
+  let token = ''; let serials = []; let rows = []; let stats = { done:0, fail:0, skip:0, retries:0 };
+  const BASE = 'https://api.gateway.mdm-hub.com/api-eqp';
+  const TENANT = 'portal';
+  let tokenResolve = null;
+
+  function log(m, type='info') {
+    const box = document.getElementById('logBox');
+    const div = document.createElement('div');
+    div.style.color = type === 'err' ? 'var(--red)' : (type === 'ok' ? 'var(--green)' : 'var(--text2)');
+    div.textContent = `[${new Date().toLocaleTimeString()}] ${m}`;
+    box.prepend(div);
+  }
+
+  async function validateToken() {
+    const val = document.getElementById('tokenInput').value.trim();
+    if(!val) return;
+    try {
+      const r = await fetch(`${BASE}/equipment?page=1&limit=1`, { headers: {'authorization': `Bearer ${val}`, 'x-tenant-code': TENANT} });
+      if(r.ok) { 
+        token = val; 
+        document.getElementById('statusDot').className = 'status-dot ok';
+        document.getElementById('statusText').textContent = 'autenticado';
+        log('Token validado com sucesso.', 'ok');
+        checkReady();
+      } else { log('Token inválido.', 'err'); }
+    } catch(e) { log('Erro de conexão.', 'err'); }
+  }
+
+  function handleFile(e) {
+    const file = e.target.files[0];
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const wb = XLSX.read(ev.target.result, {type:'binary'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const data = XLSX.utils.sheet_to_json(ws, {header:1});
+      serials = data.slice(1).map(r => String(r[0]).trim()).filter(s => s && s !== 'undefined');
+      document.getElementById('fileStatus').textContent = `${serials.length} seriais carregados.`;
+      document.getElementById('stTotal').textContent = serials.length;
+      checkReady();
+    };
+    reader.readAsBinaryString(file);
+  }
+
+  function checkReady() { if(token && serials.length > 0) document.getElementById('btnRun').disabled = false; }
+
+  async function apiCall(method, url, body=null) {
+    let attempts = 0;
+    while (attempts < 3) {
+      try {
+        const r = await fetch(url, {
+          method, headers: {'authorization': `Bearer ${token}`, 'x-tenant-code': TENANT, 'content-type': 'application/json'},
+          body: body ? JSON.stringify(body) : null
+        });
+        if(r.status === 401) {
+          log('Token expirado. Aguardando renovação...', 'err');
+          await new Promise(res => { tokenResolve = res; document.getElementById('tokenModal').classList.add('show'); });
+          continue; 
+        }
+        if(!r.ok) throw new Error(`HTTP ${r.status}`);
+        return await r.json().catch(() => ({ok:true}));
+      } catch(e) {
+        attempts++; stats.retries++; document.getElementById('stRetry').textContent = stats.retries;
+        log(`Erro: ${e.message}. Tentativa ${attempts}/3`, 'err');
+        await new Promise(r => setTimeout(r, 1000));
+      }
+    }
+    throw new Error('Falha após 3 tentativas');
+  }
+
+  function renewToken() {
+    const val = document.getElementById('newTokenInput').value.trim();
+    if(!val) return;
+    token = val; document.getElementById('tokenInput').value = val;
+    document.getElementById('tokenModal').classList.remove('show');
+    if(tokenResolve) tokenResolve();
+  }
+
+  async function startProcess() {
+    document.getElementById('btnRun').disabled = true;
+    document.getElementById('statusDot').className = 'status-dot warn';
+    document.getElementById('statusText').textContent = 'processando...';
+    
+    const body = document.getElementById('queueBody');
+    body.innerHTML = '';
+    
+    for(let i=0; i < serials.length; i++) {
+      const s = serials[i];
+      const row = body.insertRow();
+      row.innerHTML = `<td>${s}</td><td>-</td><td><span class="badge">buscando...</span></td><td>-</td>`;
+      
+      try {
+        const search = await apiCall('GET', `${BASE}/equipment?key=${s}`);
+        const eq = search.items?.find(item => String(item.serial) === s);
+        
+        if(!eq) {
+          row.cells[2].innerHTML = '<span class="badge">N/E</span>';
+          stats.skip++;
+        } else {
+          row.cells[1].textContent = eq.id;
+          if(eq.status === 1) {
+            row.cells[2].innerHTML = '<span class="badge">inativando...</span>';
+            await apiCall('PATCH', `${BASE}/equipment/${eq.id}`, {
+              status: 0, companyId: eq.companyId, subsidiaryId: eq.subsidiaryId,
+              equipmentTypeId: eq.equipmentTypeId, corporationId: eq.corporationId, name: eq.name
+            });
+          }
+          row.cells[2].innerHTML = '<span class="badge">deletando...</span>';
+          await apiCall('DELETE', `${BASE}/equipment/${eq.id}`);
+          row.cells[2].innerHTML = '<span class="badge badge-done">DELETADO</span>';
+          stats.done++;
+        }
+      } catch(e) {
+        row.cells[2].innerHTML = '<span class="badge badge-err">FALHA</span>';
+        row.cells[3].textContent = e.message;
+        stats.fail++;
+      }
+      
+      document.getElementById('stDone').textContent = stats.done;
+      document.getElementById('stFail').textContent = stats.fail;
+      document.getElementById('stSkip').textContent = stats.skip;
+      document.getElementById('progFill').style.width = `${((i+1)/serials.length)*100}%`;
+    }
+    
+    log('Processo finalizado.', 'ok');
+    document.getElementById('statusDot').className = 'status-dot ok';
+    document.getElementById('statusText').textContent = 'finalizado';
+  }
+</script>
+</body>
+</html>
