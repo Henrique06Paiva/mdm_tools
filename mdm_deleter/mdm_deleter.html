@@ -128,7 +128,7 @@
 <div class="modal-bg" id="tokenModal">
   <div class="modal">
     <h2 style="color:var(--amber); margin-bottom:10px">Sessão Expirada</h2>
-    <p style="font-size:12px; margin-bottom:15px">O token expirou. Insira um novo para continuar o processo.</p>
+    <p style="font-size:12px; margin-bottom:15px">O token expirou. O sistema tentou renovar automaticamente mas falhou. Insira um novo token para continuar.</p>
     <input type="password" id="newTokenInput" placeholder="Novo Bearer Token..." style="margin-bottom:15px"/>
     <button class="btn btn-amber" style="width:100%" onclick="renewToken()">Retomar Deleção</button>
   </div>
@@ -139,6 +139,7 @@
   const BASE = 'https://api.gateway.mdm-hub.com/api-eqp';
   const TENANT = 'portal';
   let tokenResolve = null;
+  let tokenPromise = null;
 
   function log(m, type='info') {
     const box = document.getElementById('logBox');
@@ -180,28 +181,69 @@
 
   function checkReady() { if(token && serials.length > 0) document.getElementById('btnRun').disabled = false; }
 
-  async function apiCall(method, url, body=null) {
+  async function autoRefreshToken() {
+    try {
+      log('Tentando renovar token automaticamente...', 'warn');
+      const r = await fetch('https://api.gateway.mdm-hub.com/api-acl/authentication/refresh-token', {
+        method: 'POST',
+        headers: {'authorization': `Bearer ${token}`, 'x-tenant-code': TENANT, 'content-type': 'application/json'},
+        body: JSON.stringify({})
+      });
+      if(r.ok) {
+        const data = await r.json();
+        const newToken = data.access_token || data.token;
+        if(newToken) {
+          token = newToken;
+          document.getElementById('tokenInput').value = token;
+          log('Token renovado automaticamente!', 'ok');
+          return true;
+        }
+      }
+      return false;
+    } catch(e) { return false; }
+  }
+
+  async function apiCall(method, url, body=null, retries=3, backoff=1000) {
     let attempts = 0;
-    while (attempts < 3) {
+    while (attempts < retries) {
       try {
         const r = await fetch(url, {
           method, headers: {'authorization': `Bearer ${token}`, 'x-tenant-code': TENANT, 'content-type': 'application/json'},
           body: body ? JSON.stringify(body) : null
         });
+        
         if(r.status === 401) {
-          log('Token expirado. Aguardando renovação...', 'err');
-          await new Promise(res => { tokenResolve = res; document.getElementById('tokenModal').classList.add('show'); });
+          if(!tokenPromise) {
+            tokenPromise = (async () => {
+              const refreshed = await autoRefreshToken();
+              if(!refreshed) {
+                log('Auto-refresh falhou. Aguardando token manual.', 'err');
+                await new Promise(res => { tokenResolve = res; document.getElementById('tokenModal').classList.add('show'); });
+              }
+            })();
+          }
+          await tokenPromise;
+          tokenPromise = null;
           continue; 
         }
+
+        if (r.status === 429) {
+          log(`Rate limit da API atingido. Retentando em ${backoff/1000}s...`, 'warn');
+          await new Promise(res => setTimeout(res, backoff));
+          backoff *= 2;
+          continue;
+        }
+
         if(!r.ok) throw new Error(`HTTP ${r.status}`);
         return await r.json().catch(() => ({ok:true}));
       } catch(e) {
         attempts++; stats.retries++; document.getElementById('stRetry').textContent = stats.retries;
-        log(`Erro: ${e.message}. Tentativa ${attempts}/3`, 'err');
-        await new Promise(r => setTimeout(r, 1000));
+        log(`Erro: ${e.message}. Tentativa ${attempts}/${retries}`, 'err');
+        await new Promise(r => setTimeout(r, backoff));
+        backoff *= 2;
       }
     }
-    throw new Error('Falha após 3 tentativas');
+    throw new Error(`Falha após ${retries} tentativas`);
   }
 
   function renewToken() {
@@ -219,15 +261,14 @@
     
     const body = document.getElementById('queueBody');
     body.innerHTML = '';
+    stats = { done:0, fail:0, skip:0, retries:0 };
     
-    for(let i=0; i < serials.length; i++) {
-      const s = serials[i];
-      const row = body.insertRow();
-      row.innerHTML = `<td>${s}</td><td>-</td><td><span class="badge">buscando...</span></td><td>-</td>`;
-      
+    const CONCURRENCY_LIMIT = 5;
+    
+    const processSingleSerial = async (s, row) => {
       try {
-        const search = await apiCall('GET', `${BASE}/equipment?key=${s}`);
-        const eq = search.items?.find(item => String(item.serial) === s);
+        const search = await apiCall('GET', `${BASE}/equipment?key=${encodeURIComponent(s)}`);
+        const eq = search.items?.find(item => String(item.serial) === s || String(item.serialNumber) === s || String(item.imei) === s);
         
         if(!eq) {
           row.cells[2].innerHTML = '<span class="badge">N/E</span>';
@@ -251,16 +292,36 @@
         row.cells[3].textContent = e.message;
         stats.fail++;
       }
+    };
+    
+    for(let i=0; i < serials.length; i += CONCURRENCY_LIMIT) {
+      const chunk = serials.slice(i, i + CONCURRENCY_LIMIT);
+      
+      const promises = chunk.map(s => {
+        const row = body.insertRow();
+        row.innerHTML = `<td>${s}</td><td>-</td><td><span class="badge">buscando...</span></td><td>-</td>`;
+        return processSingleSerial(s, row);
+      });
+      
+      await Promise.all(promises);
+      
+      // Scroll to bottom after each chunk
+      body.lastElementChild?.scrollIntoView({ block: 'nearest' });
       
       document.getElementById('stDone').textContent = stats.done;
       document.getElementById('stFail').textContent = stats.fail;
       document.getElementById('stSkip').textContent = stats.skip;
-      document.getElementById('progFill').style.width = `${((i+1)/serials.length)*100}%`;
+      
+      const processados = Math.min(i + CONCURRENCY_LIMIT, serials.length);
+      const pct = Math.round((processados / serials.length) * 100);
+      document.getElementById('progFill').style.width = `${pct}%`;
     }
     
     log('Processo finalizado.', 'ok');
     document.getElementById('statusDot').className = 'status-dot ok';
     document.getElementById('statusText').textContent = 'finalizado';
+    document.getElementById('btnRun').textContent = 'Nova Deleção';
+    document.getElementById('btnRun').disabled = false;
   }
 </script>
 </body>
