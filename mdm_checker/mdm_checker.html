@@ -530,26 +530,13 @@
     </div>
   </header>
 
-  <div class="panel">
-    <div class="panel-head"><span class="panel-title">Autenticação</span></div>
+  <div class="panel" id="filePanel">
+    <div class="panel-head"><span class="panel-title">Configurações e Fonte de Dados</span></div>
     <div class="panel-body">
       <div class="form-group">
-        <label>Token de Acesso (Bearer)</label>
-        <div class="input-action-group">
-          <input type="password" id="tokenInput" placeholder="Insira o Bearer Token..." />
-          <button class="btn btn-brand" onclick="validateToken()">Validar</button>
-        </div>
-      </div>
-      <div class="form-group" style="margin-bottom:0">
         <label>Package Name do App</label>
         <input type="text" id="packageInput" placeholder="Ex: com.mdmservice" value="com.mdmservice" />
       </div>
-    </div>
-  </div>
-
-  <div class="panel" id="filePanel" style="opacity: 0.5; pointer-events: none;">
-    <div class="panel-head"><span class="panel-title">Fonte de Dados</span></div>
-    <div class="panel-body">
       <div class="dropzone" onclick="document.getElementById('fileInput').click()">
         <div class="dropzone-icon">📄</div>
         <input type="file" id="fileInput" hidden onchange="handleFile(event)" accept=".xlsx,.xls,.csv" />
@@ -584,7 +571,7 @@
       <div class="prog-wrap"><div class="prog-fill" id="progFill"></div></div>
       <div class="queue-wrap">
         <table id="mainTable">
-          <thead><tr><th>Serial Number</th><th>Nome do Eqp.</th><th id="thVersion">Versão MDM Service</th><th>Status</th><th>Conexão</th><th>Ação</th></tr></thead>
+          <thead><tr><th>Serial Number</th><th>Nome do Eqp.</th><th id="thVersion">Versão do packageName</th><th>Status</th><th>Conexão</th><th>Ação</th></tr></thead>
           <tbody id="queueBody"></tbody>
         </table>
       </div>
@@ -599,17 +586,7 @@
   </div>
 </div>
 
-<div class="modal-bg" id="tokenModal">
-  <div class="modal">
-    <h2 style="font-family: var(--font-head); color:var(--amber); margin-bottom:12px; font-size:24px;">Sessão Expirada</h2>
-    <p style="font-size:14px; margin-bottom:24px; color:var(--text2)">O seu token de acesso expirou e o sistema não conseguiu renová-lo automaticamente. Por favor, insira um novo token para continuar a operação de onde parou.</p>
-    <div class="form-group">
-      <label>Novo Token (Bearer)</label>
-      <input type="password" id="newTokenInput" placeholder="Cole aqui o novo token..." style="margin-bottom:24px"/>
-    </div>
-    <button class="btn btn-brand" style="width:100%" onclick="resumeToken()">Retomar Consulta</button>
-  </div>
-</div>
+
 
 <script>
   // Theme Toggle Logic
@@ -629,6 +606,9 @@
   
   document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('themeIcon').textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+    
+    // Tentativa de auto login
+    performLogin();
   });
 
   // Application State
@@ -645,8 +625,6 @@
     TENANT: 'portal',
     CONCURRENCY_LIMIT: 5
   };
-
-  let tokenResolve = null;
 
   const log = (message, type = 'info') => {
     const box = document.getElementById('logBox');
@@ -665,31 +643,39 @@
     box.prepend(div);
   };
 
-  const validateToken = async () => {
-    const val = document.getElementById('tokenInput').value.trim();
-    if (!val) return;
-    
+  const performLogin = async () => {
     try {
-      const response = await fetch(`${CONFIG.BASE_URL}/api-eqp/equipment?page=1&limit=1`, { 
+      log('Realizando login automático...', 'warn');
+      const response = await fetch('https://api.gateway.mdm-hub.com/api-acl/authentication/login', {
+        method: 'POST',
         headers: {
-          'authorization': `Bearer ${val}`, 
+          'accept': 'application/json, text/plain, */*',
+          'content-type': 'application/json',
           'x-tenant-code': CONFIG.TENANT
-        } 
+        },
+        body: JSON.stringify({
+          username: "root",
+          password: "aW40is1yMnmaWG1cwccY!"
+        })
       });
       
-      if (response.ok) { 
-        state.token = val; 
-        document.getElementById('statusDot').className = 'status-dot ok';
-        document.getElementById('statusText').textContent = 'autenticado';
-        document.getElementById('filePanel').style.opacity = '1';
-        document.getElementById('filePanel').style.pointerEvents = 'auto';
-        log('Token validado com sucesso.', 'ok');
-        checkReady();
-      } else { 
-        log('Token inválido.', 'err'); 
+      if (response.ok) {
+        const data = await response.json();
+        const token = data.access_token ?? data.token;
+        if (token) {
+          state.token = token;
+          document.getElementById('statusDot').className = 'status-dot ok';
+          document.getElementById('statusText').textContent = 'autenticado';
+          log('Login automático efetuado com sucesso.', 'ok');
+          if (typeof checkReady === 'function') checkReady();
+          return true;
+        }
       }
-    } catch (error) { 
-      log(`Erro de conexão: ${error.message}`, 'err'); 
+      log('Falha no login automático.', 'err');
+      return false;
+    } catch (error) {
+      log(`Erro no login automático: ${error.message}`, 'err');
+      return false;
     }
   };
 
@@ -735,35 +721,6 @@
     }
   };
 
-  const autoRefreshToken = async () => {
-    try {
-      log('Tentando renovar token automaticamente...', 'warn');
-      const response = await fetch(`${CONFIG.BASE_URL}/api-acl/authentication/refresh-token`, {
-        method: 'POST',
-        headers: {
-          'authorization': `Bearer ${state.token}`, 
-          'x-tenant-code': CONFIG.TENANT, 
-          'content-type': 'application/json'
-        },
-        body: JSON.stringify({})
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        const newToken = data.access_token ?? data.token;
-        if (newToken) {
-          state.token = newToken;
-          document.getElementById('tokenInput').value = state.token;
-          log('Token renovado automaticamente!', 'ok');
-          return true;
-        }
-      }
-      return false;
-    } catch (error) { 
-      return false; 
-    }
-  };
-
   const fetchAPI = async (url, retries = 3, backoff = 1000) => {
     const getHeaders = () => ({
       'authorization': `Bearer ${state.token}`, 
@@ -773,16 +730,13 @@
     let response = await fetch(url, { headers: getHeaders() });
     
     if (response.status === 401) {
-      const refreshed = await autoRefreshToken();
+      log('Token expirado. Tentando reconectar...', 'warn');
+      const refreshed = await performLogin();
       if (refreshed) {
         response = await fetch(url, { headers: getHeaders() });
       } else {
-        log('Auto-refresh falhou. Aguardando token manual.', 'err');
-        await new Promise(res => { 
-          tokenResolve = res; 
-          document.getElementById('tokenModal').classList.add('show'); 
-        });
-        response = await fetch(url, { headers: getHeaders() });
+        log('Falha na re-autenticação. Processo abortado.', 'err');
+        throw new Error('Sessão expirada permanentemente');
       }
     }
     
@@ -794,20 +748,6 @@
 
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     return await response.json();
-  };
-
-  const resumeToken = () => {
-    const val = document.getElementById('newTokenInput').value.trim();
-    if (!val) return;
-    
-    state.token = val; 
-    document.getElementById('tokenInput').value = val;
-    document.getElementById('tokenModal').classList.remove('show');
-    
-    if (tokenResolve) {
-      tokenResolve();
-      tokenResolve = null;
-    }
   };
 
   const startProcess = async () => {
