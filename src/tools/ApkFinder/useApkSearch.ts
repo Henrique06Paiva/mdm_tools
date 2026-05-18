@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { api } from '../../api';
+import { api, CONFIG } from '../../api';
 
 export function useApkSearch() {
   const [corpId, setCorpId] = useState('');
@@ -40,7 +40,7 @@ export function useApkSearch() {
     addLog(`Buscando aplicativos para a corporação ID ${cId}...`, 'info');
 
     try {
-      const listData = await api.fetch(`${import.meta.env.VITE_API_BASE_URL}/api-application/application?page=1&limit=500&corporationId=${cId}`);
+      const listData = await api.fetch(`${CONFIG.BASE_URL}/api-application/application?page=1&limit=500&corporationId=${cId}`);
       const apps = listData?.data ?? listData?.items ?? (Array.isArray(listData) ? listData : []);
 
       if (apps.length === 0) {
@@ -69,7 +69,7 @@ export function useApkSearch() {
 
       for (const app of matchingApps) {
         try {
-          const detailData = await api.fetch(`${import.meta.env.VITE_API_BASE_URL}/api-application/application/${app.id}`);
+          const detailData = await api.fetch(`${CONFIG.BASE_URL}/api-application/application/${app.id}`);
           const appVersions = detailData.applicationVersions || [];
 
           for (const targetVer of targetVersions) {

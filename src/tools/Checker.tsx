@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import * as XLSX from 'xlsx';
-import { api } from '../api';
+import { api, CONFIG } from '../api';
 import { Download, Play, Upload, Plus, X } from 'lucide-react';
 
 export default function Checker() {
@@ -97,7 +97,7 @@ export default function Checker() {
         
         try {
           // 1. Get Equipment Info
-          const searchData = await api.fetch(`${import.meta.env.VITE_API_BASE_URL}/api-eqp/equipment?page=1&limit=10&key=${encodeURIComponent(serial)}`);
+          const searchData = await api.fetch(`${CONFIG.BASE_URL}/api-eqp/equipment?page=1&limit=10&key=${encodeURIComponent(serial)}`);
           const items = searchData.data ?? searchData.items ?? (Array.isArray(searchData) ? searchData : []);
           
           let eq = null;
@@ -132,7 +132,7 @@ export default function Checker() {
             for (const boSystem of [false, true]) {
               let page = 1;
               while (true) {
-                const appsData = await api.fetch(`${import.meta.env.VITE_API_BASE_URL}/api-eqp/equipment-application-historic/${eqId}?page=${page}&limit=50&boSystem=${boSystem}`);
+                const appsData = await api.fetch(`${CONFIG.BASE_URL}/api-eqp/equipment-application-historic/${eqId}?page=${page}&limit=50&boSystem=${boSystem}`);
                 const appItems = appsData?.data ?? appsData?.items ?? (Array.isArray(appsData) ? appsData : []);
                 
                 appItems.forEach((item: any) => {

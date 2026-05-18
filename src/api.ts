@@ -1,4 +1,4 @@
-const CONFIG = {
+export const CONFIG = {
   BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://api.gateway.mdm-hub.com',
   TENANT: import.meta.env.VITE_API_TENANT || 'portal',
   USERNAME: import.meta.env.VITE_API_USERNAME || 'root',

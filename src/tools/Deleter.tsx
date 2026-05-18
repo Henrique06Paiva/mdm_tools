@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import * as XLSX from 'xlsx';
-import { api } from '../api';
+import { api, CONFIG } from '../api';
 import { Play, Trash2 } from 'lucide-react';
 
 export default function Deleter() {
@@ -70,7 +70,7 @@ export default function Deleter() {
         let eqId = 'N/A';
 
         try {
-          const search = await api.fetch(`${import.meta.env.VITE_API_BASE_URL}/api-eqp/equipment?key=${encodeURIComponent(serial)}`);
+          const search = await api.fetch(`${CONFIG.BASE_URL}/api-eqp/equipment?key=${encodeURIComponent(serial)}`);
           
           const eq = search.items?.find((item: any) => 
             String(item.serial) === serial || 
@@ -88,14 +88,14 @@ export default function Deleter() {
             // Inactivate if active
             if (eq.status === 1) {
               const { id, companyId, subsidiaryId, equipmentTypeId, corporationId, name } = eq;
-              await api.fetch(`${import.meta.env.VITE_API_BASE_URL}/api-eqp/equipment/${id}`, {
+              await api.fetch(`${CONFIG.BASE_URL}/api-eqp/equipment/${id}`, {
                 method: 'PATCH',
                 body: JSON.stringify({ status: 0, companyId, subsidiaryId, equipmentTypeId, corporationId, name })
               });
             }
             
             // Delete
-            const delRes = await api.fetch(`${import.meta.env.VITE_API_BASE_URL}/api-eqp/equipment/${eq.id}`, { method: 'DELETE' });
+            const delRes = await api.fetch(`${CONFIG.BASE_URL}/api-eqp/equipment/${eq.id}`, { method: 'DELETE' });
             if (delRes && delRes.ok !== false) {
               statusBadge = 'badge-done';
               detailText = 'Deletado com sucesso';
