@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import * as XLSX from 'xlsx';
 import { api } from '../api';
-import { Play, Upload, Trash2 } from 'lucide-react';
+import { Play, Trash2 } from 'lucide-react';
 
 export default function Deleter() {
   const [serials, setSerials] = useState<string[]>([]);

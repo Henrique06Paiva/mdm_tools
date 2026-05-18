@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { ThemeProvider, useTheme } from './ThemeContext';
 import { api } from './api';
 import { Sun, Moon, Smartphone, Package, Trash2 } from 'lucide-react';
