@@ -53,12 +53,14 @@ export function useApkSearch() {
         if (targetPackages.length > 0 && !targetPackages.includes(app.packageName)) {
           return false;
         }
-        const appVersions = app.applicationVersions || [];
-        return appVersions.some((v: any) => targetVersions.includes(v.name));
+        // Retiramos o filtro prévio de `v.name` porque o version real pode estar
+        // escondido dentro de `applicationVersionApks` (ex: "Aplicativo Frentista")
+        // que só vem na API de detalhes.
+        return true;
       });
 
       if (matchingApps.length === 0) {
-        addLog(`Nenhuma versão correspondente encontrada nos aplicativos filtrados.`, 'warn');
+        addLog(`Nenhum aplicativo correspondente encontrado (filtro de package).`, 'warn');
         setIsProcessing(false);
         return;
       }
@@ -72,21 +74,26 @@ export function useApkSearch() {
           const detailData = await api.fetch(`${CONFIG.BASE_URL}/api-application/application/${app.id}`);
           const appVersions = detailData.applicationVersions || [];
 
-          for (const targetVer of targetVersions) {
-            const targetVerData = appVersions.find((v: any) => v.name === targetVer);
+          for (const v of appVersions) {
+            const apks = v.applicationVersionApks || [];
             
-            if (targetVerData?.applicationVersionApks?.length > 0) {
-              targetVerData.applicationVersionApks.forEach((apk: any) => {
+            for (const apk of apks) {
+              const apkVersion = apk.versionName;
+              
+              // Verifica se a versão desejada bate com apk.versionName OU com v.name
+              if (targetVersions.includes(apkVersion) || targetVersions.includes(v.name)) {
+                const matchedVer = targetVersions.includes(apkVersion) ? apkVersion : v.name;
+                
                 newResults.push({
                   id: app.id,
                   name: app.name,
                   packageName: app.packageName,
-                  version: targetVerData.name,
+                  version: matchedVer,
                   fileSize: apk.fileSize || "-",
                   link: apk.apkPath
                 });
                 foundApks++;
-              });
+              }
             }
           }
         } catch (e: any) {

@@ -1,0 +1,46 @@
+{
+  "items": [
+    {
+      "id": 553,
+      "softwareHouseId": null,
+      "softwareHouseName": null,
+      "corporationId": 7,
+      "name": "MDM Store",
+      "status": 2,
+      "private": false,
+      "packageName": "com.br.octostore",
+      "defaultShortDescription": "MDM Store",
+      "defaultLongDescription": "MDM Store",
+      "defaultIconPath": "https://mdm-hub-file-prd.s3.amazonaws.com/icons/d9539768-c3bf-4ab3-ac37-56bf286e842c-Store.png",
+      "createdBy": 1,
+      "updatedBy": 21,
+      "createdAt": "2026-05-14T19:34:57.104Z",
+      "updatedAt": "2026-05-14T19:35:39.655Z",
+      "applicationVersions": [
+        {
+          "id": 1533,
+          "status": 2,
+          "name": "MDM Store",
+          "notes": "MDM Store",
+          "iconPath": "https://mdm-hub-file-prd.s3.amazonaws.com/icons/d9539768-c3bf-4ab3-ac37-56bf286e842c-Store.png",
+          "shortDescription": "MDM Store",
+          "longDescription": "MDM Store",
+          "applicationId": 553,
+          "createdBy": 1,
+          "updatedBy": 1,
+          "createdAt": "2026-05-14T19:35:39.651Z",
+          "updatedAt": "2026-05-14T20:57:12.511Z"
+        }
+      ]
+    }
+  ],
+  "meta": {
+    "totalItems": 4,
+    "itemCount": 1,
+    "itemsPerPage": 1,
+    "totalPages": 4,
+    "currentPage": 1,
+    "itemStart": 1,
+    "itemEnd": 1
+  }
+}
