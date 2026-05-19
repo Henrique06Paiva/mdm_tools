@@ -1,6 +1,18 @@
-import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
-import { Badge } from '../../components/ui/badge';
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "../../components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../../components/ui/table";
+import { Badge } from "../../components/ui/badge";
 
 interface Result {
   id: number;
@@ -34,15 +46,17 @@ export function ResultsTable({ results }: { results: Result[] }) {
                 <TableRow key={idx}>
                   <TableCell className="font-mono">{r.id}</TableCell>
                   <TableCell className="font-medium">{r.name}</TableCell>
-                  <TableCell className="font-mono text-muted-foreground">{r.packageName}</TableCell>
+                  <TableCell className="font-mono text-muted-foreground">
+                    {r.packageName}
+                  </TableCell>
                   <TableCell>
                     <Badge variant="success">{r.version}</Badge>
                   </TableCell>
                   <TableCell>
-                    <a 
-                      href={r.link} 
-                      target="_blank" 
-                      rel="noreferrer" 
+                    <a
+                      href={r.link}
+                      target="_blank"
+                      rel="noreferrer"
                       className="text-primary font-semibold hover:underline decoration-primary underline-offset-4"
                     >
                       🔗 Baixar APK
@@ -52,8 +66,12 @@ export function ResultsTable({ results }: { results: Result[] }) {
               ))}
               {results.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                    Nenhum resultado ainda. Preencha os dados e clique em Buscar.
+                  <TableCell
+                    colSpan={5}
+                    className="h-24 text-center text-muted-foreground"
+                  >
+                    Nenhum resultado ainda. Preencha os dados e clique em
+                    Buscar.
                   </TableCell>
                 </TableRow>
               )}
