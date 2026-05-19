@@ -1,5 +1,7 @@
 import { type RefObject, type ChangeEvent } from 'react';
 import { Trash2 } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
+import { Badge } from '../../components/ui/badge';
 
 interface ConfigPanelProps {
   fileInputRef: RefObject<HTMLInputElement | null>;
@@ -13,17 +15,28 @@ export function ConfigPanel({
   serials
 }: ConfigPanelProps) {
   return (
-    <div className="panel">
-      <div className="panel-head"><span className="panel-title">Fonte de Dados</span></div>
-      <div className="panel-body">
-        <div className="dropzone" onClick={() => fileInputRef.current?.click()} style={{ border: '2px dashed var(--border2)', padding: '2rem', textAlign: 'center', borderRadius: '8px', cursor: 'pointer' }}>
-          <Trash2 size={32} style={{ color: 'var(--brand)', marginBottom: '8px' }} />
+    <Card className="mb-6 border-border/60 shadow-sm">
+      <CardHeader className="bg-muted/10 pb-4 border-b border-border/40">
+        <CardTitle className="text-foreground">Fonte de Dados</CardTitle>
+      </CardHeader>
+      <CardContent className="pt-6">
+        <div 
+          className="border-2 border-dashed border-destructive/30 bg-destructive/5 hover:bg-destructive/10 transition-colors p-8 text-center rounded-xl cursor-pointer" 
+          onClick={() => fileInputRef.current?.click()}
+        >
+          <Trash2 size={36} className="mx-auto text-destructive mb-3" />
           <input type="file" ref={fileInputRef} hidden onChange={handleFile} accept=".xlsx,.xls,.csv" />
-          <p style={{ fontWeight: 500 }}>Clique para selecionar a planilha de seriais a serem deletados</p>
-          <div style={{ fontSize: '12px', color: 'var(--text3)' }}>Formatos suportados: .xlsx, .csv</div>
-          {serials.length > 0 && <div style={{ marginTop: '12px', color: 'var(--brand)', fontWeight: 600 }}>{serials.length} seriais carregados.</div>}
+          <p className="font-medium text-foreground text-sm">Clique para selecionar a planilha de seriais a serem deletados</p>
+          <div className="text-xs text-muted-foreground mt-1">Formatos suportados: .xlsx, .csv</div>
+          {serials.length > 0 && (
+            <div className="mt-4">
+              <Badge variant="destructive" className="px-3 py-1 text-sm font-normal">
+                {serials.length} seriais carregados.
+              </Badge>
+            </div>
+          )}
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

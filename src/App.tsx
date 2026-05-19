@@ -5,33 +5,62 @@ import { Sun, Moon, Smartphone, Package, Trash2 } from 'lucide-react';
 import Checker from './tools/Checker';
 import Deleter from './tools/Deleter';
 import ApkFinder from './tools/ApkFinder';
+import { Button } from './components/ui/button';
 
 const Header = ({ status, isAuthenticating }: { status: string, isAuthenticating: boolean }) => {
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+    <header className="flex justify-between items-center mb-8 pb-4 border-b border-border/40">
       <div>
-        <h1 style={{ fontSize: '20px', fontWeight: 600, letterSpacing: '-0.02em', marginBottom: '4px' }}>MDM Hub</h1>
-        <div style={{ color: 'var(--text3)', fontSize: '13px' }}>Gerenciamento de inventário</div>
+        <h1 className="text-2xl font-bold tracking-tight mb-1 text-foreground">MDM Hub</h1>
+        <div className="text-sm text-muted-foreground font-medium">Gerenciamento de inventário</div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: 'var(--text2)' }}>
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: isAuthenticating ? 'var(--amber)' : 'var(--green)' }}></div>
+      <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-full border border-border/50">
+          <div className={`w-2 h-2 rounded-full ${isAuthenticating ? 'bg-amber-500 animate-pulse' : 'bg-green-500'}`}></div>
           {status}
         </div>
-        <div style={{ width: '1px', height: '16px', background: 'var(--border)' }}></div>
-        <button 
+        <div className="w-px h-6 bg-border"></div>
+        <Button 
+          variant="ghost" 
+          size="icon"
           onClick={toggleTheme} 
-          style={{ background: 'transparent', border: 'none', color: 'var(--text2)', cursor: 'pointer', display: 'flex' }}
           title="Alternar Tema"
+          className="text-muted-foreground hover:text-foreground rounded-full"
         >
-          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-        </button>
+          {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+        </Button>
       </div>
     </header>
   );
 };
+
+const TabButton = ({ 
+  label, 
+  icon: Icon, 
+  isActive, 
+  onClick 
+}: { 
+  label: string, 
+  icon: any, 
+  isActive: boolean, 
+  onClick: () => void 
+}) => (
+  <button 
+    onClick={onClick}
+    className={`
+      flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200
+      ${isActive 
+        ? 'bg-primary text-primary-foreground shadow-md shadow-primary/20 scale-[1.02]' 
+        : 'text-muted-foreground hover:bg-muted hover:text-foreground hover:scale-[1.02]'
+      }
+    `}
+  >
+    <Icon size={16} className={isActive ? "text-primary-foreground" : "text-muted-foreground"} />
+    {label}
+  </button>
+);
 
 const MainApp = () => {
   const [activeTab, setActiveTab] = useState<'checker' | 'deleter' | 'apk'>('checker');
@@ -47,44 +76,37 @@ const MainApp = () => {
     login();
   }, []);
 
-  const TabButton = ({ id, label, icon: Icon }: { id: any, label: string, icon: any }) => (
-    <button 
-      onClick={() => setActiveTab(id)}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '6px',
-        padding: '8px 12px',
-        border: 'none',
-        background: activeTab === id ? 'var(--bg2)' : 'transparent',
-        color: activeTab === id ? 'var(--text)' : 'var(--text3)',
-        borderRadius: '6px',
-        cursor: 'pointer',
-        fontWeight: 500,
-        fontFamily: 'var(--font-sans)',
-        fontSize: '13px',
-        transition: 'all 0.2s ease',
-      }}
-    >
-      <Icon size={16} />
-      {label}
-    </button>
-  );
-
   return (
-    <div className="shell">
-      <Header status={authStatus} isAuthenticating={isAuthenticating} />
-      
-      <div style={{ display: 'flex', gap: '4px', marginBottom: '32px' }}>
-        <TabButton id="checker" label="Version Checker" icon={Smartphone} />
-        <TabButton id="apk" label="APK Finder" icon={Package} />
-        <TabButton id="deleter" label="Deleção em Massa" icon={Trash2} />
-      </div>
+    <div className="min-h-screen bg-background">
+      <div className="w-full max-w-5xl mx-auto px-6 py-10">
+        <Header status={authStatus} isAuthenticating={isAuthenticating} />
+        
+        <div className="flex flex-wrap gap-2 mb-8 bg-muted/20 p-1.5 rounded-xl border border-border/40 w-fit">
+          <TabButton 
+            label="Version Checker" 
+            icon={Smartphone} 
+            isActive={activeTab === 'checker'}
+            onClick={() => setActiveTab('checker')}
+          />
+          <TabButton 
+            label="APK Finder" 
+            icon={Package} 
+            isActive={activeTab === 'apk'}
+            onClick={() => setActiveTab('apk')}
+          />
+          <TabButton 
+            label="Deleção em Massa" 
+            icon={Trash2} 
+            isActive={activeTab === 'deleter'}
+            onClick={() => setActiveTab('deleter')}
+          />
+        </div>
 
-      <div className="tab-content">
-        {activeTab === 'checker' && <Checker />}
-        {activeTab === 'deleter' && <Deleter />}
-        {activeTab === 'apk' && <ApkFinder />}
+        <main className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+          {activeTab === 'checker' && <Checker />}
+          {activeTab === 'deleter' && <Deleter />}
+          {activeTab === 'apk' && <ApkFinder />}
+        </main>
       </div>
     </div>
   );

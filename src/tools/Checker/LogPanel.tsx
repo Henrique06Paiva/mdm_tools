@@ -1,3 +1,5 @@
+import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
+
 interface Log {
   id: number;
   message: string;
@@ -7,24 +9,30 @@ interface Log {
 
 export function LogPanel({ logs }: { logs: Log[] }) {
   const getColorClass = (type: string) => {
-    if (type === 'err') return 'var(--red)';
-    if (type === 'ok') return 'var(--green)';
-    if (type === 'warn') return 'var(--amber)';
-    return 'var(--text2)';
+    if (type === 'err') return 'text-destructive';
+    if (type === 'ok') return 'text-green-600 dark:text-green-500';
+    if (type === 'warn') return 'text-amber-600 dark:text-amber-500';
+    return 'text-muted-foreground';
   };
 
   return (
-    <div className="panel">
-      <div className="panel-head"><span className="panel-title">Log de Eventos do Sistema</span></div>
-      <div className="panel-body" style={{ padding: '16px' }}>
-        <div style={{ maxHeight: '200px', overflowY: 'auto', background: 'var(--bg)', padding: '16px', fontSize: '12px', fontFamily: 'var(--font-mono)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+    <Card className="border-border/60 shadow-sm">
+      <CardHeader className="bg-muted/10 pb-4 border-b border-border/40">
+        <CardTitle className="text-foreground">Log de Eventos do Sistema</CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        <div className="max-h-[200px] overflow-y-auto bg-muted/5 p-4 font-mono text-xs">
           {logs.map(log => (
-            <div key={log.id} style={{ color: getColorClass(log.type), marginBottom: '6px', borderBottom: '1px solid var(--border)', paddingBottom: '6px' }}>
-              [{log.time}] {log.message}
+            <div 
+              key={log.id} 
+              className={`mb-1.5 pb-1.5 border-b border-border/40 last:border-0 last:mb-0 last:pb-0 ${getColorClass(log.type)}`}
+            >
+              <span className="opacity-70 mr-2">[{log.time}]</span> 
+              <span>{log.message}</span>
             </div>
           ))}
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

@@ -1,5 +1,9 @@
 import { Play } from 'lucide-react';
 import { api } from '../../api';
+import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
+import { Button } from '../../components/ui/button';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
+import { Badge } from '../../components/ui/badge';
 
 interface ProgressPanelProps {
   startProcess: () => void;
@@ -16,70 +20,94 @@ export function ProgressPanel({
   stats,
   tableRows
 }: ProgressPanelProps) {
+  const percentage = stats.total > 0 ? Math.round(((stats.done + stats.fail + stats.skip) / stats.total) * 100) : 0;
+
   return (
-    <div className="panel">
-      <div className="panel-head">
-        <span className="panel-title">Progresso da Deleção</span>
-        <button className="btn btn-brand" onClick={startProcess} disabled={isProcessing || serials.length === 0 || !api.hasToken()}>
-          <Play size={16} /> Iniciar Processo
-        </button>
-      </div>
-      <div className="panel-body">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '12px', marginBottom: '24px' }}>
-          <div style={{ padding: '16px', border: '1px solid var(--border)', borderRadius: '8px', textAlign: 'center' }}>
-            <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{stats.total}</div>
-            <div style={{ fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Total</div>
-          </div>
-          <div style={{ padding: '16px', border: '1px solid var(--border)', borderRadius: '8px', textAlign: 'center' }}>
-            <div style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--green)' }}>{stats.done}</div>
-            <div style={{ fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Sucesso</div>
-          </div>
-          <div style={{ padding: '16px', border: '1px solid var(--border)', borderRadius: '8px', textAlign: 'center' }}>
-            <div style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--red)' }}>{stats.fail}</div>
-            <div style={{ fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Falhas</div>
-          </div>
-          <div style={{ padding: '16px', border: '1px solid var(--border)', borderRadius: '8px', textAlign: 'center' }}>
-            <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{stats.skip}</div>
-            <div style={{ fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>N/E</div>
-          </div>
-          <div style={{ padding: '16px', border: '1px solid var(--border)', borderRadius: '8px', textAlign: 'center' }}>
-            <div style={{ fontSize: '24px', fontWeight: 'bold' }}>{stats.retries}</div>
-            <div style={{ fontSize: '11px', color: 'var(--text3)', textTransform: 'uppercase' }}>Retries</div>
-          </div>
+    <Card className="mb-6 border-border/60 shadow-sm">
+      <CardHeader className="bg-muted/10 pb-4 border-b border-border/40 flex flex-row items-center justify-between">
+        <CardTitle className="text-foreground">Progresso da Deleção</CardTitle>
+        <Button 
+          variant="destructive"
+          size="sm" 
+          onClick={startProcess} 
+          disabled={isProcessing || serials.length === 0 || !api.hasToken()}
+        >
+          <Play size={14} className="mr-2" /> Iniciar Processo
+        </Button>
+      </CardHeader>
+      <CardContent className="pt-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+          <Card className="bg-muted/10 border-border/50 text-center py-6">
+            <div className="text-2xl font-mono font-bold text-foreground">{stats.total}</div>
+            <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2 font-semibold">Total</div>
+          </Card>
+          <Card className="bg-green-500/5 border-green-500/20 text-center py-6">
+            <div className="text-2xl font-mono font-bold text-green-600 dark:text-green-500">{stats.done}</div>
+            <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2 font-semibold">Sucesso</div>
+          </Card>
+          <Card className="bg-destructive/5 border-destructive/20 text-center py-6">
+            <div className="text-2xl font-mono font-bold text-destructive">{stats.fail}</div>
+            <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2 font-semibold">Falhas</div>
+          </Card>
+          <Card className="bg-amber-500/5 border-amber-500/20 text-center py-6">
+            <div className="text-2xl font-mono font-bold text-amber-600 dark:text-amber-500">{stats.skip}</div>
+            <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2 font-semibold">N/E</div>
+          </Card>
+          <Card className="bg-muted/20 border-border/60 text-center py-6">
+            <div className="text-2xl font-mono font-bold text-foreground">{stats.retries}</div>
+            <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2 font-semibold">Retries</div>
+          </Card>
         </div>
 
-        <div style={{ height: '6px', background: 'var(--bg)', borderRadius: '99px', overflow: 'hidden', marginBottom: '24px', border: '1px solid var(--border)' }}>
-          <div style={{ height: '100%', background: 'var(--brand)', width: `${stats.total > 0 ? ((stats.done + stats.fail + stats.skip) / stats.total) * 100 : 0}%`, transition: 'width 0.3s' }}></div>
+        <div className="h-1.5 bg-muted rounded-full overflow-hidden mb-6">
+          <div 
+            className="h-full bg-destructive transition-all duration-500 ease-out" 
+            style={{ width: `${percentage}%` }} 
+          />
         </div>
 
-        <div style={{ maxHeight: '400px', overflowY: 'auto', border: '1px solid var(--border)', borderRadius: '8px', backgroundColor: 'var(--bg)' }}>
-          <table>
-            <thead>
-              <tr>
-                <th>Serial</th>
-                <th>ID do Eqp.</th>
-                <th>Status</th>
-                <th>Detalhe</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tableRows.map((row, idx) => (
-                <tr key={idx}>
-                  <td>{row.serial}</td>
-                  <td>{row.eqId}</td>
-                  <td><span className={`badge ${row.statusBadge}`}>{row.statusBadge === 'badge-done' ? 'OK' : row.statusBadge === 'badge-warn' ? 'N/E' : 'Erro'}</span></td>
-                  <td>{row.detailText}</td>
-                </tr>
-              ))}
+        <div className="max-h-[400px] overflow-auto">
+          <Table>
+            <TableHeader className="sticky top-0 bg-muted/80 backdrop-blur-sm z-10">
+              <TableRow>
+                <TableHead>Serial</TableHead>
+                <TableHead>ID do Eqp.</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Detalhe</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {tableRows.map((row, idx) => {
+                const isErr = row.statusBadge === 'badge-err';
+                const isWarn = row.statusBadge === 'badge-warn';
+                const isSuccess = row.statusBadge === 'badge-done';
+                const badgeVariant = isErr ? 'destructive' : isWarn ? 'warning' : 'success';
+                const statusLabel = isSuccess ? 'OK' : isWarn ? 'N/E' : 'Erro';
+
+                return (
+                  <TableRow key={idx}>
+                    <TableCell className="font-mono">{row.serial}</TableCell>
+                    <TableCell className="font-mono text-muted-foreground">{row.eqId}</TableCell>
+                    <TableCell>
+                      <Badge variant={badgeVariant}>
+                        {statusLabel}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{row.detailText}</TableCell>
+                  </TableRow>
+                );
+              })}
               {tableRows.length === 0 && (
-                <tr>
-                  <td colSpan={4} style={{ textAlign: 'center', color: 'var(--text3)' }}>Nenhum dado processado ainda.</td>
-                </tr>
+                <TableRow>
+                  <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                    Nenhum dado processado ainda.
+                  </TableCell>
+                </TableRow>
               )}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

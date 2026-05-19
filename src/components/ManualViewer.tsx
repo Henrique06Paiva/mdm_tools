@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
+import { Card, CardContent } from './ui/card';
 
 interface ManualViewerProps {
   title: string;
@@ -10,23 +11,26 @@ export const ManualViewer: React.FC<ManualViewerProps> = ({ title, content }) =>
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="panel" style={{ marginBottom: '24px', border: '1px solid var(--border)', backgroundColor: 'var(--bg2)' }}>
+    <Card className="mb-6 bg-muted/20 border-border/60 shadow-sm transition-all duration-300">
       <div 
-        className="panel-head" 
-        style={{ cursor: 'pointer', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+        className="flex justify-between items-center px-6 py-4 cursor-pointer hover:bg-muted/30 transition-colors"
         onClick={() => setIsOpen(!isOpen)}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text)' }}>
-          <BookOpen size={18} />
-          <span style={{ fontWeight: 600, fontSize: '14px', fontFamily: 'var(--font-sans)' }}>Manual de Uso: {title}</span>
+        <div className="flex items-center gap-3 text-foreground">
+          <BookOpen size={18} className="text-primary" />
+          <span className="font-semibold text-sm">Manual de Uso: {title}</span>
         </div>
-        {isOpen ? <ChevronUp size={18} color="var(--text3)" /> : <ChevronDown size={18} color="var(--text3)" />}
+        <div className="text-muted-foreground transition-transform duration-300">
+          {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+        </div>
       </div>
       {isOpen && (
-        <div className="panel-body" style={{ padding: '20px', fontSize: '13px', lineHeight: '1.6', color: 'var(--text2)', borderTop: '1px solid var(--border)', backgroundColor: 'var(--bg)' }}>
-          {content}
-        </div>
+        <CardContent className="px-6 py-5 border-t border-border/40 bg-background/50 text-sm leading-relaxed text-muted-foreground animate-in slide-in-from-top-2 fade-in duration-200">
+          <div className="space-y-3">
+            {content}
+          </div>
+        </CardContent>
       )}
-    </div>
+    </Card>
   );
 };
