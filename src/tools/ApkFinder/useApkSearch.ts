@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { useState, useRef } from "react";
+=======
+import { useState, useRef, useCallback } from "react";
+>>>>>>> 013aefa2043ffbd8ca9e37bb57f2903496088f08
 import { api, CONFIG } from "../../api";
 
 export function useApkSearch() {
@@ -13,6 +17,7 @@ export function useApkSearch() {
 
   const logIdRef = useRef(0);
 
+<<<<<<< HEAD
   const addLog = (
     message: string,
     type: "info" | "warn" | "err" | "ok" = "info",
@@ -27,8 +32,24 @@ export function useApkSearch() {
       ...prev,
     ]);
   };
+=======
+  const addLog = useCallback(
+    (message: string, type: "info" | "warn" | "err" | "ok" = "info") => {
+      setLogs((prev) => [
+        {
+          id: logIdRef.current++,
+          message,
+          type,
+          time: new Date().toLocaleTimeString(),
+        },
+        ...prev,
+      ]);
+    },
+    [],
+  );
+>>>>>>> 013aefa2043ffbd8ca9e37bb57f2903496088f08
 
-  const startSearch = async () => {
+  const startSearch = useCallback(async () => {
     if (!api.hasToken()) {
       addLog("Autenticação necessária antes de prosseguir.", "err");
       return;
@@ -146,7 +167,7 @@ export function useApkSearch() {
     }
 
     setIsProcessing(false);
-  };
+  }, [corpId, packages, versions, addLog]);
 
   return {
     corpId,

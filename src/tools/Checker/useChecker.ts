@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import * as XLSX from 'xlsx';
 import { api, CONFIG } from '../../api';
 
@@ -18,16 +18,16 @@ export function useChecker() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logIdRef = useRef(0);
 
-  const addLog = (message: string, type: 'info' | 'warn' | 'err' | 'ok' = 'info') => {
+  const addLog = useCallback((message: string, type: 'info' | 'warn' | 'err' | 'ok' = 'info') => {
     setLogs(prev => [{
       id: logIdRef.current++,
       message,
       type,
       time: new Date().toLocaleTimeString()
     }, ...prev]);
-  };
+  }, []);
 
-  const applyColumn = (data: any[], colIdx: number) => {
+  const applyColumn = useCallback((data: any[], colIdx: number) => {
     const parsedSerials = data.slice(1)
       .map(row => String(row[colIdx] ?? '').trim())
       .filter(Boolean);
@@ -36,9 +36,9 @@ export function useChecker() {
     setStats(s => ({ ...s, total: parsedSerials.length }));
     setSelectedCol(colIdx);
     addLog(`${parsedSerials.length} seriais encontrados na coluna selecionada.`, 'ok');
-  };
+  }, [addLog]);
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -62,9 +62,9 @@ export function useChecker() {
       }
     };
     reader.readAsBinaryString(file);
-  };
+  }, [addLog, applyColumn]);
 
-  const startProcess = async () => {
+  const startProcess = useCallback(async () => {
     if (!api.hasToken()) {
       addLog('Autenticação necessária antes de prosseguir.', 'err');
       return;
@@ -89,10 +89,13 @@ export function useChecker() {
     const processBatch = async (batch: string[]) => {
       const promises = batch.map(async (serial) => {
         let status = 'error';
-        let eqName = 'N/A';
-        let online = 'N/A';
+        let eqName = 'Sem informação';
+        let online = 'Sem informação';
         let eqId = null;
-        let versionStr = 'N/E';
+        let versionStr = 'Sem informação';
+        let eqGroup = 'Sem informação';
+        let eqPolicy = 'Sem informação';
+        const queryTime = new Date().toLocaleTimeString();
         
         try {
           // 1. Get Equipment Info
@@ -111,9 +114,13 @@ export function useChecker() {
 
           if (eq) {
             eqId = eq.id;
-            eqName = eq.name || 'N/A';
+            eqName = eq.name || 'Sem informação';
             status = eq.status === 1 ? 'ok' : 'err';
             
+            // Get group and policy details safely from various potential property paths
+            eqGroup = eq.equipmentGroup?.name || eq.group?.name || eq.equipmentGroupName || eq.groupName || eq.grupo?.name || (typeof eq.equipmentGroup === 'string' ? eq.equipmentGroup : '') || (typeof eq.group === 'string' ? eq.group : '') || 'Sem informação';
+            eqPolicy = eq.usePolicy?.name || eq.policy?.name || eq.usePolicyName || eq.policyName || eq.politica?.name || (typeof eq.usePolicy === 'string' ? eq.usePolicy : '') || (typeof eq.policy === 'string' ? eq.policy : '') || 'Sem informação';
+
             const isPowerOn = eq.powerOn === true;
             const lastUpdate = eq.lastUpdate ? new Date(eq.lastUpdate) : new Date(0);
             const tenMinsAgo = new Date(Date.now() - 10 * 60 * 1000);
@@ -136,7 +143,7 @@ export function useChecker() {
                 
                 appItems.forEach((item: any) => {
                   if (validPackages.includes(item.packageName)) {
-                    foundVersions[item.packageName] = item.version || "S/V";
+                    foundVersions[item.packageName] = item.version || "Sem informação";
                   }
                 });
                 
@@ -153,7 +160,7 @@ export function useChecker() {
             const eqVersions = validPackages.map(pkg => {
               const v = foundVersions[pkg];
               if (!v) allFound = false;
-              return v || 'Erro';
+              return v || 'Sem informação';
             });
             versionStr = eqVersions.join(' | ');
             
@@ -164,19 +171,28 @@ export function useChecker() {
             }
           } else {
             fail++;
-            versionStr = 'Serial N/E';
+            status = 'Sem informação';
+            online = 'Sem informação';
+            versionStr = 'Sem informação';
           }
         } catch (error: any) {
           fail++;
-          versionStr = 'Falha API';
+          status = 'Sem informação';
+          online = 'Sem informação';
+          versionStr = 'Sem informação';
         }
 
         const row = {
-          serial, eqName, versionStr, 
-          statusBadge: status === 'ok' ? 'badge-done' : 'badge-err',
-          statusText: status === 'ok' ? 'Ativo' : 'Inativo',
-          onlineBadge: online === 'ok' ? 'badge-done' : 'badge-err',
-          onlineText: online === 'ok' ? 'Online' : 'Offline'
+          serial, 
+          eqName, 
+          eqGroup,
+          eqPolicy,
+          versionStr, 
+          statusBadge: status === 'ok' ? 'badge-done' : status === 'Sem informação' ? 'badge-neutral' : 'badge-err',
+          statusText: status === 'ok' ? 'Ativo' : status === 'Sem informação' ? 'Sem informação' : 'Inativo',
+          onlineBadge: online === 'ok' ? 'badge-done' : online === 'Sem informação' ? 'badge-neutral' : 'badge-err',
+          onlineText: online === 'ok' ? 'Online' : online === 'Sem informação' ? 'Sem informação' : 'Offline',
+          queryTime
         };
 
         setTableRows(prev => [...prev, row]);
@@ -184,8 +200,11 @@ export function useChecker() {
         const resultObj: any = {
           "Serial Number": serial,
           "Nome do Equipamento": eqName,
+          "Grupo de Equipamento": eqGroup,
+          "Política de Uso": eqPolicy,
           "Status": row.statusText,
           "Conexão": row.onlineText,
+          "Horário da Consulta": queryTime,
         };
         const vSplit = versionStr.split(' | ');
         validPackages.forEach((pkg, idx) => {
@@ -206,15 +225,15 @@ export function useChecker() {
 
     setIsProcessing(false);
     addLog('Consulta finalizada com sucesso.', 'ok');
-  };
+  }, [serials, packages, addLog]);
 
-  const exportExcel = () => {
+  const exportExcel = useCallback(() => {
     if (results.length === 0) return;
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(results);
     XLSX.utils.book_append_sheet(wb, ws, 'Versões');
     XLSX.writeFile(wb, `MDM_Versoes_${new Date().getTime()}.xlsx`);
-  };
+  }, [results]);
 
   return {
     packages, setPackages,
