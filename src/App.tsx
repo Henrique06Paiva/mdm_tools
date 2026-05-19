@@ -102,7 +102,7 @@ const MainApp = () => {
       <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
         <Header status={authStatus} isAuthenticating={isAuthenticating} />
 
-        <div 
+        <div
           role="tablist"
           className="flex overflow-x-auto flex-nowrap md:flex-wrap gap-2 mb-8 bg-muted/20 p-1.5 rounded-xl border border-border/40 w-full md:w-fit scrollbar-none"
         >

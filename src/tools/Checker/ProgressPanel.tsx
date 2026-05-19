@@ -1,9 +1,21 @@
-import { Download, Play } from 'lucide-react';
-import { api } from '../../api';
-import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
-import { Button } from '../../components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../components/ui/table';
-import { Badge } from '../../components/ui/badge';
+import { Download, Play } from "lucide-react";
+import { api } from "../../api";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "../../components/ui/card";
+import { Button } from "../../components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../../components/ui/table";
+import { Badge } from "../../components/ui/badge";
 
 interface ProgressPanelProps {
   results: any[];
@@ -22,9 +34,12 @@ export function ProgressPanel({
   isProcessing,
   serials,
   stats,
-  tableRows
+  tableRows,
 }: ProgressPanelProps) {
-  const percentage = stats.total > 0 ? Math.round(((stats.done + stats.fail) / stats.total) * 100) : 0;
+  const percentage =
+    stats.total > 0
+      ? Math.round(((stats.done + stats.fail) / stats.total) * 100)
+      : 0;
 
   return (
     <Card className="mb-6 border-border/60 shadow-sm">
@@ -36,9 +51,9 @@ export function ProgressPanel({
               <Download size={14} className="mr-2" /> Baixar Relatório
             </Button>
           )}
-          <Button 
-            size="sm" 
-            onClick={startProcess} 
+          <Button
+            size="sm"
+            onClick={startProcess}
             disabled={isProcessing || serials.length === 0 || !api.hasToken()}
           >
             <Play size={14} className="mr-2" /> Iniciar Consulta
@@ -48,27 +63,43 @@ export function ProgressPanel({
       <CardContent className="pt-6">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <Card className="bg-muted/10 border-border/50 text-center py-6">
-            <div className="text-3xl font-mono font-bold text-foreground">{stats.total}</div>
-            <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2 font-semibold">Total Seriais</div>
+            <div className="text-3xl font-mono font-bold text-foreground">
+              {stats.total}
+            </div>
+            <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2 font-semibold">
+              Total Seriais
+            </div>
           </Card>
           <Card className="bg-green-500/5 border-green-500/20 text-center py-6">
-            <div className="text-3xl font-mono font-bold text-green-600 dark:text-green-500">{stats.done}</div>
-            <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2 font-semibold">Sucesso</div>
+            <div className="text-3xl font-mono font-bold text-green-600 dark:text-green-500">
+              {stats.done}
+            </div>
+            <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2 font-semibold">
+              Sucesso
+            </div>
           </Card>
           <Card className="bg-destructive/5 border-destructive/20 text-center py-6">
-            <div className="text-3xl font-mono font-bold text-destructive">{stats.fail}</div>
-            <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2 font-semibold">Erros / N.E.</div>
+            <div className="text-3xl font-mono font-bold text-destructive">
+              {stats.fail}
+            </div>
+            <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2 font-semibold">
+              Erros / N.E.
+            </div>
           </Card>
           <Card className="bg-primary/5 border-primary/20 text-center py-6">
-            <div className="text-3xl font-mono font-bold text-primary">{percentage}%</div>
-            <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2 font-semibold">Concluído</div>
+            <div className="text-3xl font-mono font-bold text-primary">
+              {percentage}%
+            </div>
+            <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2 font-semibold">
+              Concluído
+            </div>
           </Card>
         </div>
 
         <div className="h-1.5 bg-muted rounded-full overflow-hidden mb-6">
-          <div 
-            className="h-full bg-primary transition-all duration-500 ease-out" 
-            style={{ width: `${percentage}%` }} 
+          <div
+            className="h-full bg-primary transition-all duration-500 ease-out"
+            style={{ width: `${percentage}%` }}
           />
         </div>
 
@@ -88,40 +119,51 @@ export function ProgressPanel({
             </TableHeader>
             <TableBody>
               {tableRows.map((row, idx) => {
-                const statusVariant = 
-                  row.statusText === 'Ativo' ? 'success' : 
-                  row.statusText === 'Inativo' ? 'destructive' : 
-                  'secondary';
+                const statusVariant =
+                  row.statusText === "Ativo"
+                    ? "success"
+                    : row.statusText === "Inativo"
+                      ? "destructive"
+                      : "secondary";
 
-                const onlineVariant = 
-                  row.onlineText === 'Online' ? 'success' : 
-                  row.onlineText === 'Offline' ? 'destructive' : 
-                  'secondary';
+                const onlineVariant =
+                  row.onlineText === "Online"
+                    ? "success"
+                    : row.onlineText === "Offline"
+                      ? "destructive"
+                      : "secondary";
 
                 return (
                   <TableRow key={idx}>
                     <TableCell className="font-mono">{row.serial}</TableCell>
                     <TableCell className="font-medium">{row.eqName}</TableCell>
-                    <TableCell className="text-muted-foreground">{row.eqGroup}</TableCell>
-                    <TableCell className="text-muted-foreground">{row.eqPolicy}</TableCell>
-                    <TableCell className="font-mono text-muted-foreground">{row.versionStr}</TableCell>
-                    <TableCell>
-                      <Badge variant={statusVariant}>
-                        {row.statusText}
-                      </Badge>
+                    <TableCell className="text-muted-foreground">
+                      {row.eqGroup}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {row.eqPolicy}
+                    </TableCell>
+                    <TableCell className="font-mono text-muted-foreground">
+                      {row.versionStr}
                     </TableCell>
                     <TableCell>
-                      <Badge variant={onlineVariant}>
-                        {row.onlineText}
-                      </Badge>
+                      <Badge variant={statusVariant}>{row.statusText}</Badge>
                     </TableCell>
-                    <TableCell className="text-muted-foreground font-mono text-xs">{row.queryTime}</TableCell>
+                    <TableCell>
+                      <Badge variant={onlineVariant}>{row.onlineText}</Badge>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground font-mono text-xs">
+                      {row.queryTime}
+                    </TableCell>
                   </TableRow>
-                )
+                );
               })}
               {tableRows.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
+                  <TableCell
+                    colSpan={8}
+                    className="h-24 text-center text-muted-foreground"
+                  >
                     Nenhum dado processado ainda.
                   </TableCell>
                 </TableRow>

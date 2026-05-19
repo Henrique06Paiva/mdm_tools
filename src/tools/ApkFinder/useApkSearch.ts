@@ -17,22 +17,6 @@ export function useApkSearch() {
 
   const logIdRef = useRef(0);
 
-<<<<<<< HEAD
-  const addLog = (
-    message: string,
-    type: "info" | "warn" | "err" | "ok" = "info",
-  ) => {
-    setLogs((prev) => [
-      {
-        id: logIdRef.current++,
-        message,
-        type,
-        time: new Date().toLocaleTimeString(),
-      },
-      ...prev,
-    ]);
-  };
-=======
   const addLog = useCallback(
     (message: string, type: "info" | "warn" | "err" | "ok" = "info") => {
       setLogs((prev) => [
@@ -47,7 +31,6 @@ export function useApkSearch() {
     },
     [],
   );
->>>>>>> 013aefa2043ffbd8ca9e37bb57f2903496088f08
 
   const startSearch = useCallback(async () => {
     if (!api.hasToken()) {

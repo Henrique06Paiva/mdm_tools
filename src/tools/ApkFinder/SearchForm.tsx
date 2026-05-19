@@ -59,15 +59,6 @@ export function SearchForm({
       <CardContent className="pt-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div className="space-y-2 md:col-span-2 lg:col-span-1 max-w-xs">
-<<<<<<< HEAD
-            <Label>ID da Corporação *</Label>
-            <Input
-              type="number"
-              value={corpId}
-              onChange={(e) => setCorpId(e.target.value)}
-              placeholder="Ex: 10"
-              required
-=======
             <Label htmlFor="corpId">ID da Corporação *</Label>
             <Input 
               id="corpId"
@@ -76,7 +67,6 @@ export function SearchForm({
               onChange={e => setCorpId(e.target.value)} 
               placeholder="Ex: 10" 
               required 
->>>>>>> 013aefa2043ffbd8ca9e37bb57f2903496088f08
             />
           </div>
         </div>
@@ -87,26 +77,17 @@ export function SearchForm({
             <div className="space-y-3">
               {packages.map((pkg, idx) => (
                 <div className="flex gap-2 items-center" key={idx}>
-<<<<<<< HEAD
-                  <Input
-                    type="text"
-=======
                   <Input 
                     id={`pkg-input-apk-${idx}`}
                     type="text" 
->>>>>>> 013aefa2043ffbd8ca9e37bb57f2903496088f08
                     value={pkg}
                     onChange={(e) => {
                       const newPkgs = [...packages];
                       newPkgs[idx] = e.target.value;
                       setPackages(newPkgs);
                     }}
-<<<<<<< HEAD
-                    placeholder="Ex: com.br.octostore"
-=======
                     placeholder="Ex: com.br.octostore" 
                     aria-label={`Package Name do aplicativo ${idx + 1}`}
->>>>>>> 013aefa2043ffbd8ca9e37bb57f2903496088f08
                   />
                   <Button
                     variant="ghost"
