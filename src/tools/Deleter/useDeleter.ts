@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import * as XLSX from 'xlsx';
 import { api, CONFIG } from '../../api';
 
@@ -13,16 +13,16 @@ export function useDeleter() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logIdRef = useRef(0);
 
-  const addLog = (message: string, type: 'info' | 'warn' | 'err' | 'ok' = 'info') => {
+  const addLog = useCallback((message: string, type: 'info' | 'warn' | 'err' | 'ok' = 'info') => {
     setLogs(prev => [{
       id: logIdRef.current++,
       message,
       type,
       time: new Date().toLocaleTimeString()
     }, ...prev]);
-  };
+  }, []);
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -44,9 +44,9 @@ export function useDeleter() {
       }
     };
     reader.readAsBinaryString(file);
-  };
+  }, [addLog]);
 
-  const startProcess = async () => {
+  const startProcess = useCallback(async () => {
     if (!api.hasToken()) {
       addLog('Autenticação necessária antes de prosseguir.', 'err');
       return;
@@ -124,7 +124,7 @@ export function useDeleter() {
 
     setIsProcessing(false);
     addLog('Processo de deleção em massa finalizado.', 'ok');
-  };
+  }, [serials, addLog]);
 
   return {
     serials,

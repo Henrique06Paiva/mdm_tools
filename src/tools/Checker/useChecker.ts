@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import * as XLSX from 'xlsx';
 import { api, CONFIG } from '../../api';
 
@@ -18,16 +18,16 @@ export function useChecker() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logIdRef = useRef(0);
 
-  const addLog = (message: string, type: 'info' | 'warn' | 'err' | 'ok' = 'info') => {
+  const addLog = useCallback((message: string, type: 'info' | 'warn' | 'err' | 'ok' = 'info') => {
     setLogs(prev => [{
       id: logIdRef.current++,
       message,
       type,
       time: new Date().toLocaleTimeString()
     }, ...prev]);
-  };
+  }, []);
 
-  const applyColumn = (data: any[], colIdx: number) => {
+  const applyColumn = useCallback((data: any[], colIdx: number) => {
     const parsedSerials = data.slice(1)
       .map(row => String(row[colIdx] ?? '').trim())
       .filter(Boolean);
@@ -36,9 +36,9 @@ export function useChecker() {
     setStats(s => ({ ...s, total: parsedSerials.length }));
     setSelectedCol(colIdx);
     addLog(`${parsedSerials.length} seriais encontrados na coluna selecionada.`, 'ok');
-  };
+  }, [addLog]);
 
-  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -62,9 +62,9 @@ export function useChecker() {
       }
     };
     reader.readAsBinaryString(file);
-  };
+  }, [addLog, applyColumn]);
 
-  const startProcess = async () => {
+  const startProcess = useCallback(async () => {
     if (!api.hasToken()) {
       addLog('Autenticação necessária antes de prosseguir.', 'err');
       return;
@@ -225,15 +225,15 @@ export function useChecker() {
 
     setIsProcessing(false);
     addLog('Consulta finalizada com sucesso.', 'ok');
-  };
+  }, [serials, packages, addLog]);
 
-  const exportExcel = () => {
+  const exportExcel = useCallback(() => {
     if (results.length === 0) return;
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(results);
     XLSX.utils.book_append_sheet(wb, ws, 'Versões');
     XLSX.writeFile(wb, `MDM_Versoes_${new Date().getTime()}.xlsx`);
-  };
+  }, [results]);
 
   return {
     packages, setPackages,
