@@ -78,38 +78,50 @@ export function ProgressPanel({
               <TableRow>
                 <TableHead>Serial Number</TableHead>
                 <TableHead>Nome do Eqp.</TableHead>
+                <TableHead>Grupo</TableHead>
+                <TableHead>Política de Uso</TableHead>
                 <TableHead>Versões</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Conexão</TableHead>
+                <TableHead>Horário Get</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {tableRows.map((row, idx) => {
-                const isErr = row.statusBadge === 'badge-err';
-                const isWarn = row.statusBadge === 'badge-warn';
-                const isOnline = row.onlineBadge === 'badge-done';
+                const statusVariant = 
+                  row.statusText === 'Ativo' ? 'success' : 
+                  row.statusText === 'Inativo' ? 'destructive' : 
+                  'secondary';
+
+                const onlineVariant = 
+                  row.onlineText === 'Online' ? 'success' : 
+                  row.onlineText === 'Offline' ? 'destructive' : 
+                  'secondary';
 
                 return (
                   <TableRow key={idx}>
                     <TableCell className="font-mono">{row.serial}</TableCell>
                     <TableCell className="font-medium">{row.eqName}</TableCell>
+                    <TableCell className="text-muted-foreground">{row.eqGroup}</TableCell>
+                    <TableCell className="text-muted-foreground">{row.eqPolicy}</TableCell>
                     <TableCell className="font-mono text-muted-foreground">{row.versionStr}</TableCell>
                     <TableCell>
-                      <Badge variant={isErr ? 'destructive' : isWarn ? 'warning' : 'success'}>
+                      <Badge variant={statusVariant}>
                         {row.statusText}
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={isOnline ? 'success' : 'secondary'}>
+                      <Badge variant={onlineVariant}>
                         {row.onlineText}
                       </Badge>
                     </TableCell>
+                    <TableCell className="text-muted-foreground font-mono text-xs">{row.queryTime}</TableCell>
                   </TableRow>
                 )
               })}
               {tableRows.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                  <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                     Nenhum dado processado ainda.
                   </TableCell>
                 </TableRow>
