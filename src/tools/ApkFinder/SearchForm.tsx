@@ -55,8 +55,9 @@ export function SearchForm({
       <CardContent className="pt-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div className="space-y-2 md:col-span-2 lg:col-span-1 max-w-xs">
-            <Label>ID da Corporação *</Label>
+            <Label htmlFor="corpId">ID da Corporação *</Label>
             <Input 
+              id="corpId"
               type="number" 
               value={corpId} 
               onChange={e => setCorpId(e.target.value)} 
@@ -68,11 +69,12 @@ export function SearchForm({
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
           <div className="space-y-4">
-            <Label>Package Names dos Apps (Opcional)</Label>
+            <Label htmlFor="pkg-input-apk-0">Package Names dos Apps (Opcional)</Label>
             <div className="space-y-3">
               {packages.map((pkg, idx) => (
                 <div className="flex gap-2 items-center" key={idx}>
                   <Input 
+                    id={`pkg-input-apk-${idx}`}
                     type="text" 
                     value={pkg}
                     onChange={(e) => {
@@ -81,12 +83,14 @@ export function SearchForm({
                       setPackages(newPkgs);
                     }}
                     placeholder="Ex: com.br.octostore" 
+                    aria-label={`Package Name do aplicativo ${idx + 1}`}
                   />
                   <Button 
                     variant="ghost" 
                     size="icon" 
                     onClick={() => setPackages(packages.filter((_, i) => i !== idx))}
                     className="shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                    aria-label={`Remover package name do aplicativo ${idx + 1}`}
                   >
                     <X size={16} />
                   </Button>
@@ -99,11 +103,12 @@ export function SearchForm({
           </div>
           
           <div className="space-y-4">
-            <Label>Versões Procuradas *</Label>
+            <Label htmlFor="version-input-apk-0">Versões Procuradas *</Label>
             <div className="space-y-3">
               {versions.map((ver, idx) => (
                 <div className="flex gap-2 items-center" key={idx}>
                   <Input 
+                    id={`version-input-apk-${idx}`}
                     type="text" 
                     value={ver}
                     onChange={(e) => {
@@ -112,6 +117,7 @@ export function SearchForm({
                       setVersions(newVers);
                     }}
                     placeholder="Ex: 1.5.1" 
+                    aria-label={`Versão Procurada ${idx + 1}`}
                   />
                   <Button 
                     variant="ghost" 
@@ -124,6 +130,7 @@ export function SearchForm({
                       }
                     }}
                     className="shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                    aria-label={`Remover versão procurada ${idx + 1}`}
                   >
                     <X size={16} />
                   </Button>
