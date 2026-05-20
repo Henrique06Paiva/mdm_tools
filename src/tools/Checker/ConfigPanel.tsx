@@ -23,7 +23,7 @@ interface ConfigPanelProps {
   rawData: any[];
 }
 
-export function ConfigPanel({
+export const ConfigPanel = memo(function ConfigPanel({
   packages,
   setPackages,
   addLog,
@@ -153,4 +153,4 @@ export function ConfigPanel({
       </CardContent>
     </Card>
   );
-}
+});

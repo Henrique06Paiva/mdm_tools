@@ -14,7 +14,7 @@ interface ConfigPanelProps {
   serials: string[];
 }
 
-export function ConfigPanel({
+export const ConfigPanel = memo(function ConfigPanel({
   fileInputRef,
   handleFile,
   serials,
@@ -71,4 +71,4 @@ export function ConfigPanel({
       </CardContent>
     </Card>
   );
-}
+});

@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { useState, useRef } from "react";
-=======
 import { useState, useRef, useCallback } from "react";
->>>>>>> 013aefa2043ffbd8ca9e37bb57f2903496088f08
 import { api, CONFIG } from "../../api";
 
 export function useApkSearch() {

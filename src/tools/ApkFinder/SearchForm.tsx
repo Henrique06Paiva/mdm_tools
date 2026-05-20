@@ -23,7 +23,7 @@ interface SearchFormProps {
   addLog: (message: string, type?: "info" | "warn" | "err" | "ok") => void;
 }
 
-export function SearchForm({
+export const SearchForm = memo(function SearchForm({
   corpId,
   setCorpId,
   packages,
@@ -118,26 +118,17 @@ export function SearchForm({
             <div className="space-y-3">
               {versions.map((ver, idx) => (
                 <div className="flex gap-2 items-center" key={idx}>
-<<<<<<< HEAD
-                  <Input
-                    type="text"
-=======
                   <Input 
                     id={`version-input-apk-${idx}`}
                     type="text" 
->>>>>>> 013aefa2043ffbd8ca9e37bb57f2903496088f08
                     value={ver}
                     onChange={(e) => {
                       const newVers = [...versions];
                       newVers[idx] = e.target.value;
                       setVersions(newVers);
                     }}
-<<<<<<< HEAD
-                    placeholder="Ex: 1.5.1"
-=======
                     placeholder="Ex: 1.5.1" 
                     aria-label={`Versão Procurada ${idx + 1}`}
->>>>>>> 013aefa2043ffbd8ca9e37bb57f2903496088f08
                   />
                   <Button
                     variant="ghost"
@@ -192,4 +183,4 @@ export function SearchForm({
       </CardContent>
     </Card>
   );
-}
+});
