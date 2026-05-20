@@ -1,19 +1,24 @@
 import { useState, useEffect } from "react";
 import { ThemeProvider, useTheme } from "./ThemeContext";
 import { api } from "./api";
-import { Sun, Moon, Smartphone, Package, Trash2, RefreshCw } from "lucide-react";
+import { Sun, Moon, Smartphone, Package, Trash2, RefreshCw, LogOut, User } from "lucide-react";
 import Checker from "./tools/Checker";
 import Deleter from "./tools/Deleter";
 import ApkFinder from "./tools/ApkFinder";
 import Forcer from "./tools/Forcer";
 import { Button } from "./components/ui/button";
+import Login from "./components/Login";
 
 const Header = ({
   status,
   isAuthenticating,
+  username,
+  onLogout,
 }: {
   status: string;
   isAuthenticating: boolean;
+  username: string | null;
+  onLogout: () => void;
 }) => {
   const { theme, toggleTheme } = useTheme();
 
@@ -28,6 +33,12 @@ const Header = ({
         </div>
       </div>
       <div className="flex items-center gap-4">
+        {username && (
+          <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/20 px-2.5 py-1 rounded-md border border-border/30">
+            <User size={12} className="text-muted-foreground/80" />
+            <span className="font-mono">{username}</span>
+          </div>
+        )}
         <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-full border border-border/50">
           <div
             className={`w-2 h-2 rounded-full ${isAuthenticating ? "bg-amber-500 animate-pulse" : "bg-green-500"}`}
@@ -40,10 +51,21 @@ const Header = ({
           size="icon"
           onClick={toggleTheme}
           title="Alternar Tema"
-          className="text-muted-foreground hover:text-foreground rounded-full"
+          className="text-muted-foreground hover:text-foreground rounded-full cursor-pointer"
         >
           {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
         </Button>
+        {username && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onLogout}
+            title="Sair"
+            className="text-muted-foreground hover:text-destructive rounded-full cursor-pointer"
+          >
+            <LogOut size={18} />
+          </Button>
+        )}
       </div>
     </header>
   );
@@ -65,7 +87,7 @@ const TabButton = ({
     role="tab"
     aria-selected={isActive}
     className={`
-      flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 shrink-0
+      flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 shrink-0 cursor-pointer
       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
       ${
         isActive
@@ -82,26 +104,28 @@ const TabButton = ({
   </button>
 );
 
-const MainApp = () => {
+const MainApp = ({
+  username,
+  onLogout,
+}: {
+  username: string | null;
+  onLogout: () => void;
+}) => {
   const [activeTab, setActiveTab] = useState<
     "checker" | "deleter" | "apk" | "forcer"
   >("checker");
-  const [authStatus, setAuthStatus] = useState("Autenticando...");
-  const [isAuthenticating, setIsAuthenticating] = useState(true);
-
-  useEffect(() => {
-    const login = async () => {
-      const success = await api.performLogin();
-      setIsAuthenticating(false);
-      setAuthStatus(success ? "Autenticado" : "Falha na Autenticação");
-    };
-    login();
-  }, []);
+  const [authStatus] = useState("Autenticado");
+  const [isAuthenticating] = useState(false);
 
   return (
     <div className="min-h-screen bg-background">
       <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
-        <Header status={authStatus} isAuthenticating={isAuthenticating} />
+        <Header
+          status={authStatus}
+          isAuthenticating={isAuthenticating}
+          username={username}
+          onLogout={onLogout}
+        />
 
         <div
           role="tablist"
@@ -145,9 +169,38 @@ const MainApp = () => {
 };
 
 function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(api.hasToken());
+  const [username, setUsername] = useState<string | null>(api.getUsername());
+
+  useEffect(() => {
+    api.registerOnUnauthorized(() => {
+      setIsAuthenticated(false);
+      setUsername(null);
+    });
+
+    if (isAuthenticated) {
+      setUsername(api.getUsername());
+    }
+  }, [isAuthenticated]);
+
+  const handleLoginSuccess = () => {
+    setIsAuthenticated(true);
+    setUsername(api.getUsername());
+  };
+
+  const handleLogout = () => {
+    api.logout();
+    setIsAuthenticated(false);
+    setUsername(null);
+  };
+
   return (
     <ThemeProvider>
-      <MainApp />
+      {isAuthenticated ? (
+        <MainApp username={username} onLogout={handleLogout} />
+      ) : (
+        <Login onLoginSuccess={handleLoginSuccess} />
+      )}
     </ThemeProvider>
   );
 }
