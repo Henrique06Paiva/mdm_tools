@@ -1,7 +1,16 @@
 import { useState, useEffect } from "react";
 import { ThemeProvider, useTheme } from "./ThemeContext";
 import { api } from "./api";
-import { Sun, Moon, Smartphone, Package, Trash2, RefreshCw, LogOut, User } from "lucide-react";
+import {
+  Sun,
+  Moon,
+  Smartphone,
+  Package,
+  Trash2,
+  RefreshCw,
+  LogOut,
+  User,
+} from "lucide-react";
 import Checker from "./tools/Checker";
 import Deleter from "./tools/Deleter";
 import ApkFinder from "./tools/ApkFinder";
@@ -26,11 +35,8 @@ const Header = ({
     <header className="flex justify-between items-center mb-8 pb-4 border-b border-border/40">
       <div>
         <h1 className="text-2xl font-bold tracking-tight mb-1 text-foreground">
-          MDM Hub
+          MDM Hub - Tools
         </h1>
-        <div className="text-sm text-muted-foreground font-medium">
-          Gerenciamento de inventário
-        </div>
       </div>
       <div className="flex items-center gap-4">
         {username && (
