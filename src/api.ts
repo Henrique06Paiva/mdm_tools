@@ -2,15 +2,20 @@ export const CONFIG = {
   BASE_URL:
     import.meta.env.VITE_API_BASE_URL || "https://api.gateway.mdm-hub.com",
   TENANT: import.meta.env.VITE_API_TENANT || "portal",
-  USERNAME: import.meta.env.VITE_API_USERNAME || "root",
-  PASSWORD: import.meta.env.VITE_API_PASSWORD || "",
 };
 
 class ApiService {
-  private token: string | null = null;
+  private token: string | null = localStorage.getItem("mdm_token");
+  private username: string | null = sessionStorage.getItem("mdm_username");
+  private password: string | null = sessionStorage.getItem("mdm_password");
   private tokenPromise: Promise<boolean> | null = null;
+  private onUnauthorizedCallback: (() => void) | null = null;
 
-  async performLogin(): Promise<boolean> {
+  registerOnUnauthorized(callback: () => void) {
+    this.onUnauthorizedCallback = callback;
+  }
+
+  async login(username: string, password: string): Promise<boolean> {
     try {
       const response = await fetch(
         `${CONFIG.BASE_URL}/api-acl/authentication/login`,
@@ -22,8 +27,8 @@ class ApiService {
             "x-tenant-code": CONFIG.TENANT,
           },
           body: JSON.stringify({
-            username: CONFIG.USERNAME,
-            password: CONFIG.PASSWORD,
+            username,
+            password,
           }),
         },
       );
@@ -33,6 +38,11 @@ class ApiService {
         const token = data.access_token ?? data.token;
         if (token) {
           this.token = token;
+          this.username = username;
+          this.password = password;
+          localStorage.setItem("mdm_token", token);
+          sessionStorage.setItem("mdm_username", username);
+          sessionStorage.setItem("mdm_password", password);
           return true;
         }
       }
@@ -40,6 +50,55 @@ class ApiService {
     } catch (error) {
       console.error("Login error:", error);
       return false;
+    }
+  }
+
+  async performLogin(): Promise<boolean> {
+    if (!this.username || !this.password) {
+      return false;
+    }
+    try {
+      const response = await fetch(
+        `${CONFIG.BASE_URL}/api-acl/authentication/login`,
+        {
+          method: "POST",
+          headers: {
+            accept: "application/json, text/plain, */*",
+            "content-type": "application/json",
+            "x-tenant-code": CONFIG.TENANT,
+          },
+          body: JSON.stringify({
+            username: this.username,
+            password: this.password,
+          }),
+        },
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        const token = data.access_token ?? data.token;
+        if (token) {
+          this.token = token;
+          localStorage.setItem("mdm_token", token);
+          return true;
+        }
+      }
+      return false;
+    } catch (error) {
+      console.error("Silent auto-login error:", error);
+      return false;
+    }
+  }
+
+  logout(): void {
+    this.token = null;
+    this.username = null;
+    this.password = null;
+    localStorage.removeItem("mdm_token");
+    sessionStorage.removeItem("mdm_username");
+    sessionStorage.removeItem("mdm_password");
+    if (this.onUnauthorizedCallback) {
+      this.onUnauthorizedCallback();
     }
   }
 
@@ -65,6 +124,11 @@ class ApiService {
         const response = await fetch(url, { ...options, headers });
 
         if (response.status === 401) {
+          if (!this.username || !this.password) {
+            this.logout();
+            throw new Error("Sessão expirada");
+          }
+
           if (!this.tokenPromise) {
             this.tokenPromise = this.performLogin();
           }
@@ -72,6 +136,7 @@ class ApiService {
           this.tokenPromise = null;
 
           if (!refreshed) {
+            this.logout();
             throw new Error("Sessão expirada permanentemente");
           }
           continue;
@@ -100,6 +165,14 @@ class ApiService {
 
   hasToken(): boolean {
     return !!this.token;
+  }
+
+  getUsername(): string | null {
+    return this.username;
+  }
+
+  getTenant(): string {
+    return CONFIG.TENANT;
   }
 }
 
