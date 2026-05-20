@@ -138,13 +138,13 @@ const MainApp = ({
           className="flex overflow-x-auto flex-nowrap md:flex-wrap gap-2 mb-8 bg-muted/20 p-1.5 rounded-xl border border-border/40 w-full md:w-fit scrollbar-none"
         >
           <TabButton
-            label="Version Checker"
+            label="Validação de versão"
             icon={Smartphone}
             isActive={activeTab === "checker"}
             onClick={() => setActiveTab("checker")}
           />
           <TabButton
-            label="APK Finder"
+            label="Busca de APKs"
             icon={Package}
             isActive={activeTab === "apk"}
             onClick={() => setActiveTab("apk")}
