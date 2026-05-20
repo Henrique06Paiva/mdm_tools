@@ -1,3 +1,4 @@
+import { memo } from "react";
 import * as XLSX from "xlsx";
 import { Download, Search, Plus, X } from "lucide-react";
 import { api } from "../../api";

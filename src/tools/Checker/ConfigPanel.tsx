@@ -1,4 +1,4 @@
-import { type RefObject, type ChangeEvent } from "react";
+import { type RefObject, type ChangeEvent, memo } from "react";
 import { Plus, X, Upload } from "lucide-react";
 import {
   Card,
