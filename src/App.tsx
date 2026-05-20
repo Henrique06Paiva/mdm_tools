@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { ThemeProvider, useTheme } from "./ThemeContext";
 import { api } from "./api";
-import { Sun, Moon, Smartphone, Package, Trash2 } from "lucide-react";
+import { Sun, Moon, Smartphone, Package, Trash2, RefreshCw } from "lucide-react";
 import Checker from "./tools/Checker";
 import Deleter from "./tools/Deleter";
 import ApkFinder from "./tools/ApkFinder";
+import Forcer from "./tools/Forcer";
 import { Button } from "./components/ui/button";
 
 const Header = ({
@@ -82,9 +83,9 @@ const TabButton = ({
 );
 
 const MainApp = () => {
-  const [activeTab, setActiveTab] = useState<"checker" | "deleter" | "apk">(
-    "checker",
-  );
+  const [activeTab, setActiveTab] = useState<
+    "checker" | "deleter" | "apk" | "forcer"
+  >("checker");
   const [authStatus, setAuthStatus] = useState("Autenticando...");
   const [isAuthenticating, setIsAuthenticating] = useState(true);
 
@@ -124,12 +125,19 @@ const MainApp = () => {
             isActive={activeTab === "deleter"}
             onClick={() => setActiveTab("deleter")}
           />
+          <TabButton
+            label="Force Data em Massa"
+            icon={RefreshCw}
+            isActive={activeTab === "forcer"}
+            onClick={() => setActiveTab("forcer")}
+          />
         </div>
 
         <main className="animate-in fade-in slide-in-from-bottom-4 duration-500">
           {activeTab === "checker" && <Checker />}
           {activeTab === "deleter" && <Deleter />}
           {activeTab === "apk" && <ApkFinder />}
+          {activeTab === "forcer" && <Forcer />}
         </main>
       </div>
     </div>
