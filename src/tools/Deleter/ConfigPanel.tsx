@@ -1,4 +1,4 @@
-import { type RefObject, type ChangeEvent } from 'react';
+import { type RefObject, type ChangeEvent, memo } from 'react';
 import { Trash2 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import { Badge } from '../../components/ui/badge';
@@ -9,7 +9,7 @@ interface ConfigPanelProps {
   serials: string[];
 }
 
-export function ConfigPanel({
+export const ConfigPanel = memo(function ConfigPanel({
   fileInputRef,
   handleFile,
   serials
@@ -48,4 +48,4 @@ export function ConfigPanel({
       </CardContent>
     </Card>
   );
-}
+});

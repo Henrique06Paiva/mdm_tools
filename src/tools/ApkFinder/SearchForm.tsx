@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import * as XLSX from 'xlsx';
 import { Download, Search, Plus, X } from 'lucide-react';
 import { api } from '../../api';
@@ -18,7 +19,7 @@ interface SearchFormProps {
   addLog: (message: string, type?: 'info' | 'warn' | 'err' | 'ok') => void;
 }
 
-export function SearchForm({
+export const SearchForm = memo(function SearchForm({
   corpId,
   setCorpId,
   packages,
@@ -156,4 +157,4 @@ export function SearchForm({
       </CardContent>
     </Card>
   );
-}
+});

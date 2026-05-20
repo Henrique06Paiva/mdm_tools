@@ -1,4 +1,4 @@
-import { type RefObject, type ChangeEvent } from 'react';
+import { type RefObject, type ChangeEvent, memo } from 'react';
 import { Plus, X, Upload } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '../../components/ui/card';
 import { Input, Label } from '../../components/ui/input';
@@ -18,7 +18,7 @@ interface ConfigPanelProps {
   rawData: any[];
 }
 
-export function ConfigPanel({
+export const ConfigPanel = memo(function ConfigPanel({
   packages,
   setPackages,
   addLog,
@@ -120,4 +120,4 @@ export function ConfigPanel({
       </CardContent>
     </Card>
   );
-}
+});
