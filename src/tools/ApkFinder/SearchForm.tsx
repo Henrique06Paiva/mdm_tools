@@ -1,6 +1,6 @@
 import { memo } from "react";
 import * as XLSX from "xlsx";
-import { Download, Search, Plus, X, Pause, Square } from "lucide-react";
+import { Download, Search, Plus, X, Pause, Square, RotateCcw } from "lucide-react";
 import { api } from "../../api";
 import {
   Card,
@@ -25,6 +25,7 @@ interface SearchFormProps {
   resumeSearch: () => void;
   pauseSearch: () => void;
   stopSearch: () => void;
+  resetSearch: () => void;
   results: any[];
   addLog: (message: string, type?: "info" | "warn" | "err" | "ok") => void;
 }
@@ -42,6 +43,7 @@ export const SearchForm = memo(function SearchForm({
   resumeSearch,
   pauseSearch,
   stopSearch,
+  resetSearch,
   results,
   addLog,
 }: SearchFormProps) {
@@ -195,13 +197,24 @@ export const SearchForm = memo(function SearchForm({
             </Button>
           )}
           {!isProcessing ? (
-            <Button
-              onClick={startSearch}
-              disabled={!api.hasToken() || !corpId.trim()}
-              className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground"
-            >
-              <Search size={16} className="mr-2" /> Buscar APK
-            </Button>
+            <>
+              {results.length > 0 && (
+                <Button
+                  variant="outline"
+                  onClick={resetSearch}
+                  className="w-full sm:w-auto border-border hover:bg-muted cursor-pointer"
+                >
+                  <RotateCcw size={16} className="mr-2" /> Limpar Histórico
+                </Button>
+              )}
+              <Button
+                onClick={startSearch}
+                disabled={!api.hasToken() || !corpId.trim()}
+                className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
+              >
+                <Search size={16} className="mr-2" /> Buscar APK
+              </Button>
+            </>
           ) : (
             <>
               {isPaused ? (

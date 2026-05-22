@@ -21,6 +21,8 @@ export default function ApkFinder() {
     resumeSearch,
     pauseSearch,
     stopSearch,
+    resetSearch,
+    clearLogs,
   } = useApkSearch();
 
   return (
@@ -53,7 +55,7 @@ export default function ApkFinder() {
               <li>
                 Defina os <strong>Package Names</strong> e as{" "}
                 <strong>Versões</strong> exatas que você deseja encontrar (ex:{" "}
-                <code>com.mdmservice</code> e <code>2.0.1</code>).
+                <code>com.br.octostore</code> e <code>1.5.1</code>).
               </li>
               <li>
                 Você pode adicionar múltiplos pacotes e versões se quiser buscar
@@ -86,13 +88,14 @@ export default function ApkFinder() {
         resumeSearch={resumeSearch}
         pauseSearch={pauseSearch}
         stopSearch={stopSearch}
+        resetSearch={resetSearch}
         results={results}
         addLog={addLog}
       />
 
       <ResultsTable results={results} />
 
-      <LogPanel logs={logs} />
+      <LogPanel logs={logs} onClear={clearLogs} />
     </>
   );
 }

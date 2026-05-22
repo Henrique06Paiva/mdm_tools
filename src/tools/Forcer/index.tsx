@@ -21,6 +21,8 @@ export default function Forcer() {
     resumeProcess,
     pauseProcess,
     stopProcess,
+    resetProcess,
+    clearLogs,
   } = useForcer();
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -105,6 +107,7 @@ export default function Forcer() {
         resumeProcess={resumeProcess}
         pauseProcess={pauseProcess}
         stopProcess={stopProcess}
+        resetProcess={resetProcess}
         isProcessing={isProcessing}
         isPaused={isPaused}
         serials={serials}
@@ -112,7 +115,7 @@ export default function Forcer() {
         tableRows={tableRows}
       />
 
-      <LogPanel logs={logs} />
+      <LogPanel logs={logs} onClear={clearLogs} />
 
       {/* Confirmation Modal */}
       {isConfirmOpen && (

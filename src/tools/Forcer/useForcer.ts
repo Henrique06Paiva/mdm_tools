@@ -256,6 +256,22 @@ export function useForcer() {
     addLog("Processo interrompido pelo usuário.", "warn");
   }, [addLog]);
 
+  const resetProcess = useCallback(() => {
+    setTableRows([]);
+    setStats({ total: serials.length, done: 0, fail: 0, skip: 0 });
+    setLogs([]);
+    currentIndexRef.current = 0;
+    doneRef.current = 0;
+    failRef.current = 0;
+    skipRef.current = 0;
+    logIdRef.current = 0;
+  }, [serials.length]);
+
+  const clearLogs = useCallback(() => {
+    setLogs([]);
+    logIdRef.current = 0;
+  }, []);
+
   return {
     serials,
     isProcessing,
@@ -269,5 +285,7 @@ export function useForcer() {
     resumeProcess,
     pauseProcess,
     stopProcess,
+    resetProcess,
+    clearLogs,
   };
 }

@@ -22,6 +22,8 @@ export default function Fetcher() {
     resumeProcess,
     pauseProcess,
     stopProcess,
+    resetProcess,
+    clearLogs,
     exportExcel,
   } = useFetcher();
 
@@ -85,6 +87,7 @@ export default function Fetcher() {
         resumeProcess={resumeProcess}
         pauseProcess={pauseProcess}
         stopProcess={stopProcess}
+        resetProcess={resetProcess}
         isProcessing={isProcessing}
         isPaused={isPaused}
         corporationId={corporationId}
@@ -92,7 +95,7 @@ export default function Fetcher() {
         tableRows={tableRows}
       />
 
-      <LogPanel logs={logs} />
+      <LogPanel logs={logs} onClear={clearLogs} />
     </>
   );
 }

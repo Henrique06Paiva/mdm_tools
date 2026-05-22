@@ -371,6 +371,22 @@ export function useChecker() {
     XLSX.writeFile(wb, `MDM_Versoes_${new Date().getTime()}.xlsx`);
   }, [results]);
 
+  const resetProcess = useCallback(() => {
+    setResults([]);
+    setTableRows([]);
+    setStats({ total: serials.length, done: 0, fail: 0 });
+    setLogs([]);
+    currentIndexRef.current = 0;
+    doneRef.current = 0;
+    failRef.current = 0;
+    logIdRef.current = 0;
+  }, [serials.length]);
+
+  const clearLogs = useCallback(() => {
+    setLogs([]);
+    logIdRef.current = 0;
+  }, []);
+
   return {
     packages,
     setPackages,
@@ -400,5 +416,7 @@ export function useChecker() {
     pauseProcess,
     stopProcess,
     exportExcel,
+    resetProcess,
+    clearLogs,
   };
 }

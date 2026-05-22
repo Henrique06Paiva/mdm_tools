@@ -21,6 +21,8 @@ export default function Deleter() {
     resumeProcess,
     pauseProcess,
     stopProcess,
+    resetProcess,
+    clearLogs,
   } = useDeleter();
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -108,6 +110,7 @@ export default function Deleter() {
         resumeProcess={resumeProcess}
         pauseProcess={pauseProcess}
         stopProcess={stopProcess}
+        resetProcess={resetProcess}
         isProcessing={isProcessing}
         isPaused={isPaused}
         serials={serials}
@@ -115,7 +118,7 @@ export default function Deleter() {
         tableRows={tableRows}
       />
 
-      <LogPanel logs={logs} />
+      <LogPanel logs={logs} onClear={clearLogs} />
 
       {/* Confirmation Modal */}
       {isConfirmOpen && (

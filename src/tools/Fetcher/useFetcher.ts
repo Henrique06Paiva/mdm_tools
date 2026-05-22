@@ -265,6 +265,25 @@ export function useFetcher() {
     addLog("Processo interrompido pelo usuário.", "warn");
   }, [addLog]);
 
+  const resetProcess = useCallback(() => {
+    setResults([]);
+    setTableRows([]);
+    setStats({
+      totalItems: 0,
+      totalPages: 0,
+      currentPage: 0,
+      processedItems: 0,
+    });
+    setLogs([]);
+    currentPageRef.current = 1;
+    logIdRef.current = 0;
+  }, []);
+
+  const clearLogs = useCallback(() => {
+    setLogs([]);
+    logIdRef.current = 0;
+  }, []);
+
   const exportExcel = useCallback(() => {
     if (results.length === 0) return;
     const wb = XLSX.utils.book_new();
@@ -291,6 +310,8 @@ export function useFetcher() {
     resumeProcess,
     pauseProcess,
     stopProcess,
+    resetProcess,
+    clearLogs,
     exportExcel,
   };
 }

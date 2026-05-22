@@ -27,6 +27,8 @@ export default function Checker() {
     pauseProcess,
     stopProcess,
     exportExcel,
+    resetProcess,
+    clearLogs,
   } = useChecker();
 
   return (
@@ -100,6 +102,7 @@ export default function Checker() {
         resumeProcess={resumeProcess}
         pauseProcess={pauseProcess}
         stopProcess={stopProcess}
+        resetProcess={resetProcess}
         isProcessing={isProcessing}
         isPaused={isPaused}
         serials={serials}
@@ -107,7 +110,7 @@ export default function Checker() {
         tableRows={tableRows}
       />
 
-      <LogPanel logs={logs} />
+      <LogPanel logs={logs} onClear={clearLogs} />
     </>
   );
 }

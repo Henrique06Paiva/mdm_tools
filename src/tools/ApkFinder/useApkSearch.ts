@@ -213,6 +213,19 @@ export function useApkSearch() {
     addLog("Busca interrompida pelo usuário.", "warn");
   }, [addLog]);
 
+  const resetSearch = useCallback(() => {
+    setResults([]);
+    setLogs([]);
+    currentIndexRef.current = 0;
+    matchingAppsRef.current = [];
+    logIdRef.current = 0;
+  }, []);
+
+  const clearLogs = useCallback(() => {
+    setLogs([]);
+    logIdRef.current = 0;
+  }, []);
+
   return {
     corpId,
     setCorpId,
@@ -229,5 +242,7 @@ export function useApkSearch() {
     resumeSearch,
     pauseSearch,
     stopSearch,
+    resetSearch,
+    clearLogs,
   };
 }

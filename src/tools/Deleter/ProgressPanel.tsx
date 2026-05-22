@@ -1,4 +1,4 @@
-import { Play, Pause, Square } from "lucide-react";
+import { Play, Pause, Square, RotateCcw } from "lucide-react";
 import { api } from "../../api";
 import {
   Card,
@@ -22,6 +22,7 @@ interface ProgressPanelProps {
   resumeProcess: () => void;
   pauseProcess: () => void;
   stopProcess: () => void;
+  resetProcess: () => void;
   isProcessing: boolean;
   isPaused: boolean;
   serials: string[];
@@ -40,6 +41,7 @@ export function ProgressPanel({
   resumeProcess,
   pauseProcess,
   stopProcess,
+  resetProcess,
   isProcessing,
   isPaused,
   serials,
@@ -69,14 +71,27 @@ export function ProgressPanel({
         </CardTitle>
         <div className="flex gap-3 items-center">
           {!isProcessing ? (
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={startProcess}
-              disabled={serials.length === 0 || !api.hasToken()}
-            >
-              <Play size={14} className="mr-2" /> Iniciar Processo
-            </Button>
+            <>
+              {tableRows.length > 0 && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={resetProcess}
+                  className="border-border hover:bg-muted cursor-pointer"
+                >
+                  <RotateCcw size={14} className="mr-2" /> Limpar Histórico
+                </Button>
+              )}
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={startProcess}
+                disabled={serials.length === 0 || !api.hasToken()}
+                className="cursor-pointer"
+              >
+                <Play size={14} className="mr-2" /> Iniciar Processo
+              </Button>
+            </>
           ) : (
             <>
               {isPaused ? (
