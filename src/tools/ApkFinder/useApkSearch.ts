@@ -6,6 +6,12 @@ export function useApkSearch() {
   const [packages, setPackages] = useState<string[]>(["com.br.octostore"]);
   const [versions, setVersions] = useState<string[]>(["1.5.1"]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const isPausedRef = useRef(false);
+  const currentIndexRef = useRef(0);
+  const matchingAppsRef = useRef<any[]>([]);
+  const targetVersionsRef = useRef<string[]>([]);
+  const targetPackagesRef = useRef<string[]>([]);
   const [logs, setLogs] = useState<
     { id: number; message: string; type: string; time: string }[]
   >([]);
@@ -28,6 +34,82 @@ export function useApkSearch() {
     [],
   );
 
+  const runLoop = async () => {
+    const apps = matchingAppsRef.current;
+    const targetVersions = targetVersionsRef.current;
+
+    while (currentIndexRef.current < apps.length) {
+      if (isPausedRef.current) {
+        break;
+      }
+
+      const app = apps[currentIndexRef.current];
+      addLog(`Buscando detalhes do app ${app.name || app.packageName} (${currentIndexRef.current + 1}/${apps.length})...`, "info");
+
+      try {
+        const detailData = await api.fetch(
+          `${CONFIG.BASE_URL}/api-application/application/${app.id}`,
+        );
+        const appVersions = detailData.applicationVersions || [];
+        const appResults: any[] = [];
+
+        for (const v of appVersions) {
+          const apks = v.applicationVersionApks || [];
+
+          for (const apk of apks) {
+            const apkVersion = apk.versionName;
+
+            // Verifica se a versão desejada bate com apk.versionName OU com v.name
+            if (
+              targetVersions.includes(apkVersion) ||
+              targetVersions.includes(v.name)
+            ) {
+              const matchedVer = targetVersions.includes(apkVersion)
+                ? apkVersion
+                : v.name;
+
+              appResults.push({
+                id: app.id,
+                name: app.name,
+                packageName: app.packageName,
+                version: matchedVer,
+                fileSize: apk.fileSize || "-",
+                link: apk.apkPath,
+              });
+            }
+          }
+        }
+
+        if (appResults.length > 0) {
+          setResults((prev) => {
+            // Evitar duplicados se já estiver nos resultados
+            const filtered = appResults.filter(
+              (r) => !prev.some((p) => p.link === r.link && p.version === r.version)
+            );
+            if (filtered.length > 0) {
+              addLog(`Encontrado(s) ${filtered.length} APK(s) para o app ${app.name || app.packageName}.`, "ok");
+              return [...prev, ...filtered];
+            }
+            return prev;
+          });
+        }
+      } catch (e: any) {
+        addLog(
+          `Erro ao buscar detalhes do app ${app.name || app.id}: ${e.message}`,
+          "err",
+        );
+      }
+
+      currentIndexRef.current++;
+    }
+
+    if (currentIndexRef.current >= apps.length) {
+      setIsProcessing(false);
+      setIsPaused(false);
+      addLog("Busca de APKs finalizada.", "ok");
+    }
+  };
+
   const startSearch = useCallback(async () => {
     if (!api.hasToken()) {
       addLog("Autenticação necessária antes de prosseguir.", "err");
@@ -46,6 +128,12 @@ export function useApkSearch() {
     }
 
     setIsProcessing(true);
+    setIsPaused(false);
+    isPausedRef.current = false;
+    currentIndexRef.current = 0;
+    matchingAppsRef.current = [];
+    targetVersionsRef.current = targetVersions;
+    targetPackagesRef.current = targetPackages;
     setResults([]);
     addLog(`Buscando aplicativos para a corporação ID ${cId}...`, "info");
 
@@ -71,9 +159,6 @@ export function useApkSearch() {
         ) {
           return false;
         }
-        // Retiramos o filtro prévio de `v.name` porque o version real pode estar
-        // escondido dentro de `applicationVersionApks` (ex: "Aplicativo Frentista")
-        // que só vem na API de detalhes.
         return true;
       });
 
@@ -86,67 +171,47 @@ export function useApkSearch() {
         return;
       }
 
+      matchingAppsRef.current = matchingApps;
       addLog(
-        `${matchingApps.length} aplicativo(s) possível(eis) encontrado(s). Buscando links...`,
+        `${matchingApps.length} aplicativo(s) correspondente(s) encontrado(s). Verificando versões...`,
         "info",
       );
-      let foundApks = 0;
-      const newResults: any[] = [];
 
-      for (const app of matchingApps) {
-        try {
-          const detailData = await api.fetch(
-            `${CONFIG.BASE_URL}/api-application/application/${app.id}`,
-          );
-          const appVersions = detailData.applicationVersions || [];
-
-          for (const v of appVersions) {
-            const apks = v.applicationVersionApks || [];
-
-            for (const apk of apks) {
-              const apkVersion = apk.versionName;
-
-              // Verifica se a versão desejada bate com apk.versionName OU com v.name
-              if (
-                targetVersions.includes(apkVersion) ||
-                targetVersions.includes(v.name)
-              ) {
-                const matchedVer = targetVersions.includes(apkVersion)
-                  ? apkVersion
-                  : v.name;
-
-                newResults.push({
-                  id: app.id,
-                  name: app.name,
-                  packageName: app.packageName,
-                  version: matchedVer,
-                  fileSize: apk.fileSize || "-",
-                  link: apk.apkPath,
-                });
-                foundApks++;
-              }
-            }
-          }
-        } catch (e: any) {
-          addLog(
-            `Erro ao buscar detalhes do app ${app.id}: ${e.message}`,
-            "err",
-          );
-        }
-      }
-
-      setResults(newResults);
-      if (foundApks === 0) {
-        addLog("Nenhum link de APK encontrado nos detalhes.", "err");
-      } else {
-        addLog(`Busca concluída. ${foundApks} link(s) encontrado(s).`, "ok");
-      }
+      await runLoop();
     } catch (error: any) {
       addLog(`Erro na busca: ${error.message}`, "err");
+      setIsProcessing(false);
+    }
+  }, [corpId, packages, versions, addLog]);
+
+  const resumeSearch = useCallback(async () => {
+    if (!api.hasToken()) {
+      addLog("Autenticação necessária antes de prosseguir.", "err");
+      return;
     }
 
+    setIsProcessing(true);
+    setIsPaused(false);
+    isPausedRef.current = false;
+    addLog("Retomando busca de APKs...", "info");
+
+    await runLoop();
+  }, [addLog]);
+
+  const pauseSearch = useCallback(() => {
+    setIsPaused(true);
+    isPausedRef.current = true;
+    addLog("Busca pausada pelo usuário.", "warn");
+  }, [addLog]);
+
+  const stopSearch = useCallback(() => {
     setIsProcessing(false);
-  }, [corpId, packages, versions, addLog]);
+    setIsPaused(false);
+    isPausedRef.current = false;
+    currentIndexRef.current = 0;
+    matchingAppsRef.current = [];
+    addLog("Busca interrompida pelo usuário.", "warn");
+  }, [addLog]);
 
   return {
     corpId,
@@ -156,9 +221,13 @@ export function useApkSearch() {
     versions,
     setVersions,
     isProcessing,
+    isPaused,
     logs,
     addLog,
     results,
     startSearch,
+    resumeSearch,
+    pauseSearch,
+    stopSearch,
   };
 }

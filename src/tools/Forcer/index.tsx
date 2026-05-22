@@ -11,12 +11,16 @@ export default function Forcer() {
   const {
     serials,
     isProcessing,
+    isPaused,
     logs,
     stats,
     tableRows,
     fileInputRef,
     handleFile,
     startProcess,
+    resumeProcess,
+    pauseProcess,
+    stopProcess,
   } = useForcer();
 
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -94,7 +98,11 @@ export default function Forcer() {
 
       <ProgressPanel
         startProcess={() => setIsConfirmOpen(true)}
+        resumeProcess={resumeProcess}
+        pauseProcess={pauseProcess}
+        stopProcess={stopProcess}
         isProcessing={isProcessing}
+        isPaused={isPaused}
         serials={serials}
         stats={stats}
         tableRows={tableRows}

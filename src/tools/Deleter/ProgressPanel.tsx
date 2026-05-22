@@ -1,4 +1,4 @@
-import { Play } from "lucide-react";
+import { Play, Pause, Square } from "lucide-react";
 import { api } from "../../api";
 import {
   Card,
@@ -19,7 +19,11 @@ import { Badge } from "../../components/ui/badge";
 
 interface ProgressPanelProps {
   startProcess: () => void;
+  resumeProcess: () => void;
+  pauseProcess: () => void;
+  stopProcess: () => void;
   isProcessing: boolean;
+  isPaused: boolean;
   serials: string[];
   stats: {
     total: number;
@@ -33,7 +37,11 @@ interface ProgressPanelProps {
 
 export function ProgressPanel({
   startProcess,
+  resumeProcess,
+  pauseProcess,
+  stopProcess,
   isProcessing,
+  isPaused,
   serials,
   stats,
   tableRows,
@@ -46,15 +54,58 @@ export function ProgressPanel({
   return (
     <Card className="mb-6 border-border/60 shadow-sm">
       <CardHeader className="bg-muted/10 pb-4 border-b border-border/40 flex flex-row items-center justify-between">
-        <CardTitle className="text-foreground">Progresso da Deleção</CardTitle>
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={startProcess}
-          disabled={isProcessing || serials.length === 0 || !api.hasToken()}
-        >
-          <Play size={14} className="mr-2" /> Iniciar Processo
-        </Button>
+        <CardTitle className="text-foreground flex items-center gap-2">
+          Progresso da Deleção
+          {isProcessing && isPaused && (
+            <Badge variant="warning" className="animate-pulse">
+              Pausado
+            </Badge>
+          )}
+          {isProcessing && !isPaused && (
+            <Badge variant="success" className="animate-pulse font-medium">
+              Processando
+            </Badge>
+          )}
+        </CardTitle>
+        <div className="flex gap-3 items-center">
+          {!isProcessing ? (
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={startProcess}
+              disabled={serials.length === 0 || !api.hasToken()}
+            >
+              <Play size={14} className="mr-2" /> Iniciar Processo
+            </Button>
+          ) : (
+            <>
+              {isPaused ? (
+                <Button
+                  size="sm"
+                  onClick={resumeProcess}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <Play size={14} className="mr-2" /> Retomar
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={pauseProcess}
+                >
+                  <Pause size={14} className="mr-2" /> Pausar
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={stopProcess}
+              >
+                <Square size={14} className="mr-2" /> Parar
+              </Button>
+            </>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="pt-6">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">

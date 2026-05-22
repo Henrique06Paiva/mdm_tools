@@ -1,4 +1,4 @@
-import { Download, Play } from "lucide-react";
+import { Download, Play, Pause, Square } from "lucide-react";
 import { api } from "../../api";
 import {
   Card,
@@ -21,7 +21,11 @@ interface ProgressPanelProps {
   results: any[];
   exportExcel: () => void;
   startProcess: () => void;
+  resumeProcess: () => void;
+  pauseProcess: () => void;
+  stopProcess: () => void;
   isProcessing: boolean;
+  isPaused: boolean;
   serials: string[];
   stats: { total: number; done: number; fail: number };
   tableRows: any[];
@@ -31,7 +35,11 @@ export function ProgressPanel({
   results,
   exportExcel,
   startProcess,
+  resumeProcess,
+  pauseProcess,
+  stopProcess,
   isProcessing,
+  isPaused,
   serials,
   stats,
   tableRows,
@@ -44,20 +52,61 @@ export function ProgressPanel({
   return (
     <Card className="mb-6 border-border/60 shadow-sm">
       <CardHeader className="bg-muted/10 pb-4 border-b border-border/40 flex flex-row items-center justify-between">
-        <CardTitle className="text-foreground">Progresso da Consulta</CardTitle>
-        <div className="flex gap-3">
+        <CardTitle className="text-foreground flex items-center gap-2">
+          Progresso da Consulta
+          {isProcessing && isPaused && (
+            <Badge variant="warning" className="animate-pulse">
+              Pausado
+            </Badge>
+          )}
+          {isProcessing && !isPaused && (
+            <Badge variant="success" className="animate-pulse font-medium">
+              Processando
+            </Badge>
+          )}
+        </CardTitle>
+        <div className="flex gap-3 items-center">
           {results.length > 0 && (
             <Button variant="secondary" size="sm" onClick={exportExcel}>
               <Download size={14} className="mr-2" /> Baixar Relatório
             </Button>
           )}
-          <Button
-            size="sm"
-            onClick={startProcess}
-            disabled={isProcessing || serials.length === 0 || !api.hasToken()}
-          >
-            <Play size={14} className="mr-2" /> Iniciar Consulta
-          </Button>
+          {!isProcessing ? (
+            <Button
+              size="sm"
+              onClick={startProcess}
+              disabled={serials.length === 0 || !api.hasToken()}
+            >
+              <Play size={14} className="mr-2" /> Iniciar Consulta
+            </Button>
+          ) : (
+            <>
+              {isPaused ? (
+                <Button
+                  size="sm"
+                  onClick={resumeProcess}
+                  className="bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <Play size={14} className="mr-2" /> Retomar
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={pauseProcess}
+                >
+                  <Pause size={14} className="mr-2" /> Pausar
+                </Button>
+              )}
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={stopProcess}
+              >
+                <Square size={14} className="mr-2" /> Parar
+              </Button>
+            </>
+          )}
         </div>
       </CardHeader>
       <CardContent className="pt-6">

@@ -13,10 +13,14 @@ export default function ApkFinder() {
     versions,
     setVersions,
     isProcessing,
+    isPaused,
     logs,
     addLog,
     results,
     startSearch,
+    resumeSearch,
+    pauseSearch,
+    stopSearch,
   } = useApkSearch();
 
   return (
@@ -77,7 +81,11 @@ export default function ApkFinder() {
         versions={versions}
         setVersions={setVersions}
         isProcessing={isProcessing}
+        isPaused={isPaused}
         startSearch={startSearch}
+        resumeSearch={resumeSearch}
+        pauseSearch={pauseSearch}
+        stopSearch={stopSearch}
         results={results}
         addLog={addLog}
       />

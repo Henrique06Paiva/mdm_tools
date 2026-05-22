@@ -13,6 +13,7 @@ export default function Checker() {
     columns,
     selectedCol,
     isProcessing,
+    isPaused,
     logs,
     addLog,
     stats,
@@ -22,6 +23,9 @@ export default function Checker() {
     handleFile,
     applyColumn,
     startProcess,
+    resumeProcess,
+    pauseProcess,
+    stopProcess,
     exportExcel,
   } = useChecker();
 
@@ -93,7 +97,11 @@ export default function Checker() {
         results={results}
         exportExcel={exportExcel}
         startProcess={startProcess}
+        resumeProcess={resumeProcess}
+        pauseProcess={pauseProcess}
+        stopProcess={stopProcess}
         isProcessing={isProcessing}
+        isPaused={isPaused}
         serials={serials}
         stats={stats}
         tableRows={tableRows}

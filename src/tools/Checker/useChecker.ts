@@ -9,6 +9,11 @@ export function useChecker() {
   const [columns, setColumns] = useState<string[]>([]);
   const [selectedCol, setSelectedCol] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const isPausedRef = useRef(false);
+  const currentIndexRef = useRef(0);
+  const doneRef = useRef(0);
+  const failRef = useRef(0);
   const [logs, setLogs] = useState<
     { id: number; message: string; type: string; time: string }[]
   >([]);
@@ -82,26 +87,7 @@ export function useChecker() {
     [addLog, applyColumn],
   );
 
-  const startProcess = useCallback(async () => {
-    if (!api.hasToken()) {
-      addLog("Autenticação necessária antes de prosseguir.", "err");
-      return;
-    }
-
-    const validPackages = packages.filter((p) => p.trim() !== "");
-    if (validPackages.length === 0) {
-      addLog("Defina pelo menos um Package Name.", "err");
-      return;
-    }
-
-    setIsProcessing(true);
-    setStats({ total: serials.length, done: 0, fail: 0 });
-    setResults([]);
-    setTableRows([]);
-    addLog(`Iniciando consulta para ${serials.length} seriais.`, "info");
-
-    let done = 0;
-    let fail = 0;
+  const runLoop = async (validPackages: string[]) => {
     const concurrency = 5;
 
     const processBatch = async (batch: string[]) => {
@@ -224,18 +210,18 @@ export function useChecker() {
             versionStr = eqVersions.join(" | ");
 
             if (allFound) {
-              done++;
+              doneRef.current++;
             } else {
-              fail++;
+              failRef.current++;
             }
           } else {
-            fail++;
+            failRef.current++;
             status = "Sem informação";
             online = "Sem informação";
             versionStr = "Sem informação";
           }
         } catch (error: any) {
-          fail++;
+          failRef.current++;
           status = "Sem informação";
           online = "Sem informação";
           versionStr = "Sem informação";
@@ -291,20 +277,91 @@ export function useChecker() {
         });
 
         setResults((prev) => [...prev, resultObj]);
-        setStats((s) => ({ ...s, done, fail }));
+        setStats((s) => ({ ...s, done: doneRef.current, fail: failRef.current }));
       });
 
       await Promise.all(promises);
     };
 
-    for (let i = 0; i < serials.length; i += concurrency) {
-      const batch = serials.slice(i, i + concurrency);
+    while (currentIndexRef.current < serials.length) {
+      if (isPausedRef.current) {
+        break;
+      }
+      const nextIndex = Math.min(currentIndexRef.current + concurrency, serials.length);
+      const batch = serials.slice(currentIndexRef.current, nextIndex);
+      currentIndexRef.current = nextIndex;
       await processBatch(batch);
     }
 
-    setIsProcessing(false);
-    addLog("Consulta finalizada com sucesso.", "ok");
+    if (currentIndexRef.current >= serials.length) {
+      setIsProcessing(false);
+      setIsPaused(false);
+      addLog("Consulta finalizada com sucesso.", "ok");
+    }
+  };
+
+  const startProcess = useCallback(async () => {
+    if (!api.hasToken()) {
+      addLog("Autenticação necessária antes de prosseguir.", "err");
+      return;
+    }
+
+    const validPackages = packages.filter((p) => p.trim() !== "");
+    if (validPackages.length === 0) {
+      addLog("Defina pelo menos um Package Name.", "err");
+      return;
+    }
+
+    setIsProcessing(true);
+    setIsPaused(false);
+    isPausedRef.current = false;
+    currentIndexRef.current = 0;
+    doneRef.current = 0;
+    failRef.current = 0;
+
+    setStats({ total: serials.length, done: 0, fail: 0 });
+    setResults([]);
+    setTableRows([]);
+    addLog(`Iniciando consulta para ${serials.length} seriais.`, "info");
+
+    await runLoop(validPackages);
   }, [serials, packages, addLog]);
+
+  const resumeProcess = useCallback(async () => {
+    if (!api.hasToken()) {
+      addLog("Autenticação necessária antes de prosseguir.", "err");
+      return;
+    }
+
+    const validPackages = packages.filter((p) => p.trim() !== "");
+    if (validPackages.length === 0) {
+      addLog("Defina pelo menos um Package Name.", "err");
+      return;
+    }
+
+    setIsProcessing(true);
+    setIsPaused(false);
+    isPausedRef.current = false;
+    addLog("Retomando consulta...", "info");
+
+    await runLoop(validPackages);
+  }, [serials, packages, addLog]);
+
+  const pauseProcess = useCallback(() => {
+    setIsPaused(true);
+    isPausedRef.current = true;
+    addLog("Processo pausado pelo usuário.", "warn");
+  }, [addLog]);
+
+  const stopProcess = useCallback(() => {
+    setIsProcessing(false);
+    setIsPaused(false);
+    isPausedRef.current = false;
+    currentIndexRef.current = 0;
+    doneRef.current = 0;
+    failRef.current = 0;
+    addLog("Processo interrompido pelo usuário.", "warn");
+  }, [addLog]);
 
   const exportExcel = useCallback(() => {
     if (results.length === 0) return;
@@ -326,6 +383,7 @@ export function useChecker() {
     selectedCol,
     setSelectedCol,
     isProcessing,
+    isPaused,
     logs,
     addLog,
     stats,
@@ -338,6 +396,9 @@ export function useChecker() {
     handleFile,
     applyColumn,
     startProcess,
+    resumeProcess,
+    pauseProcess,
+    stopProcess,
     exportExcel,
   };
 }

@@ -1,6 +1,6 @@
 import { memo } from "react";
 import * as XLSX from "xlsx";
-import { Download, Search, Plus, X } from "lucide-react";
+import { Download, Search, Plus, X, Pause, Square } from "lucide-react";
 import { api } from "../../api";
 import {
   Card,
@@ -10,6 +10,7 @@ import {
 } from "../../components/ui/card";
 import { Input, Label } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
+import { Badge } from "../../components/ui/badge";
 
 interface SearchFormProps {
   corpId: string;
@@ -19,7 +20,11 @@ interface SearchFormProps {
   versions: string[];
   setVersions: (vers: string[]) => void;
   isProcessing: boolean;
+  isPaused: boolean;
   startSearch: () => void;
+  resumeSearch: () => void;
+  pauseSearch: () => void;
+  stopSearch: () => void;
   results: any[];
   addLog: (message: string, type?: "info" | "warn" | "err" | "ok") => void;
 }
@@ -32,7 +37,11 @@ export const SearchForm = memo(function SearchForm({
   versions,
   setVersions,
   isProcessing,
+  isPaused,
   startSearch,
+  resumeSearch,
+  pauseSearch,
+  stopSearch,
   results,
   addLog,
 }: SearchFormProps) {
@@ -55,7 +64,19 @@ export const SearchForm = memo(function SearchForm({
   return (
     <Card className="mb-6 border-border/60 shadow-sm">
       <CardHeader className="bg-muted/10 pb-4">
-        <CardTitle className="text-foreground">Parâmetros de Busca</CardTitle>
+        <CardTitle className="text-foreground flex items-center gap-2">
+          Parâmetros de Busca
+          {isProcessing && isPaused && (
+            <Badge variant="warning" className="animate-pulse">
+              Pausado
+            </Badge>
+          )}
+          {isProcessing && !isPaused && (
+            <Badge variant="success" className="animate-pulse font-medium">
+              Buscando
+            </Badge>
+          )}
+        </CardTitle>
       </CardHeader>
       <CardContent className="pt-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -173,13 +194,41 @@ export const SearchForm = memo(function SearchForm({
               <Download size={16} className="mr-2" /> Baixar Planilha
             </Button>
           )}
-          <Button
-            onClick={startSearch}
-            disabled={isProcessing || !api.hasToken() || !corpId.trim()}
-            className="w-full sm:w-auto"
-          >
-            <Search size={16} className="mr-2" /> Buscar APK
-          </Button>
+          {!isProcessing ? (
+            <Button
+              onClick={startSearch}
+              disabled={!api.hasToken() || !corpId.trim()}
+              className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              <Search size={16} className="mr-2" /> Buscar APK
+            </Button>
+          ) : (
+            <>
+              {isPaused ? (
+                <Button
+                  onClick={resumeSearch}
+                  className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <Search size={16} className="mr-2" /> Retomar
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  onClick={pauseSearch}
+                  className="w-full sm:w-auto"
+                >
+                  <Pause size={16} className="mr-2" /> Pausar
+                </Button>
+              )}
+              <Button
+                variant="destructive"
+                onClick={stopSearch}
+                className="w-full sm:w-auto"
+              >
+                <Square size={16} className="mr-2" /> Parar
+              </Button>
+            </>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -26,6 +26,12 @@ export interface TableRow {
 export function useForcer() {
   const [serials, setSerials] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const isPausedRef = useRef(false);
+  const currentIndexRef = useRef(0);
+  const doneRef = useRef(0);
+  const failRef = useRef(0);
+  const skipRef = useRef(0);
   const [logs, setLogs] = useState<Log[]>([]);
   const [stats, setStats] = useState<ForcerStats>({
     total: 0,
@@ -102,28 +108,7 @@ export function useForcer() {
     [addLog],
   );
 
-  const startProcess = useCallback(async () => {
-    if (!api.hasToken()) {
-      addLog("Autenticação necessária antes de prosseguir.", "err");
-      return;
-    }
-
-    if (serials.length === 0) {
-      addLog("Nenhum serial disponível para processamento.", "warn");
-      return;
-    }
-
-    setIsProcessing(true);
-    setStats({ total: serials.length, done: 0, fail: 0, skip: 0 });
-    setTableRows([]);
-    addLog(
-      `Iniciando envio de Force Data para ${serials.length} seriais.`,
-      "info",
-    );
-
-    let done = 0;
-    let fail = 0;
-    let skip = 0;
+  const runLoop = async () => {
     const concurrency = 5;
 
     const processBatch = async (batch: string[]) => {
@@ -135,7 +120,7 @@ export function useForcer() {
         if (!serial) {
           statusBadge = "badge-warn";
           detailText = "Serial vazio";
-          skip++;
+          skipRef.current++;
           const row: TableRow = {
             serial: "Vazio",
             statusBadge,
@@ -143,7 +128,7 @@ export function useForcer() {
             time: queryTime,
           };
           setTableRows((prev) => [...prev, row]);
-          setStats((s) => ({ ...s, skip }));
+          setStats((s) => ({ ...s, skip: skipRef.current }));
           return;
         }
 
@@ -161,12 +146,12 @@ export function useForcer() {
 
           statusBadge = "badge-done";
           detailText = "Comando de Force Data enviado com sucesso";
-          done++;
+          doneRef.current++;
           addLog(`Force Data enviado para o terminal: ${serial}`, "ok");
         } catch (error: unknown) {
           statusBadge = "badge-err";
           detailText = error instanceof Error ? error.message : "Erro desconhecido";
-          fail++;
+          failRef.current++;
           addLog(
             `Falha ao enviar Force Data para o terminal ${serial}: ${detailText}`,
             "err",
@@ -180,29 +165,101 @@ export function useForcer() {
           time: queryTime,
         };
         setTableRows((prev) => [...prev, row]);
-        setStats((s) => ({ ...s, done, fail }));
+        setStats((s) => ({ ...s, done: doneRef.current, fail: failRef.current }));
       });
 
       await Promise.all(promises);
     };
 
-    for (let i = 0; i < serials.length; i += concurrency) {
-      const batch = serials.slice(i, i + concurrency);
+    while (currentIndexRef.current < serials.length) {
+      if (isPausedRef.current) {
+        break;
+      }
+      const nextIndex = Math.min(currentIndexRef.current + concurrency, serials.length);
+      const batch = serials.slice(currentIndexRef.current, nextIndex);
+      currentIndexRef.current = nextIndex;
       await processBatch(batch);
     }
 
-    setIsProcessing(false);
-    addLog("Processo de envio de Force Data em massa finalizado.", "ok");
+    if (currentIndexRef.current >= serials.length) {
+      setIsProcessing(false);
+      setIsPaused(false);
+      addLog("Processo de envio de Force Data em massa finalizado.", "ok");
+    }
+  };
+
+  const startProcess = useCallback(async () => {
+    if (!api.hasToken()) {
+      addLog("Autenticação necessária antes de prosseguir.", "err");
+      return;
+    }
+
+    if (serials.length === 0) {
+      addLog("Nenhum serial disponível para processamento.", "warn");
+      return;
+    }
+
+    setIsProcessing(true);
+    setIsPaused(false);
+    isPausedRef.current = false;
+    currentIndexRef.current = 0;
+    doneRef.current = 0;
+    failRef.current = 0;
+    skipRef.current = 0;
+
+    setStats({ total: serials.length, done: 0, fail: 0, skip: 0 });
+    setTableRows([]);
+    addLog(
+      `Iniciando envio de Force Data para ${serials.length} seriais.`,
+      "info",
+    );
+
+    await runLoop();
   }, [serials, addLog]);
+
+  const resumeProcess = useCallback(async () => {
+    if (!api.hasToken()) {
+      addLog("Autenticação necessária antes de prosseguir.", "err");
+      return;
+    }
+
+    setIsProcessing(true);
+    setIsPaused(false);
+    isPausedRef.current = false;
+    addLog("Retomando envio de Force Data...", "info");
+
+    await runLoop();
+  }, [serials, addLog]);
+
+  const pauseProcess = useCallback(() => {
+    setIsPaused(true);
+    isPausedRef.current = true;
+    addLog("Processo pausado pelo usuário.", "warn");
+  }, [addLog]);
+
+  const stopProcess = useCallback(() => {
+    setIsProcessing(false);
+    setIsPaused(false);
+    isPausedRef.current = false;
+    currentIndexRef.current = 0;
+    doneRef.current = 0;
+    failRef.current = 0;
+    skipRef.current = 0;
+    addLog("Processo interrompido pelo usuário.", "warn");
+  }, [addLog]);
 
   return {
     serials,
     isProcessing,
+    isPaused,
     logs,
     stats,
     tableRows,
     fileInputRef,
     handleFile,
     startProcess,
+    resumeProcess,
+    pauseProcess,
+    stopProcess,
   };
 }

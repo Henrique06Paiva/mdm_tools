@@ -5,6 +5,12 @@ import { api, CONFIG } from "../../api";
 export function useDeleter() {
   const [serials, setSerials] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+  const isPausedRef = useRef(false);
+  const currentIndexRef = useRef(0);
+  const doneRef = useRef(0);
+  const failRef = useRef(0);
+  const skipRef = useRef(0);
   const [logs, setLogs] = useState<
     { id: number; message: string; type: string; time: string }[]
   >([]);
@@ -67,23 +73,7 @@ export function useDeleter() {
     [addLog],
   );
 
-  const startProcess = useCallback(async () => {
-    if (!api.hasToken()) {
-      addLog("Autenticação necessária antes de prosseguir.", "err");
-      return;
-    }
-
-    setIsProcessing(true);
-    setStats((s) => ({ ...s, done: 0, fail: 0, skip: 0, retries: 0 }));
-    setTableRows([]);
-    addLog(
-      `Iniciando processo de deleção para ${serials.length} seriais.`,
-      "info",
-    );
-
-    let done = 0;
-    let fail = 0;
-    let skip = 0;
+  const runLoop = async () => {
     const concurrency = 5;
 
     const processBatch = async (batch: string[]) => {
@@ -107,7 +97,7 @@ export function useDeleter() {
           if (!eq) {
             statusBadge = "badge-warn";
             detailText = "N/E";
-            skip++;
+            skipRef.current++;
           } else {
             eqId = eq.id;
 
@@ -142,7 +132,7 @@ export function useDeleter() {
             if (delRes && delRes.ok !== false) {
               statusBadge = "badge-done";
               detailText = "Deletado com sucesso";
-              done++;
+              doneRef.current++;
             } else {
               throw new Error("Falha na resposta de deleção");
             }
@@ -150,34 +140,101 @@ export function useDeleter() {
         } catch (error: any) {
           statusBadge = "badge-err";
           detailText = `Erro: ${error.message}`;
-          fail++;
+          failRef.current++;
         }
 
         const row = { serial, eqId, statusBadge, detailText };
         setTableRows((prev) => [...prev, row]);
-        setStats((s) => ({ ...s, done, fail, skip }));
+        setStats((s) => ({ ...s, done: doneRef.current, fail: failRef.current, skip: skipRef.current }));
       });
 
       await Promise.all(promises);
     };
 
-    for (let i = 0; i < serials.length; i += concurrency) {
-      const batch = serials.slice(i, i + concurrency);
+    while (currentIndexRef.current < serials.length) {
+      if (isPausedRef.current) {
+        break;
+      }
+      const nextIndex = Math.min(currentIndexRef.current + concurrency, serials.length);
+      const batch = serials.slice(currentIndexRef.current, nextIndex);
+      currentIndexRef.current = nextIndex;
       await processBatch(batch);
     }
 
-    setIsProcessing(false);
-    addLog("Processo de deleção em massa finalizado.", "ok");
+    if (currentIndexRef.current >= serials.length) {
+      setIsProcessing(false);
+      setIsPaused(false);
+      addLog("Processo de deleção em massa finalizado.", "ok");
+    }
+  };
+
+  const startProcess = useCallback(async () => {
+    if (!api.hasToken()) {
+      addLog("Autenticação necessária antes de prosseguir.", "err");
+      return;
+    }
+
+    setIsProcessing(true);
+    setIsPaused(false);
+    isPausedRef.current = false;
+    currentIndexRef.current = 0;
+    doneRef.current = 0;
+    failRef.current = 0;
+    skipRef.current = 0;
+
+    setStats({ total: serials.length, done: 0, fail: 0, skip: 0, retries: 0 });
+    setTableRows([]);
+    addLog(
+      `Iniciando processo de deleção para ${serials.length} seriais.`,
+      "info",
+    );
+
+    await runLoop();
   }, [serials, addLog]);
+
+  const resumeProcess = useCallback(async () => {
+    if (!api.hasToken()) {
+      addLog("Autenticação necessária antes de prosseguir.", "err");
+      return;
+    }
+
+    setIsProcessing(true);
+    setIsPaused(false);
+    isPausedRef.current = false;
+    addLog("Retomando deleção em massa...", "info");
+
+    await runLoop();
+  }, [serials, addLog]);
+
+  const pauseProcess = useCallback(() => {
+    setIsPaused(true);
+    isPausedRef.current = true;
+    addLog("Processo pausado pelo usuário.", "warn");
+  }, [addLog]);
+
+  const stopProcess = useCallback(() => {
+    setIsProcessing(false);
+    setIsPaused(false);
+    isPausedRef.current = false;
+    currentIndexRef.current = 0;
+    doneRef.current = 0;
+    failRef.current = 0;
+    skipRef.current = 0;
+    addLog("Processo interrompido pelo usuário.", "warn");
+  }, [addLog]);
 
   return {
     serials,
     isProcessing,
+    isPaused,
     logs,
     stats,
     tableRows,
     fileInputRef,
     handleFile,
     startProcess,
+    resumeProcess,
+    pauseProcess,
+    stopProcess,
   };
 }
