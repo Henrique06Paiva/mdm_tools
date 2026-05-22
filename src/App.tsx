@@ -10,11 +10,13 @@ import {
   RefreshCw,
   LogOut,
   User,
+  List,
 } from "lucide-react";
 import Checker from "./tools/Checker";
 import Deleter from "./tools/Deleter";
 import ApkFinder from "./tools/ApkFinder";
 import Forcer from "./tools/Forcer";
+import Fetcher from "./tools/Fetcher";
 import { Button } from "./components/ui/button";
 import Login from "./components/Login";
 
@@ -118,7 +120,7 @@ const MainApp = ({
   onLogout: () => void;
 }) => {
   const [activeTab, setActiveTab] = useState<
-    "checker" | "deleter" | "apk" | "forcer"
+    "checker" | "deleter" | "apk" | "forcer" | "fetcher"
   >("checker");
   const [authStatus] = useState("Autenticado");
   const [isAuthenticating] = useState(false);
@@ -161,6 +163,12 @@ const MainApp = ({
             isActive={activeTab === "forcer"}
             onClick={() => setActiveTab("forcer")}
           />
+          <TabButton
+            label="Exportador de Terminais"
+            icon={List}
+            isActive={activeTab === "fetcher"}
+            onClick={() => setActiveTab("fetcher")}
+          />
         </div>
 
         <main className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -168,6 +176,7 @@ const MainApp = ({
           {activeTab === "deleter" && <Deleter />}
           {activeTab === "apk" && <ApkFinder />}
           {activeTab === "forcer" && <Forcer />}
+          {activeTab === "fetcher" && <Fetcher />}
         </main>
       </div>
     </div>
