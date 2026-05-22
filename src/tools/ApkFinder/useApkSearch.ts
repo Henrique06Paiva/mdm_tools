@@ -47,7 +47,7 @@ export function useApkSearch() {
       addLog(`Buscando detalhes do app ${app.name || app.packageName} (${currentIndexRef.current + 1}/${apps.length})...`, "info");
 
       try {
-        const detailData = await api.fetch(
+        const detailData: any = await api.fetch(
           `${CONFIG.BASE_URL}/api-application/application/${app.id}`,
         );
         const appVersions = detailData.applicationVersions || [];
@@ -138,7 +138,7 @@ export function useApkSearch() {
     addLog(`Buscando aplicativos para a corporação ID ${cId}...`, "info");
 
     try {
-      const listData = await api.fetch(
+      const listData: any = await api.fetch(
         `${CONFIG.BASE_URL}/api-application/application?page=1&limit=500&corporationId=${cId}`,
       );
       const apps =

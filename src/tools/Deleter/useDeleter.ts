@@ -83,7 +83,7 @@ export function useDeleter() {
         let eqId = "N/A";
 
         try {
-          const search = await api.fetch(
+          const search: any = await api.fetch(
             `${CONFIG.BASE_URL}/api-eqp/equipment?key=${encodeURIComponent(serial)}`,
           );
 
@@ -125,7 +125,7 @@ export function useDeleter() {
             }
 
             // Delete
-            const delRes = await api.fetch(
+            const delRes: any = await api.fetch(
               `${CONFIG.BASE_URL}/api-eqp/equipment/${eq.id}`,
               { method: "DELETE" },
             );

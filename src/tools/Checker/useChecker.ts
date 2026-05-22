@@ -103,7 +103,7 @@ export function useChecker() {
 
         try {
           // 1. Get Equipment Info
-          const searchData = await api.fetch(
+          const searchData: any = await api.fetch(
             `${CONFIG.BASE_URL}/api-eqp/equipment?page=1&limit=10&key=${encodeURIComponent(serial)}`,
           );
           const items =
@@ -176,7 +176,7 @@ export function useChecker() {
             for (const boSystem of [false, true]) {
               let page = 1;
               while (true) {
-                const appsData = await api.fetch(
+                const appsData: any = await api.fetch(
                   `${CONFIG.BASE_URL}/api-eqp/equipment-application-historic/${eqId}?page=${page}&limit=50&boSystem=${boSystem}`,
                 );
                 const appItems =
