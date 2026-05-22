@@ -107,7 +107,7 @@ class ApiService {
     options: RequestInit = {},
     retries = 3,
     backoff = 1000,
-  ): Promise<any> {
+  ): Promise<unknown> {
     let attempts = 0;
     while (attempts < retries) {
       try {

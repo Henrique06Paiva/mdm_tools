@@ -89,19 +89,11 @@ export function ProgressPanel({
                   <Play size={14} className="mr-2" /> Retomar
                 </Button>
               ) : (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={pauseProcess}
-                >
+                <Button size="sm" variant="outline" onClick={pauseProcess}>
                   <Pause size={14} className="mr-2" /> Pausar
                 </Button>
               )}
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={stopProcess}
-              >
+              <Button size="sm" variant="destructive" onClick={stopProcess}>
                 <Square size={14} className="mr-2" /> Parar
               </Button>
             </>

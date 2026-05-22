@@ -108,7 +108,7 @@ export function useForcer() {
     [addLog],
   );
 
-  const runLoop = async () => {
+  const runLoop = useCallback(async () => {
     const concurrency = 5;
 
     const processBatch = async (batch: string[]) => {
@@ -150,7 +150,8 @@ export function useForcer() {
           addLog(`Force Data enviado para o terminal: ${serial}`, "ok");
         } catch (error: unknown) {
           statusBadge = "badge-err";
-          detailText = error instanceof Error ? error.message : "Erro desconhecido";
+          detailText =
+            error instanceof Error ? error.message : "Erro desconhecido";
           failRef.current++;
           addLog(
             `Falha ao enviar Force Data para o terminal ${serial}: ${detailText}`,
@@ -165,7 +166,11 @@ export function useForcer() {
           time: queryTime,
         };
         setTableRows((prev) => [...prev, row]);
-        setStats((s) => ({ ...s, done: doneRef.current, fail: failRef.current }));
+        setStats((s) => ({
+          ...s,
+          done: doneRef.current,
+          fail: failRef.current,
+        }));
       });
 
       await Promise.all(promises);
@@ -175,7 +180,10 @@ export function useForcer() {
       if (isPausedRef.current) {
         break;
       }
-      const nextIndex = Math.min(currentIndexRef.current + concurrency, serials.length);
+      const nextIndex = Math.min(
+        currentIndexRef.current + concurrency,
+        serials.length,
+      );
       const batch = serials.slice(currentIndexRef.current, nextIndex);
       currentIndexRef.current = nextIndex;
       await processBatch(batch);
@@ -186,7 +194,7 @@ export function useForcer() {
       setIsPaused(false);
       addLog("Processo de envio de Force Data em massa finalizado.", "ok");
     }
-  };
+  }, [serials, addLog, setTableRows, setStats, setIsProcessing, setIsPaused]);
 
   const startProcess = useCallback(async () => {
     if (!api.hasToken()) {
@@ -215,7 +223,7 @@ export function useForcer() {
     );
 
     await runLoop();
-  }, [serials, addLog]);
+  }, [serials.length, addLog, runLoop]);
 
   const resumeProcess = useCallback(async () => {
     if (!api.hasToken()) {
@@ -229,7 +237,7 @@ export function useForcer() {
     addLog("Retomando envio de Force Data...", "info");
 
     await runLoop();
-  }, [serials, addLog]);
+  }, [addLog, runLoop]);
 
   const pauseProcess = useCallback(() => {
     setIsPaused(true);

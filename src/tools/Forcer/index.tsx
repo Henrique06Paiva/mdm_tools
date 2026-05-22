@@ -53,7 +53,9 @@ export default function Forcer() {
         content={
           <div>
             <p style={{ marginBottom: "8px" }}>
-              <strong>Objetivo:</strong> Forçar o envio de comandos de sincronização e atualização de dados (Force Data) para múltiplos equipamentos cadastrados no MDM.
+              <strong>Objetivo:</strong> Forçar o envio de comandos de
+              sincronização e atualização de dados (Force Data) para múltiplos
+              equipamentos cadastrados no MDM.
             </p>
             <p style={{ marginBottom: "8px" }}>
               <strong>Como utilizar:</strong>
@@ -83,7 +85,9 @@ export default function Forcer() {
                 Clique em <strong>Iniciar Processo</strong> e confirme.
               </li>
               <li>
-                Acompanhe o progresso na tabela em tempo real para verificar se os envios foram realizados com sucesso ou se apresentaram falhas.
+                Acompanhe o progresso na tabela em tempo real para verificar se
+                os envios foram realizados com sucesso ou se apresentaram
+                falhas.
               </li>
             </ol>
           </div>
@@ -139,8 +143,9 @@ export default function Forcer() {
               </p>
 
               <div className="bg-primary/5 border border-primary/20 rounded-lg p-3.5 mb-6 text-sm text-primary font-medium leading-relaxed">
-                <p className="font-semibold mb-1">Ação:</p>
-                O sistema fará requisições de atualização para cada terminal na lista em lotes paralelos.
+                <p className="font-semibold mb-1">Ação:</p>O sistema fará
+                requisições de atualização para cada terminal na lista em lotes
+                paralelos.
               </div>
 
               <div className="flex justify-end gap-3">
