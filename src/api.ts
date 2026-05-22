@@ -153,9 +153,7 @@ class ApiService {
       } catch (error) {
         attempts++;
         if (attempts >= retries) {
-          throw new Error(
-            `Falha após ${retries} tentativas: ${error instanceof Error ? error.message : String(error)}`,
-          );
+          throw new Error(`Falha após ${retries} tentativas`, { cause: error });
         }
         await new Promise((r) => setTimeout(r, backoff));
         backoff *= 2;
