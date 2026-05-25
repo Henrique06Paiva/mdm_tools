@@ -101,40 +101,65 @@ export function useDeleter() {
           } else {
             eqId = eq.id;
 
-            // Inactivate if active
-            if (eq.status === 1) {
-              const {
-                id,
-                companyId,
-                subsidiaryId,
-                equipmentTypeId,
-                corporationId,
-                name,
-              } = eq;
-              await api.fetch(`${CONFIG.BASE_URL}/api-eqp/equipment/${id}`, {
-                method: "PATCH",
-                body: JSON.stringify({
-                  status: 0,
+            const eqGroup =
+              eq.equipmentGroup?.name ||
+              eq.group?.name ||
+              eq.equipmentGroupName ||
+              eq.groupName ||
+              eq.grupo?.name ||
+              (typeof eq.equipmentGroup === "string" && eq.equipmentGroup.trim() ? eq.equipmentGroup.trim() : "") ||
+              (typeof eq.group === "string" && eq.group.trim() ? eq.group.trim() : "");
+
+            const hasGroup =
+              !!eqGroup ||
+              !!eq.equipmentGroupId ||
+              !!eq.groupId ||
+              !!eq.grupoId ||
+              (eq.equipmentGroup && typeof eq.equipmentGroup === "object" && Object.keys(eq.equipmentGroup).length > 0) ||
+              (eq.group && typeof eq.group === "object" && Object.keys(eq.group).length > 0) ||
+              (eq.grupo && typeof eq.grupo === "object" && Object.keys(eq.grupo).length > 0);
+
+            if (hasGroup) {
+              statusBadge = "badge-err";
+              detailText = eqGroup ? `Vinculado ao grupo: ${eqGroup}` : "Vinculado a um grupo";
+              addLog(`Terminal ${serial} está vinculado ao grupo${eqGroup ? `: ${eqGroup}` : ""}. Ignorando deleção.`, "err");
+              failRef.current++;
+            } else {
+              // Inactivate if active
+              if (eq.status === 1) {
+                const {
+                  id,
                   companyId,
                   subsidiaryId,
                   equipmentTypeId,
                   corporationId,
                   name,
-                }),
-              });
-            }
+                } = eq;
+                await api.fetch(`${CONFIG.BASE_URL}/api-eqp/equipment/${id}`, {
+                  method: "PATCH",
+                  body: JSON.stringify({
+                    status: 0,
+                    companyId,
+                    subsidiaryId,
+                    equipmentTypeId,
+                    corporationId,
+                    name,
+                  }),
+                });
+              }
 
-            // Delete
-            const delRes: any = await api.fetch(
-              `${CONFIG.BASE_URL}/api-eqp/equipment/${eq.id}`,
-              { method: "DELETE" },
-            );
-            if (delRes && delRes.ok !== false) {
-              statusBadge = "badge-done";
-              detailText = "Deletado com sucesso";
-              doneRef.current++;
-            } else {
-              throw new Error("Falha na resposta de deleção");
+              // Delete
+              const delRes: any = await api.fetch(
+                `${CONFIG.BASE_URL}/api-eqp/equipment/${eq.id}`,
+                { method: "DELETE" },
+              );
+              if (delRes && delRes.ok !== false) {
+                statusBadge = "badge-done";
+                detailText = "Deletado com sucesso";
+                doneRef.current++;
+              } else {
+                throw new Error("Falha na resposta de deleção");
+              }
             }
           }
         } catch (error: any) {
