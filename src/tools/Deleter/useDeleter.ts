@@ -11,6 +11,7 @@ export function useDeleter() {
   const doneRef = useRef(0);
   const failRef = useRef(0);
   const skipRef = useRef(0);
+  const groupRef = useRef(0);
   const [logs, setLogs] = useState<
     { id: number; message: string; type: string; time: string }[]
   >([]);
@@ -20,7 +21,7 @@ export function useDeleter() {
     done: 0,
     fail: 0,
     skip: 0,
-    retries: 0,
+    group: 0,
   });
   const [tableRows, setTableRows] = useState<any[]>([]);
 
@@ -84,19 +85,36 @@ export function useDeleter() {
 
         try {
           const search: any = await api.fetch(
-            `${CONFIG.BASE_URL}/api-eqp/equipment?key=${encodeURIComponent(serial)}`,
+            `${CONFIG.BASE_URL}/api-eqp/equipment?page=1&limit=10&key=${encodeURIComponent(serial)}`,
           );
 
-          const eq = search.items?.find(
-            (item: any) =>
-              String(item.serial) === serial ||
-              String(item.serialNumber) === serial ||
-              String(item.imei) === serial,
-          );
+          const items =
+            search?.data ??
+            search?.items ??
+            (Array.isArray(search) ? search : []);
+
+          let eq = null;
+          const serialFields = [
+            "serialNumber",
+            "serial",
+            "serialnumber",
+            "imei",
+          ];
+          for (const item of items) {
+            if (
+              serialFields.some(
+                (field) => String(item[field] || "").trim().toLowerCase() === serial.toLowerCase(),
+              )
+            ) {
+              eq = item;
+              break;
+            }
+          }
+          if (!eq && items.length === 1) eq = items[0];
 
           if (!eq) {
             statusBadge = "badge-warn";
-            detailText = "N/E";
+            detailText = "Não Encontrado";
             skipRef.current++;
           } else {
             eqId = eq.id;
@@ -120,10 +138,10 @@ export function useDeleter() {
               (eq.grupo && typeof eq.grupo === "object" && Object.keys(eq.grupo).length > 0);
 
             if (hasGroup) {
-              statusBadge = "badge-err";
+              statusBadge = "badge-group";
               detailText = eqGroup ? `Vinculado ao grupo: ${eqGroup}` : "Vinculado a um grupo";
               addLog(`Terminal ${serial} está vinculado ao grupo${eqGroup ? `: ${eqGroup}` : ""}. Ignorando deleção.`, "err");
-              failRef.current++;
+              groupRef.current++;
             } else {
               // Inactivate if active
               if (eq.status === 1) {
@@ -170,7 +188,13 @@ export function useDeleter() {
 
         const row = { serial, eqId, statusBadge, detailText };
         setTableRows((prev) => [...prev, row]);
-        setStats((s) => ({ ...s, done: doneRef.current, fail: failRef.current, skip: skipRef.current }));
+        setStats((s) => ({
+          ...s,
+          done: doneRef.current,
+          fail: failRef.current,
+          skip: skipRef.current,
+          group: groupRef.current,
+        }));
       });
 
       await Promise.all(promises);
@@ -206,8 +230,9 @@ export function useDeleter() {
     doneRef.current = 0;
     failRef.current = 0;
     skipRef.current = 0;
+    groupRef.current = 0;
 
-    setStats({ total: serials.length, done: 0, fail: 0, skip: 0, retries: 0 });
+    setStats({ total: serials.length, done: 0, fail: 0, skip: 0, group: 0 });
     setTableRows([]);
     addLog(
       `Iniciando processo de deleção para ${serials.length} seriais.`,
@@ -245,17 +270,19 @@ export function useDeleter() {
     doneRef.current = 0;
     failRef.current = 0;
     skipRef.current = 0;
+    groupRef.current = 0;
     addLog("Processo interrompido pelo usuário.", "warn");
   }, [addLog]);
 
   const resetProcess = useCallback(() => {
     setTableRows([]);
-    setStats({ total: serials.length, done: 0, fail: 0, skip: 0, retries: 0 });
+    setStats({ total: serials.length, done: 0, fail: 0, skip: 0, group: 0 });
     setLogs([]);
     currentIndexRef.current = 0;
     doneRef.current = 0;
     failRef.current = 0;
     skipRef.current = 0;
+    groupRef.current = 0;
     logIdRef.current = 0;
   }, [serials.length]);
 

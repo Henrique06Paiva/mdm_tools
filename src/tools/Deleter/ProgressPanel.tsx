@@ -31,7 +31,7 @@ interface ProgressPanelProps {
     done: number;
     fail: number;
     skip: number;
-    retries: number;
+    group: number;
   };
   tableRows: any[];
 }
@@ -50,7 +50,10 @@ export function ProgressPanel({
 }: ProgressPanelProps) {
   const percentage =
     stats.total > 0
-      ? Math.round(((stats.done + stats.fail + stats.skip) / stats.total) * 100)
+      ? Math.round(
+          ((stats.done + stats.fail + stats.skip + stats.group) / stats.total) *
+            100
+        )
       : 0;
 
   return (
@@ -140,28 +143,28 @@ export function ProgressPanel({
               Sucesso
             </div>
           </Card>
+          <Card className="bg-muted/20 border-border/60 text-center py-6">
+            <div className="text-2xl font-mono font-bold text-muted-foreground">
+              {stats.skip}
+            </div>
+            <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2 font-semibold">
+              Não Encontrado
+            </div>
+          </Card>
+          <Card className="bg-amber-500/5 border-amber-500/20 text-center py-6">
+            <div className="text-2xl font-mono font-bold text-amber-600 dark:text-amber-500">
+              {stats.group}
+            </div>
+            <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2 font-semibold">
+              Com Grupo
+            </div>
+          </Card>
           <Card className="bg-destructive/5 border-destructive/20 text-center py-6">
             <div className="text-2xl font-mono font-bold text-destructive">
               {stats.fail}
             </div>
             <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2 font-semibold">
               Falhas
-            </div>
-          </Card>
-          <Card className="bg-amber-500/5 border-amber-500/20 text-center py-6">
-            <div className="text-2xl font-mono font-bold text-amber-600 dark:text-amber-500">
-              {stats.skip}
-            </div>
-            <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2 font-semibold">
-              N/E
-            </div>
-          </Card>
-          <Card className="bg-muted/20 border-border/60 text-center py-6">
-            <div className="text-2xl font-mono font-bold text-foreground">
-              {stats.retries}
-            </div>
-            <div className="text-[10px] text-muted-foreground uppercase tracking-widest mt-2 font-semibold">
-              Retries
             </div>
           </Card>
         </div>
@@ -188,12 +191,22 @@ export function ProgressPanel({
                 const isErr = row.statusBadge === "badge-err";
                 const isWarn = row.statusBadge === "badge-warn";
                 const isSuccess = row.statusBadge === "badge-done";
+                const isGroup = row.statusBadge === "badge-group";
+
                 const badgeVariant = isErr
                   ? "destructive"
-                  : isWarn
+                  : isGroup
                     ? "warning"
-                    : "success";
-                const statusLabel = isSuccess ? "OK" : isWarn ? "N/E" : "Erro";
+                    : isWarn
+                      ? "secondary"
+                      : "success";
+                const statusLabel = isSuccess
+                  ? "Deletado"
+                  : isGroup
+                    ? "Com Grupo"
+                    : isWarn
+                      ? "Não Encontrado"
+                      : "Erro";
 
                 return (
                   <TableRow key={idx}>
