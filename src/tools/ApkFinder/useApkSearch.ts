@@ -3,8 +3,8 @@ import { api, CONFIG } from "../../api";
 
 export function useApkSearch() {
   const [corpId, setCorpId] = useState("");
-  const [packages, setPackages] = useState<string[]>(["com.br.octostore"]);
-  const [versions, setVersions] = useState<string[]>(["1.5.1"]);
+  const [packages, setPackages] = useState<string[]>([]);
+  const [versions, setVersions] = useState<string[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const isPausedRef = useRef(false);
@@ -59,14 +59,16 @@ export function useApkSearch() {
           for (const apk of apks) {
             const apkVersion = apk.versionName;
 
-            // Verifica se a versão desejada bate com apk.versionName OU com v.name
-            if (
+            // Verifica se a versão desejada bate com apk.versionName OU com v.name, ou se não foi especificada nenhuma versão
+            const isVersionMatched =
+              targetVersions.length === 0 ||
               targetVersions.includes(apkVersion) ||
-              targetVersions.includes(v.name)
-            ) {
-              const matchedVer = targetVersions.includes(apkVersion)
-                ? apkVersion
-                : v.name;
+              targetVersions.includes(v.name);
+
+            if (isVersionMatched) {
+              const matchedVer = targetVersions.length > 0
+                ? (targetVersions.includes(apkVersion) ? apkVersion : v.name)
+                : (apkVersion || v.name || "-");
 
               appResults.push({
                 id: app.id,
@@ -120,9 +122,9 @@ export function useApkSearch() {
     const targetPackages = packages.filter((p) => p.trim() !== "");
     const targetVersions = versions.filter((v) => v.trim() !== "");
 
-    if (!cId || targetVersions.length === 0) {
+    if (!cId) {
       alert(
-        "Por favor, preencha o ID da Corporação e pelo menos uma Versão Procurada.",
+        "Por favor, preencha o ID da Corporação.",
       );
       return;
     }

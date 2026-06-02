@@ -32,9 +32,7 @@ export default function ApkFinder() {
         content={
           <div>
             <p style={{ marginBottom: "8px" }}>
-              <strong>Objetivo:</strong> Procurar ativamente quais equipamentos
-              possuem uma (ou mais) versão(ões) específica(s) de um aplicativo
-              instalada, iterando sobre todo o inventário do MDM.
+              <strong>Objetivo:</strong> Procurar os APKs e versões de aplicativos cadastrados em uma determinada corporação no MDM, permitindo obter informações e links diretos para download dos arquivos.
             </p>
             <p style={{ marginBottom: "8px" }}>
               <strong>Como utilizar:</strong>
@@ -48,27 +46,23 @@ export default function ApkFinder() {
               }}
             >
               <li>
-                Insira o <strong>ID da Corporação</strong> (opcional). Se
-                deixado em branco, a busca irá iterar sobre os equipamentos
-                acessíveis na raiz da sua conta.
+                Insira o <strong>ID da Corporação</strong> (obrigatório).
               </li>
               <li>
-                Defina os <strong>Package Names</strong> e as{" "}
+                (Opcional) Defina os <strong>Package Names</strong> e as{" "}
                 <strong>Versões</strong> exatas que você deseja encontrar (ex:{" "}
-                <code>com.br.octostore</code> e <code>1.5.1</code>).
+                <code>com.br.octostore</code> e <code>1.5.1</code>). Se deixados em branco, todos os aplicativos e versões da corporação serão listados.
               </li>
               <li>
                 Você pode adicionar múltiplos pacotes e versões se quiser buscar
-                equipamentos que possuam a combinação específica.
+                combinações específicas.
               </li>
               <li>
-                Clique em <strong>Iniciar Busca</strong>. A ferramenta paginará
-                através da API buscando equipamentos ativos que reportem a
-                versão solicitada do aplicativo.
+                Clique em <strong>Buscar APK</strong>. A ferramenta irá listar as correspondências com os links diretos para download.
               </li>
               <li>
                 Acompanhe o painel de resultados e o log de execução. A tabela
-                listará todos os equipamentos compatíveis encontrados.
+                listará todos os APKs encontrados.
               </li>
             </ol>
           </div>
