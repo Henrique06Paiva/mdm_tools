@@ -15,7 +15,6 @@ export default function ApkFinder() {
     isProcessing,
     isPaused,
     logs,
-    addLog,
     results,
     startSearch,
     resumeSearch,
@@ -84,7 +83,6 @@ export default function ApkFinder() {
         stopSearch={stopSearch}
         resetSearch={resetSearch}
         results={results}
-        addLog={addLog}
       />
 
       <ResultsTable results={results} />

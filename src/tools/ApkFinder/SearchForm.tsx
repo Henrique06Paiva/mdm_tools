@@ -27,7 +27,6 @@ interface SearchFormProps {
   stopSearch: () => void;
   resetSearch: () => void;
   results: any[];
-  addLog: (message: string, type?: "info" | "warn" | "err" | "ok") => void;
 }
 
 export const SearchForm = memo(function SearchForm({
@@ -45,7 +44,6 @@ export const SearchForm = memo(function SearchForm({
   stopSearch,
   resetSearch,
   results,
-  addLog,
 }: SearchFormProps) {
   const exportExcel = () => {
     if (results.length === 0) return;
