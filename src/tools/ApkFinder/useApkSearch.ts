@@ -234,6 +234,11 @@ export function useApkSearch() {
     setResults([]);
     addLog(`Buscando aplicativos para a corporação ID ${cId}...`, "info");
 
+    // Limpeza automática dos filtros de busca pós-início
+    setCorpId("");
+    setPackages([]);
+    setVersions([]);
+
     try {
       const listData: any = await api.fetch(
         `${CONFIG.BASE_URL}/api-application/application?page=1&limit=500&corporationId=${cId}`,
@@ -323,6 +328,12 @@ export function useApkSearch() {
     logIdRef.current = 0;
   }, []);
 
+  const clearFilters = useCallback(() => {
+    setCorpId("");
+    setPackages([]);
+    setVersions([]);
+  }, []);
+
   return {
     corpId,
     setCorpId,
@@ -345,5 +356,6 @@ export function useApkSearch() {
     stopSearch,
     resetSearch,
     clearLogs,
+    clearFilters,
   };
 }

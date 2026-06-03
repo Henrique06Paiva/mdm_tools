@@ -31,6 +31,7 @@ interface SearchFormProps {
   stopSearch: () => void;
   resetSearch: () => void;
   results: any[];
+  clearFilters: () => void;
 }
 
 export const SearchForm = memo(function SearchForm({
@@ -52,6 +53,7 @@ export const SearchForm = memo(function SearchForm({
   stopSearch,
   resetSearch,
   results,
+  clearFilters,
 }: SearchFormProps) {
   const [appFilter, setAppFilter] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -413,6 +415,13 @@ export const SearchForm = memo(function SearchForm({
                   <RotateCcw size={16} className="mr-2" /> Limpar Histórico
                 </Button>
               )}
+              <Button
+                variant="outline"
+                onClick={clearFilters}
+                className="w-full sm:w-auto border-border hover:bg-muted cursor-pointer"
+              >
+                <X size={16} className="mr-2" /> Limpar Filtros
+              </Button>
               <Button
                 onClick={startSearch}
                 disabled={!api.hasToken() || !corpId.trim()}

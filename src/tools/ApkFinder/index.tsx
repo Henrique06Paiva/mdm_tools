@@ -26,6 +26,7 @@ export default function ApkFinder() {
     stopSearch,
     resetSearch,
     clearLogs,
+    clearFilters,
   } = useApkSearch();
 
   return (
@@ -90,6 +91,7 @@ export default function ApkFinder() {
         pauseSearch={pauseSearch}
         stopSearch={stopSearch}
         resetSearch={resetSearch}
+        clearFilters={clearFilters}
         results={results}
       />
 
