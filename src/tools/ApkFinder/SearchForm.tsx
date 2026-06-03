@@ -84,7 +84,7 @@ export const SearchForm = memo(function SearchForm({
   };
 
   return (
-    <Card className="mb-6 border-border/60 shadow-sm">
+    <Card className="mb-6 border-border/60 shadow-sm overflow-visible">
       <CardHeader className="bg-muted/10 pb-4">
         <CardTitle className="text-foreground flex items-center gap-2">
           Parâmetros de Busca
@@ -150,7 +150,7 @@ export const SearchForm = memo(function SearchForm({
                     onChange={(e) => setAppFilter(e.target.value)}
                     className="mb-2 h-9"
                   />
-                  <div className="max-h-60 overflow-y-auto border border-border/60 rounded-md p-1.5 space-y-1 bg-muted/5">
+                  <div className="max-h-80 overflow-y-auto border border-border/60 rounded-md p-1.5 space-y-1 bg-muted/5">
                     {availableApps.filter(
                       (app) =>
                         app.name?.toLowerCase().includes(appFilter.toLowerCase()) ||
