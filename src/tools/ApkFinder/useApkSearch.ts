@@ -42,7 +42,7 @@ export function useApkSearch() {
     return () => clearTimeout(delayDebounceFn);
   }, [corpId]);
 
-  const [availableVersions, setAvailableVersions] = useState<string[]>([]);
+  const [availableVersions, setAvailableVersions] = useState<{ version: string; appName: string }[]>([]);
   const [isLoadingVersions, setIsLoadingVersions] = useState(false);
 
   useEffect(() => {
@@ -63,7 +63,7 @@ export function useApkSearch() {
     setIsLoadingVersions(true);
     const fetchVersions = async () => {
       try {
-        const versionsSet = new Set<string>();
+        const versionsList: { version: string; appName: string }[] = [];
         await Promise.all(
           selectedApps.map(async (app) => {
             try {
@@ -73,12 +73,22 @@ export function useApkSearch() {
               const appVersions = detailData.applicationVersions || [];
               for (const v of appVersions) {
                 if (v.name) {
-                  versionsSet.add(v.name);
+                  versionsList.push({ version: v.name, appName: app.name || app.packageName });
                 }
                 const apks = v.applicationVersionApks || [];
                 for (const apk of apks) {
-                  if (apk.versionName) {
-                    versionsSet.add(apk.versionName);
+                  if (
+                    apk.versionName &&
+                    !versionsList.some(
+                      (item) =>
+                        item.version === apk.versionName &&
+                        item.appName === (app.name || app.packageName),
+                    )
+                  ) {
+                    versionsList.push({
+                      version: apk.versionName,
+                      appName: app.name || app.packageName,
+                    });
                   }
                 }
               }
@@ -87,9 +97,14 @@ export function useApkSearch() {
             }
           }),
         );
-        const sortedVersions = Array.from(versionsSet).sort();
+        const sortedVersions = Array.from(versionsList).sort((a, b) => {
+          if (a.appName !== b.appName) {
+            return a.appName.localeCompare(b.appName);
+          }
+          return a.version.localeCompare(b.version);
+        });
         setAvailableVersions(sortedVersions);
-        setVersions((prev) => prev.filter((v) => sortedVersions.includes(v)));
+        setVersions((prev) => prev.filter((v) => sortedVersions.some((av) => av.version === v)));
       } catch (error) {
         console.error("Erro ao carregar versões:", error);
         setAvailableVersions([]);
@@ -203,6 +218,8 @@ export function useApkSearch() {
     if (currentIndexRef.current >= apps.length) {
       setIsProcessing(false);
       setIsPaused(false);
+      setPackages([]);
+      setVersions([]);
       addLog("Busca de APKs finalizada.", "ok");
     }
   };
@@ -233,11 +250,6 @@ export function useApkSearch() {
     targetPackagesRef.current = targetPackages;
     setResults([]);
     addLog(`Buscando aplicativos para a corporação ID ${cId}...`, "info");
-
-    // Limpeza automática dos filtros de busca pós-início
-    setCorpId("");
-    setPackages([]);
-    setVersions([]);
 
     try {
       const listData: any = await api.fetch(
@@ -312,6 +324,8 @@ export function useApkSearch() {
     isPausedRef.current = false;
     currentIndexRef.current = 0;
     matchingAppsRef.current = [];
+    setPackages([]);
+    setVersions([]);
     addLog("Busca interrompida pelo usuário.", "warn");
   }, [addLog]);
 

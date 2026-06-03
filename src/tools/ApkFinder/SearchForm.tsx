@@ -21,7 +21,7 @@ interface SearchFormProps {
   setVersions: (vers: string[]) => void;
   availableApps: any[];
   isLoadingApps: boolean;
-  availableVersions: string[];
+  availableVersions: { version: string; appName: string }[];
   isLoadingVersions: boolean;
   isProcessing: boolean;
   isPaused: boolean;
@@ -305,11 +305,11 @@ export const SearchForm = memo(function SearchForm({
               {isVersionsDropdownOpen && (
                 <div className="absolute left-0 right-0 z-50 mt-1 p-3 bg-card border border-border shadow-lg rounded-md space-y-3 bg-background animate-in fade-in-0 zoom-in-95">
                   <div className="max-h-80 overflow-y-auto border border-border/60 rounded-md p-1.5 space-y-1 bg-muted/5">
-                    {availableVersions.map((ver) => {
-                      const isChecked = versions.includes(ver);
+                    {availableVersions.map((verObj) => {
+                      const isChecked = versions.includes(verObj.version);
                       return (
                         <label
-                          key={ver}
+                          key={`${verObj.appName}-${verObj.version}`}
                           className={`flex items-center gap-3 p-2 rounded hover:bg-muted/40 cursor-pointer transition-colors border ${isChecked ? "bg-primary/5 border-primary/20" : "border-transparent"}`}
                         >
                           <input
@@ -317,14 +317,17 @@ export const SearchForm = memo(function SearchForm({
                             checked={isChecked}
                             onChange={() => {
                               if (isChecked) {
-                                setVersions(versions.filter((v) => v !== ver));
+                                setVersions(versions.filter((v) => v !== verObj.version));
                               } else {
-                                setVersions([...versions, ver]);
+                                setVersions([...versions, verObj.version]);
                               }
                             }}
                             className="h-4 w-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
                           />
-                          <span className="text-sm font-medium text-foreground">{ver}</span>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-sm font-medium text-foreground truncate">{verObj.version}</span>
+                            <span className="text-xs text-muted-foreground truncate font-mono">{verObj.appName}</span>
+                          </div>
                         </label>
                       );
                     })}
@@ -333,7 +336,7 @@ export const SearchForm = memo(function SearchForm({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setVersions([...availableVersions])}
+                      onClick={() => setVersions(availableVersions.map((v) => v.version))}
                       className="w-full text-xs h-8 cursor-pointer"
                     >
                       Selecionar Todas
