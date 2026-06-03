@@ -14,6 +14,8 @@ export default function ApkFinder() {
     setVersions,
     availableApps,
     isLoadingApps,
+    availableVersions,
+    isLoadingVersions,
     isProcessing,
     isPaused,
     logs,
@@ -79,6 +81,8 @@ export default function ApkFinder() {
         setVersions={setVersions}
         availableApps={availableApps}
         isLoadingApps={isLoadingApps}
+        availableVersions={availableVersions}
+        isLoadingVersions={isLoadingVersions}
         isProcessing={isProcessing}
         isPaused={isPaused}
         startSearch={startSearch}

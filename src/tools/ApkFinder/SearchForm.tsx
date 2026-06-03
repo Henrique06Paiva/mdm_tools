@@ -21,6 +21,8 @@ interface SearchFormProps {
   setVersions: (vers: string[]) => void;
   availableApps: any[];
   isLoadingApps: boolean;
+  availableVersions: string[];
+  isLoadingVersions: boolean;
   isProcessing: boolean;
   isPaused: boolean;
   startSearch: () => void;
@@ -40,6 +42,8 @@ export const SearchForm = memo(function SearchForm({
   setVersions,
   availableApps,
   isLoadingApps,
+  availableVersions,
+  isLoadingVersions,
   isProcessing,
   isPaused,
   startSearch,
@@ -51,21 +55,26 @@ export const SearchForm = memo(function SearchForm({
 }: SearchFormProps) {
   const [appFilter, setAppFilter] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isVersionsDropdownOpen, setIsVersionsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const versionsDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsDropdownOpen(false);
       }
+      if (versionsDropdownRef.current && !versionsDropdownRef.current.contains(event.target as Node)) {
+        setIsVersionsDropdownOpen(false);
+      }
     };
-    if (isDropdownOpen) {
+    if (isDropdownOpen || isVersionsDropdownOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [isDropdownOpen]);
+  }, [isDropdownOpen, isVersionsDropdownOpen]);
 
   const exportExcel = () => {
     if (results.length === 0) return;
@@ -262,46 +271,125 @@ export const SearchForm = memo(function SearchForm({
             </div>
           )}
 
-          <div className="space-y-4">
-            <Label htmlFor="version-input-apk-0">Versões Procuradas (Opcional)</Label>
-            <div className="space-y-3">
-              {versions.map((ver, idx) => (
-                <div className="flex gap-2 items-center" key={idx}>
-                  <Input 
-                    id={`version-input-apk-${idx}`}
-                    type="text" 
-                    value={ver}
-                    onChange={(e) => {
-                      const newVers = [...versions];
-                      newVers[idx] = e.target.value;
-                      setVersions(newVers);
-                    }}
-                    placeholder="Ex: 1.5.1" 
-                    aria-label={`Versão Procurada ${idx + 1}`}
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setVersions(versions.filter((_, i) => i !== idx));
-                    }}
-                    className="shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                    aria-label={`Remover versão procurada ${idx + 1}`}
-                  >
-                    <X size={16} />
-                  </Button>
-                </div>
-              ))}
+          {isLoadingVersions ? (
+            <div className="space-y-4">
+              <Label>Versões Procuradas (Opcional)</Label>
+              <div className="flex items-center gap-3 text-muted-foreground py-6 px-4 bg-muted/5 border border-border/40 rounded-md">
+                <span className="w-5 h-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                <span className="text-sm font-medium">Carregando versões disponíveis...</span>
+              </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setVersions([...versions, ""])}
-              className="w-full sm:w-auto mt-2"
-            >
-              <Plus size={14} className="mr-2" /> Adicionar Versão
-            </Button>
-          </div>
+          ) : availableVersions.length > 0 ? (
+            <div className="space-y-2 relative" ref={versionsDropdownRef}>
+              <Label>Versões Procuradas (Opcional)</Label>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full flex items-center justify-between font-normal text-left h-10 border-border/60 hover:bg-muted/30 bg-background cursor-pointer"
+                onClick={() => setIsVersionsDropdownOpen(!isVersionsDropdownOpen)}
+              >
+                <span className="truncate">
+                  {versions.length === 0
+                    ? "Todas as versões (sem filtro)"
+                    : `${versions.length} versão(ões) selecionada(s)`}
+                </span>
+                {isVersionsDropdownOpen ? (
+                  <ChevronUp size={16} className="text-muted-foreground shrink-0 ml-2" />
+                ) : (
+                  <ChevronDown size={16} className="text-muted-foreground shrink-0 ml-2" />
+                )}
+              </Button>
+
+              {isVersionsDropdownOpen && (
+                <div className="absolute left-0 right-0 z-50 mt-1 p-3 bg-card border border-border shadow-lg rounded-md space-y-3 bg-background animate-in fade-in-0 zoom-in-95">
+                  <div className="max-h-80 overflow-y-auto border border-border/60 rounded-md p-1.5 space-y-1 bg-muted/5">
+                    {availableVersions.map((ver) => {
+                      const isChecked = versions.includes(ver);
+                      return (
+                        <label
+                          key={ver}
+                          className={`flex items-center gap-3 p-2 rounded hover:bg-muted/40 cursor-pointer transition-colors border ${isChecked ? "bg-primary/5 border-primary/20" : "border-transparent"}`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => {
+                              if (isChecked) {
+                                setVersions(versions.filter((v) => v !== ver));
+                              } else {
+                                setVersions([...versions, ver]);
+                              }
+                            }}
+                            className="h-4 w-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                          />
+                          <span className="text-sm font-medium text-foreground">{ver}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setVersions([...availableVersions])}
+                      className="w-full text-xs h-8 cursor-pointer"
+                    >
+                      Selecionar Todas
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setVersions([])}
+                      className="w-full text-xs h-8 cursor-pointer"
+                    >
+                      Limpar Seleção
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <Label htmlFor="version-input-apk-0">Versões Procuradas (Opcional)</Label>
+              <div className="space-y-3">
+                {versions.map((ver, idx) => (
+                  <div className="flex gap-2 items-center" key={idx}>
+                    <Input 
+                      id={`version-input-apk-${idx}`}
+                      type="text" 
+                      value={ver}
+                      onChange={(e) => {
+                        const newVers = [...versions];
+                        newVers[idx] = e.target.value;
+                        setVersions(newVers);
+                      }}
+                      placeholder="Ex: 1.5.1" 
+                      aria-label={`Versão Procurada ${idx + 1}`}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        setVersions(versions.filter((_, i) => i !== idx));
+                      }}
+                      className="shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      aria-label={`Remover versão procurada ${idx + 1}`}
+                    >
+                      <X size={16} />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setVersions([...versions, ""])}
+                className="w-full sm:w-auto mt-2 cursor-pointer"
+              >
+                <Plus size={14} className="mr-2" /> Adicionar Versão
+              </Button>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-8 pt-6 border-t border-border/40">

@@ -41,6 +41,65 @@ export function useApkSearch() {
 
     return () => clearTimeout(delayDebounceFn);
   }, [corpId]);
+
+  const [availableVersions, setAvailableVersions] = useState<string[]>([]);
+  const [isLoadingVersions, setIsLoadingVersions] = useState(false);
+
+  useEffect(() => {
+    const selectedApps = availableApps.filter((app) =>
+      packages.includes(app.packageName),
+    );
+
+    if (selectedApps.length === 0) {
+      setAvailableVersions([]);
+      setVersions([]);
+      return;
+    }
+
+    if (!api.hasToken()) {
+      return;
+    }
+
+    setIsLoadingVersions(true);
+    const fetchVersions = async () => {
+      try {
+        const versionsSet = new Set<string>();
+        await Promise.all(
+          selectedApps.map(async (app) => {
+            try {
+              const detailData: any = await api.fetch(
+                `${CONFIG.BASE_URL}/api-application/application/${app.id}`,
+              );
+              const appVersions = detailData.applicationVersions || [];
+              for (const v of appVersions) {
+                if (v.name) {
+                  versionsSet.add(v.name);
+                }
+                const apks = v.applicationVersionApks || [];
+                for (const apk of apks) {
+                  if (apk.versionName) {
+                    versionsSet.add(apk.versionName);
+                  }
+                }
+              }
+            } catch (e) {
+              console.error(`Erro ao carregar versões do app ${app.name}:`, e);
+            }
+          }),
+        );
+        const sortedVersions = Array.from(versionsSet).sort();
+        setAvailableVersions(sortedVersions);
+        setVersions((prev) => prev.filter((v) => sortedVersions.includes(v)));
+      } catch (error) {
+        console.error("Erro ao carregar versões:", error);
+        setAvailableVersions([]);
+      } finally {
+        setIsLoadingVersions(false);
+      }
+    };
+
+    fetchVersions();
+  }, [packages, availableApps]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const isPausedRef = useRef(false);
@@ -273,6 +332,8 @@ export function useApkSearch() {
     setVersions,
     availableApps,
     isLoadingApps,
+    availableVersions,
+    isLoadingVersions,
     isProcessing,
     isPaused,
     logs,
