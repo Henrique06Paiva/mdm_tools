@@ -1,10 +1,46 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { api, CONFIG } from "../../api";
 
 export function useApkSearch() {
   const [corpId, setCorpId] = useState("");
   const [packages, setPackages] = useState<string[]>([]);
   const [versions, setVersions] = useState<string[]>([]);
+  const [availableApps, setAvailableApps] = useState<any[]>([]);
+  const [isLoadingApps, setIsLoadingApps] = useState(false);
+
+  useEffect(() => {
+    setPackages([]);
+    const cId = corpId.trim();
+    if (!cId) {
+      setAvailableApps([]);
+      return;
+    }
+
+    if (!api.hasToken()) {
+      return;
+    }
+
+    setIsLoadingApps(true);
+    const delayDebounceFn = setTimeout(async () => {
+      try {
+        const listData: any = await api.fetch(
+          `${CONFIG.BASE_URL}/api-application/application?page=1&limit=500&corporationId=${cId}`,
+        );
+        const apps =
+          listData?.data ??
+          listData?.items ??
+          (Array.isArray(listData) ? listData : []);
+        setAvailableApps(apps);
+      } catch (error) {
+        console.error("Erro ao carregar aplicativos:", error);
+        setAvailableApps([]);
+      } finally {
+        setIsLoadingApps(false);
+      }
+    }, 600);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [corpId]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const isPausedRef = useRef(false);
@@ -235,6 +271,8 @@ export function useApkSearch() {
     setPackages,
     versions,
     setVersions,
+    availableApps,
+    isLoadingApps,
     isProcessing,
     isPaused,
     logs,

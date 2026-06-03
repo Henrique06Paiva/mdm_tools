@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import * as XLSX from "xlsx";
 import { Download, Search, Plus, X, Pause, Square, RotateCcw } from "lucide-react";
 import { api } from "../../api";
@@ -19,6 +19,8 @@ interface SearchFormProps {
   setPackages: (pkgs: string[]) => void;
   versions: string[];
   setVersions: (vers: string[]) => void;
+  availableApps: any[];
+  isLoadingApps: boolean;
   isProcessing: boolean;
   isPaused: boolean;
   startSearch: () => void;
@@ -36,6 +38,8 @@ export const SearchForm = memo(function SearchForm({
   setPackages,
   versions,
   setVersions,
+  availableApps,
+  isLoadingApps,
   isProcessing,
   isPaused,
   startSearch,
@@ -45,6 +49,7 @@ export const SearchForm = memo(function SearchForm({
   resetSearch,
   results,
 }: SearchFormProps) {
+  const [appFilter, setAppFilter] = useState("");
   const exportExcel = () => {
     if (results.length === 0) return;
     const exportData = results.map((r) => ({
@@ -94,46 +99,138 @@ export const SearchForm = memo(function SearchForm({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-6">
-          <div className="space-y-4">
-            <Label htmlFor="pkg-input-apk-0">Package Names dos Apps (Opcional)</Label>
-            <div className="space-y-3">
-              {packages.map((pkg, idx) => (
-                <div className="flex gap-2 items-center" key={idx}>
-                  <Input 
-                    id={`pkg-input-apk-${idx}`}
-                    type="text" 
-                    value={pkg}
-                    onChange={(e) => {
-                      const newPkgs = [...packages];
-                      newPkgs[idx] = e.target.value;
-                      setPackages(newPkgs);
-                    }}
-                    placeholder="Ex: com.br.octostore" 
-                    aria-label={`Package Name do aplicativo ${idx + 1}`}
-                  />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() =>
-                      setPackages(packages.filter((_, i) => i !== idx))
-                    }
-                    className="shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
-                    aria-label={`Remover package name do aplicativo ${idx + 1}`}
-                  >
-                    <X size={16} />
-                  </Button>
-                </div>
-              ))}
+          {isLoadingApps ? (
+            <div className="space-y-4">
+              <Label>Selecione os Apps da Corporação</Label>
+              <div className="flex items-center gap-3 text-muted-foreground py-6 px-4 bg-muted/5 border border-border/40 rounded-md">
+                <span className="w-5 h-5 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+                <span className="text-sm font-medium">Carregando aplicativos da corporação...</span>
+              </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPackages([...packages, ""])}
-              className="w-full sm:w-auto mt-2"
-            >
-              <Plus size={14} className="mr-2" /> Adicionar Pacote
-            </Button>
-          </div>
+          ) : availableApps.length > 0 ? (
+            <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <Label>Selecione os Apps da Corporação</Label>
+                <span className="text-xs text-muted-foreground font-mono bg-muted px-2 py-0.5 rounded">
+                  {packages.length} selecionado(s)
+                </span>
+              </div>
+              <Input
+                type="text"
+                placeholder="Filtrar por nome ou pacote..."
+                value={appFilter}
+                onChange={(e) => setAppFilter(e.target.value)}
+                className="mb-2"
+              />
+              <div className="max-h-60 overflow-y-auto border border-border/60 rounded-md p-2 space-y-1 bg-muted/5">
+                {availableApps.filter(
+                  (app) =>
+                    app.name?.toLowerCase().includes(appFilter.toLowerCase()) ||
+                    app.packageName?.toLowerCase().includes(appFilter.toLowerCase())
+                ).length === 0 ? (
+                  <div className="text-sm text-muted-foreground py-6 text-center">
+                    Nenhum aplicativo correspondente.
+                  </div>
+                ) : (
+                  availableApps
+                    .filter(
+                      (app) =>
+                        app.name?.toLowerCase().includes(appFilter.toLowerCase()) ||
+                        app.packageName?.toLowerCase().includes(appFilter.toLowerCase())
+                    )
+                    .map((app) => {
+                      const isChecked = packages.includes(app.packageName);
+                      return (
+                        <label
+                          key={app.id}
+                          className={`flex items-start gap-3 p-2 rounded-md hover:bg-muted/40 cursor-pointer transition-colors border ${isChecked ? "bg-primary/5 border-primary/20" : "border-transparent"}`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isChecked}
+                            onChange={() => {
+                              if (isChecked) {
+                                setPackages(packages.filter((p) => p !== app.packageName));
+                              } else {
+                                setPackages([...packages, app.packageName]);
+                              }
+                            }}
+                            className="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                          />
+                          <div className="space-y-0.5 min-w-0">
+                            <div className="text-sm font-semibold text-foreground truncate">
+                              {app.name || "Aplicativo sem nome"}
+                            </div>
+                            <div className="text-xs text-muted-foreground font-mono truncate">
+                              {app.packageName}
+                            </div>
+                          </div>
+                        </label>
+                      );
+                    })
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPackages(availableApps.map((a) => a.packageName).filter(Boolean))}
+                  className="w-full text-xs"
+                >
+                  Selecionar Todos
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPackages([])}
+                  className="w-full text-xs"
+                >
+                  Limpar Seleção
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <Label htmlFor="pkg-input-apk-0">Package Names dos Apps (Opcional)</Label>
+              <div className="space-y-3">
+                {packages.map((pkg, idx) => (
+                  <div className="flex gap-2 items-center" key={idx}>
+                    <Input 
+                      id={`pkg-input-apk-${idx}`}
+                      type="text" 
+                      value={pkg}
+                      onChange={(e) => {
+                        const newPkgs = [...packages];
+                        newPkgs[idx] = e.target.value;
+                        setPackages(newPkgs);
+                      }}
+                      placeholder="Ex: com.br.octostore" 
+                      aria-label={`Package Name do aplicativo ${idx + 1}`}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() =>
+                        setPackages(packages.filter((_, i) => i !== idx))
+                      }
+                      className="shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                      aria-label={`Remover package name do aplicativo ${idx + 1}`}
+                    >
+                      <X size={16} />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPackages([...packages, ""])}
+                className="w-full sm:w-auto mt-2"
+              >
+                <Plus size={14} className="mr-2" /> Adicionar Pacote
+              </Button>
+            </div>
+          )}
 
           <div className="space-y-4">
             <Label htmlFor="version-input-apk-0">Versões Procuradas (Opcional)</Label>
