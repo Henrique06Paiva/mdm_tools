@@ -1,6 +1,6 @@
-import { memo, useState } from "react";
+import { memo, useState, useRef, useEffect } from "react";
 import * as XLSX from "xlsx";
-import { Download, Search, Plus, X, Pause, Square, RotateCcw } from "lucide-react";
+import { Download, Search, Plus, X, Pause, Square, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
 import { api } from "../../api";
 import {
   Card,
@@ -50,6 +50,23 @@ export const SearchForm = memo(function SearchForm({
   results,
 }: SearchFormProps) {
   const [appFilter, setAppFilter] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    if (isDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isDropdownOpen]);
+
   const exportExcel = () => {
     if (results.length === 0) return;
     const exportData = results.map((r) => ({
@@ -108,86 +125,99 @@ export const SearchForm = memo(function SearchForm({
               </div>
             </div>
           ) : availableApps.length > 0 ? (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <Label>Selecione os Apps da Corporação</Label>
-                <span className="text-xs text-muted-foreground font-mono bg-muted px-2 py-0.5 rounded">
-                  {packages.length} selecionado(s)
+            <div className="space-y-2 relative" ref={dropdownRef}>
+              <Label>Selecione os Apps da Corporação</Label>
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full flex items-center justify-between font-normal text-left h-10 border-border/60 hover:bg-muted/30 bg-background cursor-pointer"
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              >
+                <span className="truncate">
+                  {packages.length === 0
+                    ? "Todos os apps da corporação (sem filtro)"
+                    : `${packages.length} app(s) selecionado(s)`}
                 </span>
-              </div>
-              <Input
-                type="text"
-                placeholder="Filtrar por nome ou pacote..."
-                value={appFilter}
-                onChange={(e) => setAppFilter(e.target.value)}
-                className="mb-2"
-              />
-              <div className="max-h-60 overflow-y-auto border border-border/60 rounded-md p-2 space-y-1 bg-muted/5">
-                {availableApps.filter(
-                  (app) =>
-                    app.name?.toLowerCase().includes(appFilter.toLowerCase()) ||
-                    app.packageName?.toLowerCase().includes(appFilter.toLowerCase())
-                ).length === 0 ? (
-                  <div className="text-sm text-muted-foreground py-6 text-center">
-                    Nenhum aplicativo correspondente.
-                  </div>
-                ) : (
-                  availableApps
-                    .filter(
+                {isDropdownOpen ? <ChevronUp size={16} className="text-muted-foreground shrink-0 ml-2" /> : <ChevronDown size={16} className="text-muted-foreground shrink-0 ml-2" />}
+              </Button>
+
+              {isDropdownOpen && (
+                <div className="absolute left-0 right-0 z-50 mt-1 p-3 bg-card border border-border shadow-lg rounded-md space-y-3 bg-background animate-in fade-in-0 zoom-in-95">
+                  <Input
+                    type="text"
+                    placeholder="Filtrar por nome ou pacote..."
+                    value={appFilter}
+                    onChange={(e) => setAppFilter(e.target.value)}
+                    className="mb-2 h-9"
+                  />
+                  <div className="max-h-60 overflow-y-auto border border-border/60 rounded-md p-1.5 space-y-1 bg-muted/5">
+                    {availableApps.filter(
                       (app) =>
                         app.name?.toLowerCase().includes(appFilter.toLowerCase()) ||
                         app.packageName?.toLowerCase().includes(appFilter.toLowerCase())
-                    )
-                    .map((app) => {
-                      const isChecked = packages.includes(app.packageName);
-                      return (
-                        <label
-                          key={app.id}
-                          className={`flex items-start gap-3 p-2 rounded-md hover:bg-muted/40 cursor-pointer transition-colors border ${isChecked ? "bg-primary/5 border-primary/20" : "border-transparent"}`}
-                        >
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => {
-                              if (isChecked) {
-                                setPackages(packages.filter((p) => p !== app.packageName));
-                              } else {
-                                setPackages([...packages, app.packageName]);
-                              }
-                            }}
-                            className="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
-                          />
-                          <div className="space-y-0.5 min-w-0">
-                            <div className="text-sm font-semibold text-foreground truncate">
-                              {app.name || "Aplicativo sem nome"}
-                            </div>
-                            <div className="text-xs text-muted-foreground font-mono truncate">
-                              {app.packageName}
-                            </div>
-                          </div>
-                        </label>
-                      );
-                    })
-                )}
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPackages(availableApps.map((a) => a.packageName).filter(Boolean))}
-                  className="w-full text-xs"
-                >
-                  Selecionar Todos
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPackages([])}
-                  className="w-full text-xs"
-                >
-                  Limpar Seleção
-                </Button>
-              </div>
+                    ).length === 0 ? (
+                      <div className="text-sm text-muted-foreground py-6 text-center">
+                        Nenhum aplicativo correspondente.
+                      </div>
+                    ) : (
+                      availableApps
+                        .filter(
+                          (app) =>
+                            app.name?.toLowerCase().includes(appFilter.toLowerCase()) ||
+                            app.packageName?.toLowerCase().includes(appFilter.toLowerCase())
+                        )
+                        .map((app) => {
+                          const isChecked = packages.includes(app.packageName);
+                          return (
+                            <label
+                              key={app.id}
+                              className={`flex items-start gap-3 p-2 rounded hover:bg-muted/40 cursor-pointer transition-colors border ${isChecked ? "bg-primary/5 border-primary/20" : "border-transparent"}`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => {
+                                  if (isChecked) {
+                                    setPackages(packages.filter((p) => p !== app.packageName));
+                                  } else {
+                                    setPackages([...packages, app.packageName]);
+                                  }
+                                }}
+                                className="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-primary cursor-pointer"
+                              />
+                              <div className="space-y-0.5 min-w-0">
+                                <div className="text-sm font-semibold text-foreground truncate">
+                                  {app.name || "Aplicativo sem nome"}
+                                </div>
+                                <div className="text-xs text-muted-foreground font-mono truncate">
+                                  {app.packageName}
+                                </div>
+                              </div>
+                            </label>
+                          );
+                        })
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPackages(availableApps.map((a) => a.packageName).filter(Boolean))}
+                      className="w-full text-xs h-8 cursor-pointer"
+                    >
+                      Selecionar Todos
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPackages([])}
+                      className="w-full text-xs h-8 cursor-pointer"
+                    >
+                      Limpar Seleção
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="space-y-4">
@@ -225,7 +255,7 @@ export const SearchForm = memo(function SearchForm({
                 variant="outline"
                 size="sm"
                 onClick={() => setPackages([...packages, ""])}
-                className="w-full sm:w-auto mt-2"
+                className="w-full sm:w-auto mt-2 cursor-pointer"
               >
                 <Plus size={14} className="mr-2" /> Adicionar Pacote
               </Button>
