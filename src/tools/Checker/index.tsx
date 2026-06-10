@@ -12,6 +12,14 @@ export default function Checker() {
     serials,
     columns,
     selectedCol,
+    searchSource,
+    setSearchSource,
+    corporationId,
+    setCorporationId,
+    companyId,
+    setCompanyId,
+    subsidiaryId,
+    setSubsidiaryId,
     isProcessing,
     isPaused,
     logs,
@@ -40,7 +48,7 @@ export default function Checker() {
             <p style={{ marginBottom: "8px" }}>
               <strong>Objetivo:</strong> Consultar em lote a versão de
               aplicativos instalados em diversos equipamentos e o seu status de
-              conectividade (Online/Offline e Ativo/Inativo).
+              conectividade (Energia, Conexão e Última Atualização).
             </p>
             <p style={{ marginBottom: "8px" }}>
               <strong>Como utilizar:</strong>
@@ -55,27 +63,28 @@ export default function Checker() {
             >
               <li>
                 Insira os <strong>Package Names</strong> dos aplicativos que
-                deseja buscar (ex: <code>com.mdmservice</code>). Use o botão
+                deseja verificar (ex: <code>com.mdmservice</code>). Use o botão
                 "Adicionar Pacote" para incluir mais de um.
               </li>
               <li>
-                Clique na área pontilhada para selecionar uma planilha (
-                <strong>.xlsx</strong> ou <strong>.csv</strong>) contendo os
-                números de série dos equipamentos.
+                Escolha a fonte de dados na aba de seleção:
+                <ul style={{ marginLeft: "15px", listStyleType: "disc", marginTop: "4px" }}>
+                  <li>
+                    <strong>Filtros de Corporação:</strong> Insira o ID da Corporação (obrigatório) e, opcionalmente, os IDs de Empresa/Filial para obter a lista de terminais direto da API de 50 em 50.
+                  </li>
+                  <li>
+                    <strong>Importar Planilha:</strong> Clique para fazer o upload de uma planilha (<strong>.xlsx</strong> ou <strong>.csv</strong>) e selecione a coluna contendo os números de série.
+                  </li>
+                </ul>
               </li>
               <li>
-                Selecione qual coluna da planilha contém os seriais (caso não
-                seja a primeira). A leitura dos seriais se inicia a partir da
-                segunda linha da planilha.
+                Clique em <strong>Iniciar Consulta</strong>. A ferramenta processará os terminais em lotes de 50 por vez.
               </li>
               <li>
-                Clique em <strong>Iniciar Consulta</strong>. A ferramenta
-                consultará os dados na API em lotes e exibirá o progresso no
-                painel.
+                Acompanhe o andamento no painel. A tabela de resultados é paginada exibindo <strong>50 registros por página</strong>.
               </li>
               <li>
-                Após finalizar, você pode visualizar os resultados na tabela e
-                exportá-los clicando em <strong>Baixar Relatório</strong>.
+                Após finalizar (ou quando preferir), você poderá baixar a planilha Excel com todos os dados padronizados clicando em <strong>Baixar Relatório</strong>.
               </li>
             </ol>
           </div>
@@ -93,6 +102,15 @@ export default function Checker() {
         selectedCol={selectedCol}
         applyColumn={applyColumn}
         rawData={rawData}
+        searchSource={searchSource}
+        setSearchSource={setSearchSource}
+        corporationId={corporationId}
+        setCorporationId={setCorporationId}
+        companyId={companyId}
+        setCompanyId={setCompanyId}
+        subsidiaryId={subsidiaryId}
+        setSubsidiaryId={setSubsidiaryId}
+        isProcessing={isProcessing}
       />
 
       <ProgressPanel
@@ -106,6 +124,8 @@ export default function Checker() {
         isProcessing={isProcessing}
         isPaused={isPaused}
         serials={serials}
+        searchSource={searchSource}
+        corporationId={corporationId}
         stats={stats}
         tableRows={tableRows}
       />

@@ -8,22 +8,36 @@ export function useChecker() {
   const [serials, setSerials] = useState<string[]>([]);
   const [columns, setColumns] = useState<string[]>([]);
   const [selectedCol, setSelectedCol] = useState(0);
+
+  // New Filters and Search Source
+  const [searchSource, setSearchSource] = useState<"filters" | "file">("filters");
+  const [corporationId, setCorporationId] = useState<string>("");
+  const [companyId, setCompanyId] = useState<string>("");
+  const [subsidiaryId, setSubsidiaryId] = useState<string>("");
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  
   const isPausedRef = useRef(false);
   const currentIndexRef = useRef(0);
-  const doneRef = useRef(0);
-  const failRef = useRef(0);
+  const currentPageRef = useRef(1);
+  const logIdRef = useRef(0);
+
   const [logs, setLogs] = useState<
     { id: number; message: string; type: string; time: string }[]
   >([]);
 
-  const [stats, setStats] = useState({ total: 0, done: 0, fail: 0 });
+  const [stats, setStats] = useState({
+    totalItems: 0,
+    totalPages: 0,
+    currentPage: 0,
+    processedItems: 0,
+  });
+
   const [results, setResults] = useState<any[]>([]);
   const [tableRows, setTableRows] = useState<any[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const logIdRef = useRef(0);
 
   const addLog = useCallback(
     (message: string, type: "info" | "warn" | "err" | "ok" = "info") => {
@@ -48,7 +62,11 @@ export function useChecker() {
         .filter(Boolean);
 
       setSerials(parsedSerials);
-      setStats((s) => ({ ...s, total: parsedSerials.length }));
+      setStats((s) => ({
+        ...s,
+        totalItems: parsedSerials.length,
+        totalPages: Math.ceil(parsedSerials.length / 50),
+      }));
       setSelectedCol(colIdx);
       addLog(
         `${parsedSerials.length} seriais encontrados na coluna selecionada.`,
@@ -88,215 +106,341 @@ export function useChecker() {
   );
 
   const runLoop = async (validPackages: string[]) => {
-    const concurrency = 5;
+    const limit = 50;
 
-    const processBatch = async (batch: string[]) => {
-      const promises = batch.map(async (serial) => {
-        let status = "error";
-        let eqName = "Sem informação";
-        let online = "Sem informação";
-        let eqId = null;
-        let versionStr = "Sem informação";
-        let eqGroup = "Sem informação";
-        let eqPolicy = "Sem informação";
-        const queryTime = new Date().toLocaleTimeString();
+    const fetchAppVersions = async (eqId: any, pkgs: string[]) => {
+      const foundVersions: Record<string, string> = {};
+      try {
+        for (const boSystem of [false, true]) {
+          let page = 1;
+          while (true) {
+            const appsData: any = await api.fetch(
+              `${CONFIG.BASE_URL}/api-eqp/equipment-application-historic/${eqId}?page=${page}&limit=50&boSystem=${boSystem}`,
+            );
+            const appItems =
+              appsData?.data ??
+              appsData?.items ??
+              (Array.isArray(appsData) ? appsData : []);
 
-        try {
-          // 1. Get Equipment Info
-          const searchData: any = await api.fetch(
-            `${CONFIG.BASE_URL}/api-eqp/equipment?page=1&limit=10&key=${encodeURIComponent(serial)}`,
-          );
-          const items =
-            searchData.data ??
-            searchData.items ??
-            (Array.isArray(searchData) ? searchData : []);
-
-          let eq = null;
-          const serialFields = [
-            "serialNumber",
-            "serial",
-            "serialnumber",
-            "imei",
-          ];
-          for (const item of items) {
-            if (
-              serialFields.some(
-                (field) => String(item[field] || "").trim() === serial,
-              )
-            ) {
-              eq = item;
-              break;
-            }
-          }
-          if (!eq && items.length === 1) eq = items[0];
-
-          if (eq) {
-            eqId = eq.id;
-            eqName = eq.name || "Sem informação";
-            status = eq.status === 1 ? "ok" : "err";
-
-            // Get group and policy details safely from various potential property paths
-            eqGroup =
-              eq.equipmentGroup?.name ||
-              eq.group?.name ||
-              eq.equipmentGroupName ||
-              eq.groupName ||
-              eq.grupo?.name ||
-              (typeof eq.equipmentGroup === "string"
-                ? eq.equipmentGroup
-                : "") ||
-              (typeof eq.group === "string" ? eq.group : "") ||
-              "Sem informação";
-            eqPolicy =
-              eq.usePolicy?.name ||
-              eq.policy?.name ||
-              eq.usePolicyName ||
-              eq.policyName ||
-              eq.politica?.name ||
-              (typeof eq.usePolicy === "string" ? eq.usePolicy : "") ||
-              (typeof eq.policy === "string" ? eq.policy : "") ||
-              "Sem informação";
-
-            const isPowerOn = eq.powerOn === true;
-            const lastUpdate = eq.lastUpdate
-              ? new Date(eq.lastUpdate)
-              : new Date(0);
-            const tenMinsAgo = new Date(Date.now() - 10 * 60 * 1000);
-
-            if (!isPowerOn) {
-              online = "err";
-            } else if (lastUpdate < tenMinsAgo) {
-              online = "err";
-            } else {
-              online = "ok";
-            }
-
-            // 2. Get App Versions
-            const foundVersions: Record<string, string> = {};
-            for (const boSystem of [false, true]) {
-              let page = 1;
-              while (true) {
-                const appsData: any = await api.fetch(
-                  `${CONFIG.BASE_URL}/api-eqp/equipment-application-historic/${eqId}?page=${page}&limit=50&boSystem=${boSystem}`,
-                );
-                const appItems =
-                  appsData?.data ??
-                  appsData?.items ??
-                  (Array.isArray(appsData) ? appsData : []);
-
-                appItems.forEach((item: any) => {
-                  if (validPackages.includes(item.packageName)) {
-                    foundVersions[item.packageName] =
-                      item.version || "Sem informação";
-                  }
-                });
-
-                if (validPackages.every((pkg) => foundVersions[pkg])) break;
-
-                const total =
-                  typeof appsData?.total === "number" ? appsData.total : 0;
-                if (!appItems.length || page * 50 >= total) break;
-                page++;
+            appItems.forEach((item: any) => {
+              if (pkgs.includes(item.packageName)) {
+                foundVersions[item.packageName] =
+                  item.version || "Sem informação";
               }
-              if (validPackages.every((pkg) => foundVersions[pkg])) break;
-            }
-
-            let allFound = true;
-            const eqVersions = validPackages.map((pkg) => {
-              const v = foundVersions[pkg];
-              if (!v) allFound = false;
-              return v || "Sem informação";
             });
-            versionStr = eqVersions.join(" | ");
 
-            if (allFound) {
-              doneRef.current++;
-            } else {
-              failRef.current++;
-            }
-          } else {
-            failRef.current++;
-            status = "Sem informação";
-            online = "Sem informação";
-            versionStr = "Sem informação";
+            if (pkgs.every((pkg) => foundVersions[pkg])) break;
+
+            const total =
+              typeof appsData?.total === "number" ? appsData.total : 0;
+            if (!appItems.length || page * 50 >= total) break;
+            page++;
           }
-        } catch (error: any) {
-          failRef.current++;
-          status = "Sem informação";
-          online = "Sem informação";
-          versionStr = "Sem informação";
+          if (pkgs.every((pkg) => foundVersions[pkg])) break;
         }
-
-        const row = {
-          serial,
-          eqName,
-          eqGroup,
-          eqPolicy,
-          versionStr,
-          statusBadge:
-            status === "ok"
-              ? "badge-done"
-              : status === "Sem informação"
-                ? "badge-neutral"
-                : "badge-err",
-          statusText:
-            status === "ok"
-              ? "Ativo"
-              : status === "Sem informação"
-                ? "Sem informação"
-                : "Inativo",
-          onlineBadge:
-            online === "ok"
-              ? "badge-done"
-              : online === "Sem informação"
-                ? "badge-neutral"
-                : "badge-err",
-          onlineText:
-            online === "ok"
-              ? "Online"
-              : online === "Sem informação"
-                ? "Sem informação"
-                : "Offline",
-          queryTime,
-        };
-
-        setTableRows((prev) => [...prev, row]);
-
-        const resultObj: any = {
-          "Serial Number": serial,
-          "Nome do Equipamento": eqName,
-          "Grupo de Equipamento": eqGroup,
-          "Política de Uso": eqPolicy,
-          Status: row.statusText,
-          Conexão: row.onlineText,
-          "Horário da Consulta": queryTime,
-        };
-        const vSplit = versionStr.split(" | ");
-        validPackages.forEach((pkg, idx) => {
-          resultObj[pkg] = vSplit[idx] || versionStr;
-        });
-
-        setResults((prev) => [...prev, resultObj]);
-        setStats((s) => ({ ...s, done: doneRef.current, fail: failRef.current }));
-      });
-
-      await Promise.all(promises);
+      } catch (e) {
+        // Ignorar erros de rede individuais, retornar "Sem informação" por fallback
+      }
+      return pkgs.map((pkg) => foundVersions[pkg] || "Sem informação").join(" | ");
     };
 
-    while (currentIndexRef.current < serials.length) {
-      if (isPausedRef.current) {
-        break;
-      }
-      const nextIndex = Math.min(currentIndexRef.current + concurrency, serials.length);
-      const batch = serials.slice(currentIndexRef.current, nextIndex);
-      currentIndexRef.current = nextIndex;
-      await processBatch(batch);
-    }
+    if (searchSource === "filters") {
+      let page = currentPageRef.current;
 
-    if (currentIndexRef.current >= serials.length) {
-      setIsProcessing(false);
-      setIsPaused(false);
-      addLog("Consulta finalizada com sucesso.", "ok");
+      while (true) {
+        if (isPausedRef.current) {
+          break;
+        }
+
+        addLog(`Consultando página ${page}...`, "info");
+
+        try {
+          let url = `${CONFIG.BASE_URL}/api-eqp/equipment?page=${page}&limit=${limit}&corporationId=${corporationId}`;
+          if (companyId) url += `&companyId=${companyId}`;
+          if (subsidiaryId) url += `&subsidiaryId=${subsidiaryId}`;
+
+          const response: any = await api.fetch(url);
+
+          const items =
+            response.data ??
+            response.items ??
+            (Array.isArray(response) ? response : []);
+
+          if (!items || items.length === 0) {
+            addLog("Nenhum terminal retornado nesta página. Consulta encerrada.", "ok");
+            setIsProcessing(false);
+            setIsPaused(false);
+            break;
+          }
+
+          // Initialize total counts on page 1
+          if (page === 1) {
+            const total =
+              typeof response?.total === "number"
+                ? response.total
+                : typeof response?.meta?.totalItems === "number"
+                ? response.meta.totalItems
+                : typeof response?.meta?.total === "number"
+                ? response.meta.total
+                : items.length;
+
+            const pages =
+              typeof response?.totalPages === "number"
+                ? response.totalPages
+                : typeof response?.meta?.totalPages === "number"
+                ? response.meta.totalPages
+                : Math.ceil(total / limit) || 1;
+
+            setStats((s) => ({
+              ...s,
+              totalItems: total,
+              totalPages: pages,
+            }));
+
+            addLog(
+              `Encontrados no total ${total} terminais distribuídos em ${pages} páginas.`,
+              "ok"
+            );
+          }
+
+          const newRows: any[] = [];
+          const newResults: any[] = [];
+          const tenMinsAgo = new Date(Date.now() - 10 * 60 * 1000);
+
+          const promises = items.map(async (item: any) => {
+            const id = item.id;
+            const name = item.name || "Sem informação";
+            const serial =
+              String(item.serial || item.serialNumber || item.imei || "").trim() ||
+              "Sem informação";
+
+            const eqGroup =
+              item.equipmentGroup?.name ||
+              item.group?.name ||
+              item.equipmentGroupName ||
+              item.groupName ||
+              item.grupo?.name ||
+              (typeof item.equipmentGroup === "string" ? item.equipmentGroup : "") ||
+              (typeof item.group === "string" ? item.group : "") ||
+              "Sem informação";
+
+            const isPowerOn = item.powerOn === true;
+            const powerText = isPowerOn ? "Ligado" : "Desligado";
+
+            const lastUpdate = item.lastUpdate ? new Date(item.lastUpdate) : null;
+            const lastUpdateText = lastUpdate
+              ? lastUpdate.toLocaleString("pt-BR")
+              : "Sem informação";
+
+            let onlineText = "Offline";
+            if (isPowerOn && lastUpdate && lastUpdate >= tenMinsAgo) {
+              onlineText = "Online";
+            }
+
+            const versionStr = await fetchAppVersions(id, validPackages);
+
+            newRows.push({
+              serial,
+              eqName: name,
+              eqGroup,
+              powerText,
+              onlineText,
+              lastUpdateText,
+              versionStr,
+            });
+
+            const resultObj: any = {
+              "Nome do Equipamento": name,
+              "Número de Série": serial,
+              "Grupo de Equipamento": eqGroup,
+              "Status de Energia": powerText,
+              "Conexão": onlineText,
+              "Última Atualização": lastUpdateText,
+            };
+
+            const vSplit = versionStr.split(" | ");
+            validPackages.forEach((pkg, idx) => {
+              resultObj[pkg] = vSplit[idx] || versionStr;
+            });
+
+            newResults.push(resultObj);
+          });
+
+          await Promise.all(promises);
+
+          setTableRows((prev) => [...prev, ...newRows]);
+          setResults((prev) => [...prev, ...newResults]);
+
+          setStats((s) => {
+            const nextProcessed = s.processedItems + items.length;
+            return {
+              ...s,
+              currentPage: page,
+              processedItems: nextProcessed,
+            };
+          });
+
+          addLog(`Página ${page} processada com sucesso (${items.length} terminais obtidos).`, "ok");
+
+          const totalPages =
+            typeof response?.totalPages === "number"
+              ? response.totalPages
+              : typeof response?.meta?.totalPages === "number"
+              ? response.meta.totalPages
+              : Math.ceil(
+                  (response.total ?? response.meta?.totalItems ?? items.length) / limit
+                ) || 1;
+
+          if (page >= totalPages || items.length < limit) {
+            addLog("Busca completa finalizada com sucesso.", "ok");
+            setIsProcessing(false);
+            setIsPaused(false);
+            break;
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, 150));
+          page++;
+          currentPageRef.current = page;
+        } catch (err: any) {
+          addLog(`Erro ao buscar página ${page}: ${err.message || err}`, "err");
+          setIsProcessing(false);
+          setIsPaused(false);
+          break;
+        }
+      }
+    } else {
+      const totalSerials = serials.length;
+
+      while (currentIndexRef.current < totalSerials) {
+        if (isPausedRef.current) {
+          break;
+        }
+
+        const nextIndex = Math.min(currentIndexRef.current + limit, totalSerials);
+        const batch = serials.slice(currentIndexRef.current, nextIndex);
+        const currentBatchPage = Math.ceil(nextIndex / limit);
+
+        addLog(`Consultando lote ${currentBatchPage} (${batch.length} seriais)...`, "info");
+
+        const newRows: any[] = [];
+        const newResults: any[] = [];
+        const tenMinsAgo = new Date(Date.now() - 10 * 60 * 1000);
+
+        const promises = batch.map(async (serial) => {
+          let eqName = "Sem informação";
+          let eqGroup = "Sem informação";
+          let powerText = "Desligado";
+          let onlineText = "Offline";
+          let lastUpdateText = "Sem informação";
+          let versionStr = "";
+          validPackages.forEach(() => {
+            versionStr += (versionStr ? " | " : "") + "Sem informação";
+          });
+
+          try {
+            const searchData: any = await api.fetch(
+              `${CONFIG.BASE_URL}/api-eqp/equipment?page=1&limit=10&key=${encodeURIComponent(serial)}`,
+            );
+            const items =
+              searchData.data ??
+              searchData.items ??
+              (Array.isArray(searchData) ? searchData : []);
+
+            let eq = null;
+            const serialFields = ["serialNumber", "serial", "serialnumber", "imei"];
+            for (const item of items) {
+              if (
+                serialFields.some(
+                  (field) => String(item[field] || "").trim() === serial,
+                )
+              ) {
+                eq = item;
+                break;
+              }
+            }
+            if (!eq && items.length === 1) eq = items[0];
+
+            if (eq) {
+              const eqId = eq.id;
+              eqName = eq.name || "Sem informação";
+              eqGroup =
+                eq.equipmentGroup?.name ||
+                eq.group?.name ||
+                eq.equipmentGroupName ||
+                eq.groupName ||
+                eq.grupo?.name ||
+                (typeof eq.equipmentGroup === "string" ? eq.equipmentGroup : "") ||
+                (typeof eq.group === "string" ? eq.group : "") ||
+                "Sem informação";
+
+              const isPowerOn = eq.powerOn === true;
+              powerText = isPowerOn ? "Ligado" : "Desligado";
+
+              const lastUpdate = eq.lastUpdate ? new Date(eq.lastUpdate) : null;
+              lastUpdateText = lastUpdate
+                ? lastUpdate.toLocaleString("pt-BR")
+                : "Sem informação";
+
+              if (isPowerOn && lastUpdate && lastUpdate >= tenMinsAgo) {
+                onlineText = "Online";
+              }
+
+              versionStr = await fetchAppVersions(eqId, validPackages);
+            }
+          } catch (error) {
+            // Ignorar erros individuais
+          }
+
+          newRows.push({
+            serial,
+            eqName,
+            eqGroup,
+            powerText,
+            onlineText,
+            lastUpdateText,
+            versionStr,
+          });
+
+          const resultObj: any = {
+            "Nome do Equipamento": eqName,
+            "Número de Série": serial,
+            "Grupo de Equipamento": eqGroup,
+            "Status de Energia": powerText,
+            "Conexão": onlineText,
+            "Última Atualização": lastUpdateText,
+          };
+
+          const vSplit = versionStr.split(" | ");
+          validPackages.forEach((pkg, idx) => {
+            resultObj[pkg] = vSplit[idx] || versionStr;
+          });
+
+          newResults.push(resultObj);
+        });
+
+        await Promise.all(promises);
+
+        setTableRows((prev) => [...prev, ...newRows]);
+        setResults((prev) => [...prev, ...newResults]);
+
+        currentIndexRef.current = nextIndex;
+
+        setStats((s) => ({
+          ...s,
+          currentPage: currentBatchPage,
+          processedItems: nextIndex,
+        }));
+
+        addLog(`Lote ${currentBatchPage} processado com sucesso.`, "ok");
+
+        await new Promise((resolve) => setTimeout(resolve, 150));
+      }
+
+      if (currentIndexRef.current >= totalSerials) {
+        setIsProcessing(false);
+        setIsPaused(false);
+        addLog("Consulta finalizada com sucesso.", "ok");
+      }
     }
   };
 
@@ -312,20 +456,42 @@ export function useChecker() {
       return;
     }
 
+    if (searchSource === "filters" && !corporationId.trim()) {
+      addLog("ID da Corporação é obrigatório.", "err");
+      return;
+    }
+
+    if (searchSource === "file" && serials.length === 0) {
+      addLog("Carregue uma planilha com números de série.", "err");
+      return;
+    }
+
     setIsProcessing(true);
     setIsPaused(false);
     isPausedRef.current = false;
     currentIndexRef.current = 0;
-    doneRef.current = 0;
-    failRef.current = 0;
+    currentPageRef.current = 1;
 
-    setStats({ total: serials.length, done: 0, fail: 0 });
+    const totalItems = searchSource === "file" ? serials.length : 0;
+    const totalPages = searchSource === "file" ? Math.ceil(serials.length / 50) : 0;
+
+    setStats({
+      totalItems,
+      totalPages,
+      currentPage: 0,
+      processedItems: 0,
+    });
     setResults([]);
     setTableRows([]);
-    addLog(`Iniciando consulta para ${serials.length} seriais.`, "info");
+
+    if (searchSource === "file") {
+      addLog(`Iniciando consulta para ${serials.length} seriais via planilha.`, "info");
+    } else {
+      addLog(`Iniciando consulta completa para corporação ID ${corporationId}.`, "info");
+    }
 
     await runLoop(validPackages);
-  }, [serials, packages, addLog]);
+  }, [searchSource, serials, packages, corporationId, companyId, subsidiaryId, addLog]);
 
   const resumeProcess = useCallback(async () => {
     if (!api.hasToken()) {
@@ -342,10 +508,14 @@ export function useChecker() {
     setIsProcessing(true);
     setIsPaused(false);
     isPausedRef.current = false;
-    addLog("Retomando consulta...", "info");
 
+    if (searchSource === "file") {
+      addLog(`Retomando consulta a partir do serial ${currentIndexRef.current + 1}...`, "info");
+    } else {
+      addLog(`Retomando busca a partir da página ${currentPageRef.current}...`, "info");
+    }
     await runLoop(validPackages);
-  }, [serials, packages, addLog]);
+  }, [searchSource, serials, packages, corporationId, companyId, subsidiaryId, addLog]);
 
   const pauseProcess = useCallback(() => {
     setIsPaused(true);
@@ -358,8 +528,7 @@ export function useChecker() {
     setIsPaused(false);
     isPausedRef.current = false;
     currentIndexRef.current = 0;
-    doneRef.current = 0;
-    failRef.current = 0;
+    currentPageRef.current = 1;
     addLog("Processo interrompido pelo usuário.", "warn");
   }, [addLog]);
 
@@ -374,13 +543,17 @@ export function useChecker() {
   const resetProcess = useCallback(() => {
     setResults([]);
     setTableRows([]);
-    setStats({ total: serials.length, done: 0, fail: 0 });
+    setStats({
+      totalItems: searchSource === "file" ? serials.length : 0,
+      totalPages: searchSource === "file" ? Math.ceil(serials.length / 50) : 0,
+      currentPage: 0,
+      processedItems: 0,
+    });
     setLogs([]);
     currentIndexRef.current = 0;
-    doneRef.current = 0;
-    failRef.current = 0;
+    currentPageRef.current = 1;
     logIdRef.current = 0;
-  }, [serials.length]);
+  }, [searchSource, serials.length]);
 
   const clearLogs = useCallback(() => {
     setLogs([]);
@@ -398,6 +571,14 @@ export function useChecker() {
     setColumns,
     selectedCol,
     setSelectedCol,
+    searchSource,
+    setSearchSource,
+    corporationId,
+    setCorporationId,
+    companyId,
+    setCompanyId,
+    subsidiaryId,
+    setSubsidiaryId,
     isProcessing,
     isPaused,
     logs,
