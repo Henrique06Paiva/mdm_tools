@@ -8,11 +8,13 @@ import { useTheme } from "../ThemeContext";
 
 interface LoginProps {
   onLoginSuccess: () => void;
+  isOverlay?: boolean;
+  onCancel?: () => void;
 }
 
-export default function Login({ onLoginSuccess }: LoginProps) {
+export default function Login({ onLoginSuccess, isOverlay = false, onCancel }: LoginProps) {
   const { theme, toggleTheme } = useTheme();
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState(() => (isOverlay ? (api.getUsername() || "") : ""));
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,23 +45,29 @@ export default function Login({ onLoginSuccess }: LoginProps) {
   };
 
   return (
-    <div className="relative min-h-screen flex flex-col items-center justify-center bg-background px-4 overflow-hidden">
+    <div className={isOverlay ? "fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background/80 backdrop-blur-md px-4 overflow-y-auto" : "relative min-h-screen flex flex-col items-center justify-center bg-background px-4 overflow-hidden"}>
       {/* Dynamic Ambient Background Gradients */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-[120px] pointer-events-none"></div>
-      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-primary/15 blur-[120px] pointer-events-none"></div>
+      {!isOverlay && (
+        <>
+          <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-[120px] pointer-events-none"></div>
+          <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-primary/15 blur-[120px] pointer-events-none"></div>
+        </>
+      )}
 
       {/* Theme Toggle Button */}
-      <div className="absolute top-6 right-6">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={toggleTheme}
-          title="Alternar Tema"
-          className="text-muted-foreground hover:text-foreground rounded-full border border-border/20 bg-background/40 backdrop-blur-sm"
-        >
-          {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-        </Button>
-      </div>
+      {!isOverlay && (
+        <div className="absolute top-6 right-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            title="Alternar Tema"
+            className="text-muted-foreground hover:text-foreground rounded-full border border-border/20 bg-background/40 backdrop-blur-sm"
+          >
+            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          </Button>
+        </div>
+      )}
 
       <div className="w-full max-w-[420px] z-10 animate-in fade-in zoom-in-95 duration-500">
         <Card className="border border-border/40 bg-card/60 backdrop-blur-xl shadow-2xl">
@@ -68,10 +76,12 @@ export default function Login({ onLoginSuccess }: LoginProps) {
               <Lock className="text-primary" size={24} />
             </div>
             <CardTitle className="text-2xl font-bold tracking-tight text-foreground lowercase first-letter:uppercase">
-              MDM Hub Tools
+              {isOverlay ? "Sessão expirada" : "MDM Hub Tools"}
             </CardTitle>
             <p className="text-xs text-muted-foreground mt-1">
-              Faça login para gerenciar o inventário de forma segura
+              {isOverlay 
+                ? "Confirme sua senha para continuar de onde parou"
+                : "Faça login para gerenciar o inventário de forma segura"}
             </p>
           </CardHeader>
           <CardContent className="p-8">
@@ -96,7 +106,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
                     placeholder="exemplo@empresa.com"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    disabled={loading}
+                    disabled={loading || isOverlay}
                     className="pl-10 font-sans"
                     autoComplete="username"
                     required
@@ -125,20 +135,33 @@ export default function Login({ onLoginSuccess }: LoginProps) {
                 </div>
               </div>
 
-              <Button
-                type="submit"
-                disabled={loading}
-                className="w-full h-11 mt-2 text-sm font-semibold shadow-md shadow-primary/10 flex items-center justify-center gap-2 cursor-pointer"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 size={16} className="animate-spin" />
-                    <span>Conectando...</span>
-                  </>
-                ) : (
-                  <span>Entrar</span>
+              <div className="flex flex-col sm:flex-row gap-3 mt-2">
+                {isOverlay && onCancel && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onCancel}
+                    disabled={loading}
+                    className="w-full h-11 text-sm font-semibold flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    Desconectar
+                  </Button>
                 )}
-              </Button>
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full h-11 text-sm font-semibold shadow-md shadow-primary/10 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      <span>Conectando...</span>
+                    </>
+                  ) : (
+                    <span>{isOverlay ? "Confirmar" : "Entrar"}</span>
+                  )}
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>

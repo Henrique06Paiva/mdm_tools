@@ -186,11 +186,17 @@ const MainApp = ({
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(api.hasToken());
   const [username, setUsername] = useState<string | null>(api.getUsername());
+  const [isSessionExpired, setIsSessionExpired] = useState(false);
 
   useEffect(() => {
     api.registerOnUnauthorized(() => {
       setIsAuthenticated(false);
       setUsername(null);
+      setIsSessionExpired(false);
+    });
+
+    api.registerOnSessionExpired(() => {
+      setIsSessionExpired(true);
     });
 
     if (isAuthenticated) {
@@ -201,10 +207,26 @@ function App() {
   const handleLoginSuccess = () => {
     setIsAuthenticated(true);
     setUsername(api.getUsername());
+    setIsSessionExpired(false);
   };
 
   const handleLogout = () => {
     api.logout();
+    setIsAuthenticated(false);
+    setUsername(null);
+    setIsSessionExpired(false);
+  };
+
+  const handleOverlayLoginSuccess = () => {
+    setIsSessionExpired(false);
+    api.resolveSessionExpired(true);
+    setUsername(api.getUsername());
+  };
+
+  const handleOverlayCancel = () => {
+    api.resolveSessionExpired(false);
+    api.logout();
+    setIsSessionExpired(false);
     setIsAuthenticated(false);
     setUsername(null);
   };
@@ -212,7 +234,16 @@ function App() {
   return (
     <ThemeProvider>
       {isAuthenticated ? (
-        <MainApp username={username} onLogout={handleLogout} />
+        <>
+          <MainApp username={username} onLogout={handleLogout} />
+          {isSessionExpired && (
+            <Login
+              onLoginSuccess={handleOverlayLoginSuccess}
+              isOverlay={true}
+              onCancel={handleOverlayCancel}
+            />
+          )}
+        </>
       ) : (
         <Login onLoginSuccess={handleLoginSuccess} />
       )}

@@ -10,9 +10,24 @@ class ApiService {
   private password: string | null = sessionStorage.getItem("mdm_password");
   private tokenPromise: Promise<boolean> | null = null;
   private onUnauthorizedCallback: (() => void) | null = null;
+  private sessionRecoveryPromise: Promise<boolean> | null = null;
+  private resolveSessionRecovery: ((success: boolean) => void) | null = null;
+  private onSessionExpiredCallback: (() => void) | null = null;
 
   registerOnUnauthorized(callback: () => void) {
     this.onUnauthorizedCallback = callback;
+  }
+
+  registerOnSessionExpired(callback: () => void) {
+    this.onSessionExpiredCallback = callback;
+  }
+
+  resolveSessionExpired(success: boolean) {
+    if (this.resolveSessionRecovery) {
+      this.resolveSessionRecovery(success);
+      this.sessionRecoveryPromise = null;
+      this.resolveSessionRecovery = null;
+    }
   }
 
   async login(username: string, password: string): Promise<boolean> {
@@ -97,6 +112,7 @@ class ApiService {
     localStorage.removeItem("mdm_token");
     sessionStorage.removeItem("mdm_username");
     sessionStorage.removeItem("mdm_password");
+    this.resolveSessionExpired(false);
     if (this.onUnauthorizedCallback) {
       this.onUnauthorizedCallback();
     }
@@ -124,22 +140,39 @@ class ApiService {
         const response = await fetch(url, { ...options, headers });
 
         if (response.status === 401) {
-          if (!this.username || !this.password) {
-            this.logout();
-            throw new Error("Sessão expirada");
+          // 1. Tenta login silencioso se tiver as credenciais no sessionStorage
+          if (this.username && this.password) {
+            if (!this.tokenPromise) {
+              this.tokenPromise = this.performLogin();
+            }
+            const refreshed = await this.tokenPromise;
+            this.tokenPromise = null;
+
+            if (refreshed) {
+              continue;
+            }
           }
 
-          if (!this.tokenPromise) {
-            this.tokenPromise = this.performLogin();
+          // 2. Tenta reautenticar manualmente exibindo o modal
+          if (!this.sessionRecoveryPromise) {
+            this.sessionRecoveryPromise = new Promise<boolean>((resolve) => {
+              this.resolveSessionRecovery = resolve;
+            });
+            if (this.onSessionExpiredCallback) {
+              this.onSessionExpiredCallback();
+            } else {
+              this.logout();
+              throw new Error("UNAUTHORIZED_EXPIRED");
+            }
           }
-          const refreshed = await this.tokenPromise;
-          this.tokenPromise = null;
 
-          if (!refreshed) {
+          const recovered = await this.sessionRecoveryPromise;
+          if (recovered) {
+            continue;
+          } else {
             this.logout();
-            throw new Error("Sessão expirada permanentemente");
+            throw new Error("UNAUTHORIZED_EXPIRED");
           }
-          continue;
         }
 
         if (response.status === 429) {
@@ -150,7 +183,10 @@ class ApiService {
 
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return await response.json().catch(() => ({ ok: true }));
-      } catch (error) {
+      } catch (error: any) {
+        if (error.message === "UNAUTHORIZED_EXPIRED") {
+          throw error;
+        }
         attempts++;
         if (attempts >= retries) {
           throw new Error(`Falha após ${retries} tentativas`, { cause: error });
