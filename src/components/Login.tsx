@@ -18,6 +18,7 @@ export default function Login({ onLoginSuccess, isOverlay = false, onCancel }: L
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasInitialUsername] = useState(() => !!(isOverlay && api.getUsername()));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,7 +107,7 @@ export default function Login({ onLoginSuccess, isOverlay = false, onCancel }: L
                     placeholder="exemplo@empresa.com"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    disabled={loading || isOverlay}
+                    disabled={loading || (isOverlay && hasInitialUsername)}
                     className="pl-10 font-sans"
                     autoComplete="username"
                     required

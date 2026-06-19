@@ -11,6 +11,7 @@ export function useFetcher() {
   const [isPaused, setIsPaused] = useState(false);
   
   const isPausedRef = useRef(false);
+  const isProcessingRef = useRef(false);
   const currentPageRef = useRef(1);
   const logIdRef = useRef(0);
 
@@ -47,6 +48,9 @@ export function useFetcher() {
     const limit = 50;
 
     while (true) {
+      if (!isProcessingRef.current) {
+        break;
+      }
       if (isPausedRef.current) {
         break;
       }
@@ -61,6 +65,10 @@ export function useFetcher() {
 
         const response: any = await api.fetch(url);
 
+        if (!isProcessingRef.current) {
+          break;
+        }
+
         const items =
           response.data ??
           response.items ??
@@ -69,6 +77,7 @@ export function useFetcher() {
         if (!items || items.length === 0) {
           addLog("Nenhum terminal retornado nesta página. Busca encerrada.", "ok");
           setIsProcessing(false);
+          isProcessingRef.current = false;
           setIsPaused(false);
           break;
         }
@@ -188,6 +197,7 @@ export function useFetcher() {
         if (page >= totalPages || items.length < limit) {
           addLog("Busca completa finalizada com sucesso.", "ok");
           setIsProcessing(false);
+          isProcessingRef.current = false;
           setIsPaused(false);
           break;
         }
@@ -198,6 +208,7 @@ export function useFetcher() {
       } catch (err: any) {
         addLog(`Erro ao buscar página ${page}: ${err.message || err}`, "err");
         setIsProcessing(false);
+        isProcessingRef.current = false;
         setIsPaused(false);
         break;
       }
@@ -216,6 +227,7 @@ export function useFetcher() {
     }
 
     setIsProcessing(true);
+    isProcessingRef.current = true;
     setIsPaused(false);
     isPausedRef.current = false;
     currentPageRef.current = 1;
@@ -244,6 +256,7 @@ export function useFetcher() {
     }
 
     setIsProcessing(true);
+    isProcessingRef.current = true;
     setIsPaused(false);
     isPausedRef.current = false;
 
@@ -259,6 +272,7 @@ export function useFetcher() {
 
   const stopProcess = useCallback(() => {
     setIsProcessing(false);
+    isProcessingRef.current = false;
     setIsPaused(false);
     isPausedRef.current = false;
     currentPageRef.current = 1;

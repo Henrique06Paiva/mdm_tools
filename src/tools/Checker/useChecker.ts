@@ -19,6 +19,7 @@ export function useChecker() {
   const [isPaused, setIsPaused] = useState(false);
   
   const isPausedRef = useRef(false);
+  const isProcessingRef = useRef(false);
   const currentIndexRef = useRef(0);
   const currentPageRef = useRef(1);
   const logIdRef = useRef(0);
@@ -114,9 +115,13 @@ export function useChecker() {
         for (const boSystem of [false, true]) {
           let page = 1;
           while (true) {
+            if (!isProcessingRef.current) break;
             const appsData: any = await api.fetch(
               `${CONFIG.BASE_URL}/api-eqp/equipment-application-historic/${eqId}?page=${page}&limit=50&boSystem=${boSystem}`,
             );
+            
+            if (!isProcessingRef.current) break;
+
             const appItems =
               appsData?.data ??
               appsData?.items ??
@@ -148,6 +153,9 @@ export function useChecker() {
       let page = currentPageRef.current;
 
       while (true) {
+        if (!isProcessingRef.current) {
+          break;
+        }
         if (isPausedRef.current) {
           break;
         }
@@ -161,6 +169,10 @@ export function useChecker() {
 
           const response: any = await api.fetch(url);
 
+          if (!isProcessingRef.current) {
+            break;
+          }
+
           const items =
             response.data ??
             response.items ??
@@ -169,6 +181,7 @@ export function useChecker() {
           if (!items || items.length === 0) {
             addLog("Nenhum terminal retornado nesta página. Consulta encerrada.", "ok");
             setIsProcessing(false);
+            isProcessingRef.current = false;
             setIsPaused(false);
             break;
           }
@@ -294,6 +307,7 @@ export function useChecker() {
           if (page >= totalPages || items.length < limit) {
             addLog("Busca completa finalizada com sucesso.", "ok");
             setIsProcessing(false);
+            isProcessingRef.current = false;
             setIsPaused(false);
             break;
           }
@@ -304,6 +318,7 @@ export function useChecker() {
         } catch (err: any) {
           addLog(`Erro ao buscar página ${page}: ${err.message || err}`, "err");
           setIsProcessing(false);
+          isProcessingRef.current = false;
           setIsPaused(false);
           break;
         }
@@ -312,6 +327,9 @@ export function useChecker() {
       const totalSerials = serials.length;
 
       while (currentIndexRef.current < totalSerials) {
+        if (!isProcessingRef.current) {
+          break;
+        }
         if (isPausedRef.current) {
           break;
         }
@@ -438,6 +456,7 @@ export function useChecker() {
 
       if (currentIndexRef.current >= totalSerials) {
         setIsProcessing(false);
+        isProcessingRef.current = false;
         setIsPaused(false);
         addLog("Consulta finalizada com sucesso.", "ok");
       }
@@ -467,6 +486,7 @@ export function useChecker() {
     }
 
     setIsProcessing(true);
+    isProcessingRef.current = true;
     setIsPaused(false);
     isPausedRef.current = false;
     currentIndexRef.current = 0;
@@ -506,6 +526,7 @@ export function useChecker() {
     }
 
     setIsProcessing(true);
+    isProcessingRef.current = true;
     setIsPaused(false);
     isPausedRef.current = false;
 
@@ -525,6 +546,7 @@ export function useChecker() {
 
   const stopProcess = useCallback(() => {
     setIsProcessing(false);
+    isProcessingRef.current = false;
     setIsPaused(false);
     isPausedRef.current = false;
     currentIndexRef.current = 0;
