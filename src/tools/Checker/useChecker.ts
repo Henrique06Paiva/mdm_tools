@@ -637,8 +637,19 @@ export function useChecker() {
 
     const header = [...metadataKeys, ...appKeys];
 
+    // Preenche chaves de aplicativos ausentes com "Não instalado"
+    const formattedResults = results.map((row) => {
+      const newRow = { ...row };
+      appKeys.forEach((key) => {
+        if (newRow[key] === undefined || newRow[key] === null || newRow[key] === "") {
+          newRow[key] = "Não instalado";
+        }
+      });
+      return newRow;
+    });
+
     const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(results, { header });
+    const ws = XLSX.utils.json_to_sheet(formattedResults, { header });
     XLSX.utils.book_append_sheet(wb, ws, "Versões");
     XLSX.writeFile(wb, `MDM_Versoes_${new Date().getTime()}.xlsx`);
   }, [results]);
