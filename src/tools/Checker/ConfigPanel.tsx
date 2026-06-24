@@ -13,6 +13,10 @@ import { Badge } from "../../components/ui/badge";
 interface ConfigPanelProps {
   packages: string[];
   setPackages: (packages: string[]) => void;
+  fetchAllApps: boolean;
+  setFetchAllApps: (fetchAll: boolean) => void;
+  includeSystemApps: boolean;
+  setIncludeSystemApps: (includeSys: boolean) => void;
   addLog: (msg: string, type: "info" | "warn" | "err" | "ok") => void;
   fileInputRef: RefObject<HTMLInputElement | null>;
   handleFile: (e: ChangeEvent<HTMLInputElement>) => void;
@@ -35,6 +39,10 @@ interface ConfigPanelProps {
 export const ConfigPanel = memo(function ConfigPanel({
   packages,
   setPackages,
+  fetchAllApps,
+  setFetchAllApps,
+  includeSystemApps,
+  setIncludeSystemApps,
   addLog,
   fileInputRef,
   handleFile,
@@ -63,56 +71,124 @@ export const ConfigPanel = memo(function ConfigPanel({
       <CardContent className="pt-6">
         {/* APK Packages Setup */}
         <div className="space-y-4 mb-8">
-          <Label htmlFor="pkg-input-0" className="font-semibold text-foreground">
-            Package Names dos Apps a Verificar
-          </Label>
-          <div className="space-y-3">
-            {packages.map((pkg, idx) => (
-              <div className="flex gap-2 items-center" key={idx}>
-                <Input
-                  id={`pkg-input-${idx}`}
-                  type="text"
-                  value={pkg}
-                  onChange={(e) => {
-                    const newPkgs = [...packages];
-                    newPkgs[idx] = e.target.value;
-                    setPackages(newPkgs);
-                  }}
-                  placeholder="Ex: com.mdmservice"
-                  disabled={isProcessing}
-                  aria-label={`Package Name do Aplicativo ${idx + 1}`}
-                />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => {
-                    if (packages.length > 1) {
-                      setPackages(packages.filter((_, i) => i !== idx));
-                    } else {
-                      addLog(
-                        "É necessário pelo menos um package name.",
-                        "warn",
-                      );
-                    }
-                  }}
-                  disabled={isProcessing}
-                  className="shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
-                  aria-label={`Remover package name do aplicativo ${idx + 1}`}
-                >
-                  <X size={16} />
-                </Button>
+          <div className="flex flex-col gap-4 p-4 bg-muted/20 border border-border/40 rounded-xl max-w-xl">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold text-foreground">
+                  Trazer todos os aplicativos instalados no terminal
+                </span>
+                <span className="text-xs text-muted-foreground mt-0.5">
+                  Consulta todos os pacotes presentes no terminal em vez de pacotes específicos.
+                </span>
               </div>
-            ))}
+              <button
+                type="button"
+                role="switch"
+                aria-checked={fetchAllApps}
+                disabled={isProcessing}
+                onClick={() => setFetchAllApps(!fetchAllApps)}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                  fetchAllApps ? "bg-primary" : "bg-muted/80"
+                }`}
+              >
+                <span
+                  aria-hidden="true"
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-background shadow-md ring-0 transition duration-200 ease-in-out ${
+                    fetchAllApps ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+
+            {fetchAllApps && (
+              <div className="flex items-center justify-between gap-4 pl-4 border-l-2 border-border/40 py-1 animate-in fade-in slide-in-from-left-2 duration-200">
+                <div className="flex flex-col">
+                  <span className="text-sm font-semibold text-foreground">
+                    Incluir aplicativos de sistema (boSystem)
+                  </span>
+                  <span className="text-xs text-muted-foreground mt-0.5">
+                    Também trará pacotes nativos do sistema (pode tornar a consulta mais lenta).
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={includeSystemApps}
+                  disabled={isProcessing}
+                  onClick={() => setIncludeSystemApps(!includeSystemApps)}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
+                    includeSystemApps ? "bg-primary" : "bg-muted/80"
+                  }`}
+                >
+                  <span
+                    aria-hidden="true"
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-background shadow-md ring-0 transition duration-200 ease-in-out ${
+                      includeSystemApps ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+              </div>
+            )}
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPackages([...packages, ""])}
-            disabled={isProcessing}
-            className="mt-2 cursor-pointer"
-          >
-            <Plus size={14} className="mr-2" /> Adicionar Pacote
-          </Button>
+
+          {!fetchAllApps ? (
+            <div className="space-y-3">
+              <Label htmlFor="pkg-input-0" className="font-semibold text-foreground">
+                Package Names dos Apps a Verificar
+              </Label>
+              <div className="space-y-3">
+                {packages.map((pkg, idx) => (
+                  <div className="flex gap-2 items-center" key={idx}>
+                    <Input
+                      id={`pkg-input-${idx}`}
+                      type="text"
+                      value={pkg}
+                      onChange={(e) => {
+                        const newPkgs = [...packages];
+                        newPkgs[idx] = e.target.value;
+                        setPackages(newPkgs);
+                      }}
+                      placeholder="Ex: com.mdmservice"
+                      disabled={isProcessing}
+                      aria-label={`Package Name do Aplicativo ${idx + 1}`}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        if (packages.length > 1) {
+                          setPackages(packages.filter((_, i) => i !== idx));
+                        } else {
+                          addLog(
+                            "É necessário pelo menos um package name.",
+                            "warn",
+                          );
+                        }
+                      }}
+                      disabled={isProcessing}
+                      className="shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
+                      aria-label={`Remover package name do aplicativo ${idx + 1}`}
+                    >
+                      <X size={16} />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPackages([...packages, ""])}
+                disabled={isProcessing}
+                className="mt-2 cursor-pointer"
+              >
+                <Plus size={14} className="mr-2" /> Adicionar Pacote
+              </Button>
+            </div>
+          ) : (
+            <p className="text-xs text-muted-foreground italic">
+              * Nota: A consulta trará todos os pacotes instalados em cada terminal.
+            </p>
+          )}
         </div>
 
         <hr className="border-border/40 mb-6" />

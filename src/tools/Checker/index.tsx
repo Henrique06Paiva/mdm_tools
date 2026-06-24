@@ -8,6 +8,10 @@ export default function Checker() {
   const {
     packages,
     setPackages,
+    fetchAllApps,
+    setFetchAllApps,
+    includeSystemApps,
+    setIncludeSystemApps,
     rawData,
     serials,
     columns,
@@ -94,6 +98,10 @@ export default function Checker() {
       <ConfigPanel
         packages={packages}
         setPackages={setPackages}
+        fetchAllApps={fetchAllApps}
+        setFetchAllApps={setFetchAllApps}
+        includeSystemApps={includeSystemApps}
+        setIncludeSystemApps={setIncludeSystemApps}
         addLog={addLog}
         fileInputRef={fileInputRef}
         handleFile={handleFile}

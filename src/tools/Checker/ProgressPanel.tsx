@@ -235,7 +235,17 @@ export function ProgressPanel({
                       {row.lastUpdateText}
                     </TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground">
-                      {row.versionStr}
+                      {row.versionStr.includes(" | ") ? (
+                        <div className="max-h-24 overflow-y-auto space-y-1 pr-1 scrollbar-thin">
+                          {row.versionStr.split(" | ").map((val: string, i: number) => (
+                            <div key={i} className="whitespace-nowrap border-b border-border/20 last:border-0 pb-0.5">
+                              {val}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        row.versionStr
+                      )}
                     </TableCell>
                   </TableRow>
                 );

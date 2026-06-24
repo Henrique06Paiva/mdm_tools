@@ -4,6 +4,8 @@ import { api, CONFIG } from "../../api";
 
 export function useChecker() {
   const [packages, setPackages] = useState<string[]>(["com.mdmservice"]);
+  const [fetchAllApps, setFetchAllApps] = useState(false);
+  const [includeSystemApps, setIncludeSystemApps] = useState(false);
   const [rawData, setRawData] = useState<any[]>([]);
   const [serials, setSerials] = useState<string[]>([]);
   const [columns, setColumns] = useState<string[]>([]);
@@ -112,7 +114,11 @@ export function useChecker() {
     const fetchAppVersions = async (eqId: any, pkgs: string[]) => {
       const foundVersions: Record<string, string> = {};
       try {
-        for (const boSystem of [false, true]) {
+        const boSystemOptions = fetchAllApps
+          ? (includeSystemApps ? [false, true] : [false])
+          : [false, true];
+
+        for (const boSystem of boSystemOptions) {
           let page = 1;
           while (true) {
             if (!isProcessingRef.current) break;
@@ -128,24 +134,38 @@ export function useChecker() {
               (Array.isArray(appsData) ? appsData : []);
 
             appItems.forEach((item: any) => {
-              if (pkgs.includes(item.packageName)) {
+              if (fetchAllApps) {
                 foundVersions[item.packageName] =
                   item.version || "Sem informação";
+              } else {
+                if (pkgs.includes(item.packageName)) {
+                  foundVersions[item.packageName] =
+                    item.version || "Sem informação";
+                }
               }
             });
 
-            if (pkgs.every((pkg) => foundVersions[pkg])) break;
+            if (!fetchAllApps && pkgs.every((pkg) => foundVersions[pkg])) break;
 
             const total =
               typeof appsData?.total === "number" ? appsData.total : 0;
             if (!appItems.length || page * 50 >= total) break;
             page++;
           }
-          if (pkgs.every((pkg) => foundVersions[pkg])) break;
+          if (!fetchAllApps && pkgs.every((pkg) => foundVersions[pkg])) break;
         }
       } catch (e) {
         // Ignorar erros de rede individuais, retornar "Sem informação" por fallback
       }
+
+      if (fetchAllApps) {
+        const entries = Object.entries(foundVersions);
+        if (entries.length === 0) return "Nenhum aplicativo encontrado";
+        return entries
+          .map(([pkg, ver]) => `${pkg} (${ver})`)
+          .join(" | ");
+      }
+
       return pkgs.map((pkg) => foundVersions[pkg] || "Sem informação").join(" | ");
     };
 
@@ -271,10 +291,14 @@ export function useChecker() {
               "Última Atualização": lastUpdateText,
             };
 
-            const vSplit = versionStr.split(" | ");
-            validPackages.forEach((pkg, idx) => {
-              resultObj[pkg] = vSplit[idx] || versionStr;
-            });
+            if (fetchAllApps) {
+              resultObj["Aplicativos Instalados"] = versionStr.split(" | ").join("\n");
+            } else {
+              const vSplit = versionStr.split(" | ");
+              validPackages.forEach((pkg, idx) => {
+                resultObj[pkg] = vSplit[idx] || versionStr;
+              });
+            }
 
             newResults.push(resultObj);
           });
@@ -351,9 +375,13 @@ export function useChecker() {
           let onlineText = "Offline";
           let lastUpdateText = "Sem informação";
           let versionStr = "";
-          validPackages.forEach(() => {
-            versionStr += (versionStr ? " | " : "") + "Sem informação";
-          });
+          if (fetchAllApps) {
+            versionStr = "Sem informação";
+          } else {
+            validPackages.forEach(() => {
+              versionStr += (versionStr ? " | " : "") + "Sem informação";
+            });
+          }
 
           try {
             const searchData: any = await api.fetch(
@@ -428,10 +456,14 @@ export function useChecker() {
             "Última Atualização": lastUpdateText,
           };
 
-          const vSplit = versionStr.split(" | ");
-          validPackages.forEach((pkg, idx) => {
-            resultObj[pkg] = vSplit[idx] || versionStr;
-          });
+          if (fetchAllApps) {
+            resultObj["Aplicativos Instalados"] = versionStr.split(" | ").join("\n");
+          } else {
+            const vSplit = versionStr.split(" | ");
+            validPackages.forEach((pkg, idx) => {
+              resultObj[pkg] = vSplit[idx] || versionStr;
+            });
+          }
 
           newResults.push(resultObj);
         });
@@ -469,8 +501,8 @@ export function useChecker() {
       return;
     }
 
-    const validPackages = packages.filter((p) => p.trim() !== "");
-    if (validPackages.length === 0) {
+    const validPackages = fetchAllApps ? [] : packages.filter((p) => p.trim() !== "");
+    if (!fetchAllApps && validPackages.length === 0) {
       addLog("Defina pelo menos um Package Name.", "err");
       return;
     }
@@ -511,7 +543,7 @@ export function useChecker() {
     }
 
     await runLoop(validPackages);
-  }, [searchSource, serials, packages, corporationId, companyId, subsidiaryId, addLog]);
+  }, [searchSource, serials, packages, corporationId, companyId, subsidiaryId, fetchAllApps, includeSystemApps, addLog]);
 
   const resumeProcess = useCallback(async () => {
     if (!api.hasToken()) {
@@ -519,8 +551,8 @@ export function useChecker() {
       return;
     }
 
-    const validPackages = packages.filter((p) => p.trim() !== "");
-    if (validPackages.length === 0) {
+    const validPackages = fetchAllApps ? [] : packages.filter((p) => p.trim() !== "");
+    if (!fetchAllApps && validPackages.length === 0) {
       addLog("Defina pelo menos um Package Name.", "err");
       return;
     }
@@ -536,7 +568,7 @@ export function useChecker() {
       addLog(`Retomando busca a partir da página ${currentPageRef.current}...`, "info");
     }
     await runLoop(validPackages);
-  }, [searchSource, serials, packages, corporationId, companyId, subsidiaryId, addLog]);
+  }, [searchSource, serials, packages, corporationId, companyId, subsidiaryId, fetchAllApps, includeSystemApps, addLog]);
 
   const pauseProcess = useCallback(() => {
     setIsPaused(true);
@@ -585,6 +617,10 @@ export function useChecker() {
   return {
     packages,
     setPackages,
+    fetchAllApps,
+    setFetchAllApps,
+    includeSystemApps,
+    setIncludeSystemApps,
     rawData,
     setRawData,
     serials,
