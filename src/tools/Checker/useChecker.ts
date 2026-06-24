@@ -292,7 +292,19 @@ export function useChecker() {
             };
 
             if (fetchAllApps) {
-              resultObj["Aplicativos Instalados"] = versionStr.split(" | ").join("\n");
+              if (versionStr && versionStr !== "Nenhum aplicativo encontrado" && versionStr !== "Sem informação") {
+                const apps = versionStr.split(" | ");
+                apps.forEach((app) => {
+                  const match = app.match(/^(.*?)\s*\((.*?)\)$/);
+                  if (match) {
+                    const pkgName = match[1].trim();
+                    const version = match[2].trim();
+                    resultObj[pkgName] = version;
+                  } else {
+                    resultObj[app] = "Instalado";
+                  }
+                });
+              }
             } else {
               const vSplit = versionStr.split(" | ");
               validPackages.forEach((pkg, idx) => {
@@ -457,7 +469,19 @@ export function useChecker() {
           };
 
           if (fetchAllApps) {
-            resultObj["Aplicativos Instalados"] = versionStr.split(" | ").join("\n");
+            if (versionStr && versionStr !== "Nenhum aplicativo encontrado" && versionStr !== "Sem informação") {
+              const apps = versionStr.split(" | ");
+              apps.forEach((app) => {
+                const match = app.match(/^(.*?)\s*\((.*?)\)$/);
+                if (match) {
+                  const pkgName = match[1].trim();
+                  const version = match[2].trim();
+                  resultObj[pkgName] = version;
+                } else {
+                  resultObj[app] = "Instalado";
+                }
+              });
+            }
           } else {
             const vSplit = versionStr.split(" | ");
             validPackages.forEach((pkg, idx) => {
@@ -588,8 +612,33 @@ export function useChecker() {
 
   const exportExcel = useCallback(() => {
     if (results.length === 0) return;
+
+    // Detect all unique keys
+    const allKeys = new Set<string>();
+    results.forEach((row) => {
+      Object.keys(row).forEach((key) => {
+        allKeys.add(key);
+      });
+    });
+
+    const metadataKeys = [
+      "Nome do Equipamento",
+      "Número de Série",
+      "Grupo de Equipamento",
+      "Status de Energia",
+      "Conexão",
+      "Última Atualização",
+    ];
+
+    // Other keys (app package names) sorted alphabetically
+    const appKeys = Array.from(allKeys)
+      .filter((k) => !metadataKeys.includes(k))
+      .sort((a, b) => a.localeCompare(b));
+
+    const header = [...metadataKeys, ...appKeys];
+
     const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(results);
+    const ws = XLSX.utils.json_to_sheet(results, { header });
     XLSX.utils.book_append_sheet(wb, ws, "Versões");
     XLSX.writeFile(wb, `MDM_Versoes_${new Date().getTime()}.xlsx`);
   }, [results]);
