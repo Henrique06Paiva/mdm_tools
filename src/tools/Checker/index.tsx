@@ -77,7 +77,7 @@ export default function Checker() {
                     <strong>Filtros de Corporação:</strong> Insira o ID da Corporação (obrigatório) e, opcionalmente, os IDs de Empresa/Filial para obter a lista de terminais direto da API de 50 em 50.
                   </li>
                   <li>
-                    <strong>Importar Planilha:</strong> Clique para fazer o upload de uma planilha (<strong>.xlsx</strong> ou <strong>.csv</strong>) e selecione a coluna contendo os números de série.
+                    <strong>Importar Planilha:</strong> Clique para fazer o upload de uma planilha (<strong>.xlsx</strong> ou <strong>.csv</strong>, limite de 10.000 terminais) e selecione a coluna contendo os números de série.
                   </li>
                 </ul>
               </li>

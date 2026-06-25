@@ -64,17 +64,29 @@ export function useChecker() {
         .map((row) => String(row[colIdx] ?? "").trim())
         .filter(Boolean);
 
-      setSerials(parsedSerials);
+      const totalParsed = parsedSerials.length;
+      const wasTruncated = totalParsed > 10000;
+      const finalSerials = wasTruncated ? parsedSerials.slice(0, 10000) : parsedSerials;
+
+      setSerials(finalSerials);
       setStats((s) => ({
         ...s,
-        totalItems: parsedSerials.length,
-        totalPages: Math.ceil(parsedSerials.length / 50),
+        totalItems: finalSerials.length,
+        totalPages: Math.ceil(finalSerials.length / 50),
       }));
       setSelectedCol(colIdx);
-      addLog(
-        `${parsedSerials.length} seriais encontrados na coluna selecionada.`,
-        "ok",
-      );
+
+      if (wasTruncated) {
+        addLog(
+          `Aviso: A coluna selecionada contém ${totalParsed} seriais. Apenas os primeiros 10.000 serão processados por limitação técnica.`,
+          "warn",
+        );
+      } else {
+        addLog(
+          `${finalSerials.length} seriais encontrados na coluna selecionada.`,
+          "ok",
+        );
+      }
     },
     [addLog],
   );

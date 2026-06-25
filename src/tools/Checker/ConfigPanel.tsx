@@ -307,7 +307,7 @@ export const ConfigPanel = memo(function ConfigPanel({
                 Selecione a planilha de seriais
               </p>
               <div className="text-xs text-muted-foreground mt-1">
-                Formatos: .xlsx, .csv
+                Formatos: .xlsx, .csv (Limite de 10.000 terminais)
               </div>
               {serials.length > 0 && (
                 <div className="mt-4">

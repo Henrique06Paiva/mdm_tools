@@ -55,7 +55,7 @@ export const ConfigPanel = memo(function ConfigPanel({
             Clique para selecionar a planilha de seriais a serem deletados
           </p>
           <div className="text-xs text-muted-foreground mt-1">
-            Formatos suportados: .xlsx, .csv
+            Formatos suportados: .xlsx, .csv (Limite de 10.000 terminais)
           </div>
           {serials.length > 0 && (
             <div className="mt-4">

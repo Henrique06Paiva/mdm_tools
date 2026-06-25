@@ -71,7 +71,7 @@ export default function Deleter() {
             >
               <li>
                 Clique na área pontilhada para fazer o upload de uma planilha (
-                <strong>.xlsx</strong> ou <strong>.csv</strong>).
+                <strong>.xlsx</strong> ou <strong>.csv</strong>, limite de 10.000 terminais).
               </li>
               <li>
                 A planilha deve conter os seriais dos equipamentos na{" "}

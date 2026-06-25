@@ -85,18 +85,30 @@ export function useForcer() {
                 (serial) => serial && serial !== "undefined" && serial !== "",
               );
 
-            setSerials(parsedSerials);
+            const totalParsed = parsedSerials.length;
+            const wasTruncated = totalParsed > 10000;
+            const finalSerials = wasTruncated ? parsedSerials.slice(0, 10000) : parsedSerials;
+
+            setSerials(finalSerials);
             setStats({
-              total: parsedSerials.length,
+              total: finalSerials.length,
               done: 0,
               fail: 0,
               skip: 0,
             });
             setTableRows([]);
-            addLog(
-              `${parsedSerials.length} seriais carregados para envio de Force Data.`,
-              "ok",
-            );
+
+            if (wasTruncated) {
+              addLog(
+                `Aviso: A planilha contém ${totalParsed} terminais. Apenas os primeiros 10.000 serão processados por limitação técnica.`,
+                "warn",
+              );
+            } else {
+              addLog(
+                `${finalSerials.length} seriais carregados para envio de Force Data.`,
+                "ok",
+              );
+            }
           } catch (err: unknown) {
             const msg = err instanceof Error ? err.message : String(err);
             addLog(`Erro ao ler arquivo: ${msg}`, "err");

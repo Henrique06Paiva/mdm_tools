@@ -61,12 +61,24 @@ export function useDeleter() {
             .map((row: any) => String(row[0]).trim())
             .filter((serial) => serial && serial !== "undefined");
 
-          setSerials(parsedSerials);
-          setStats((s) => ({ ...s, total: parsedSerials.length }));
-          addLog(
-            `${parsedSerials.length} seriais carregados para deleção.`,
-            "ok",
-          );
+          const totalParsed = parsedSerials.length;
+          const wasTruncated = totalParsed > 10000;
+          const finalSerials = wasTruncated ? parsedSerials.slice(0, 10000) : parsedSerials;
+
+          setSerials(finalSerials);
+          setStats((s) => ({ ...s, total: finalSerials.length }));
+
+          if (wasTruncated) {
+            addLog(
+              `Aviso: A planilha contém ${totalParsed} terminais. Apenas os primeiros 10.000 serão processados por limitação técnica.`,
+              "warn",
+            );
+          } else {
+            addLog(
+              `${finalSerials.length} seriais carregados para deleção.`,
+              "ok",
+            );
+          }
         }
       };
       reader.readAsBinaryString(file);
