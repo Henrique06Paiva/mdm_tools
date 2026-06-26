@@ -79,11 +79,11 @@ export default function Login({ onLoginSuccess, isOverlay = false, onCancel }: L
             <CardTitle className="text-2xl font-bold tracking-tight text-foreground lowercase first-letter:uppercase">
               {isOverlay ? "Sessão expirada" : "MDM Hub Tools"}
             </CardTitle>
-            <p className="text-xs text-muted-foreground mt-1">
-              {isOverlay 
-                ? "Confirme sua senha para continuar de onde parou"
-                : "Faça login para gerenciar o inventário de forma segura"}
-            </p>
+            {isOverlay && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Confirme sua senha para continuar de onde parou
+              </p>
+            )}
           </CardHeader>
           <CardContent className="p-8">
             <form onSubmit={handleSubmit} className="space-y-5">
@@ -167,18 +167,6 @@ export default function Login({ onLoginSuccess, isOverlay = false, onCancel }: L
           </CardContent>
         </Card>
 
-        {/* Corporate isolation notice */}
-        <div className="text-center mt-6 text-xs text-muted-foreground/60 flex flex-col gap-1.5">
-          <p>
-            Corporação ativa:{" "}
-            <span className="font-semibold text-muted-foreground uppercase">
-              {api.getTenant()}
-            </span>
-          </p>
-          <p className="opacity-75">
-            Os acessos e visualizações serão restritos apenas a esta corporação.
-          </p>
-        </div>
       </div>
     </div>
   );
