@@ -186,6 +186,7 @@ export function ProgressPanel({
                 <TableHead>Energia</TableHead>
                 <TableHead>Conexão</TableHead>
                 <TableHead>Atividade</TableHead>
+                <TableHead>Bloqueio</TableHead>
                 <TableHead className="min-w-[150px]">Última Atualização</TableHead>
               </TableRow>
             </TableHeader>
@@ -194,6 +195,7 @@ export function ProgressPanel({
                 const powerVariant = row.powerText === "Ligado" ? "success" : "destructive";
                 const onlineVariant = row.onlineText === "Online" ? "success" : "destructive";
                 const statusVariant = row.statusText === "Ativo" ? "success" : "destructive";
+                const blockedVariant = row.blockedText === "Bloqueado" ? "destructive" : "success";
 
                 return (
                   <TableRow key={idx}>
@@ -210,6 +212,9 @@ export function ProgressPanel({
                     <TableCell>
                       <Badge variant={statusVariant}>{row.statusText}</Badge>
                     </TableCell>
+                    <TableCell>
+                      <Badge variant={blockedVariant}>{row.blockedText}</Badge>
+                    </TableCell>
                     <TableCell className="text-muted-foreground font-mono text-xs">
                       {row.lastUpdateText}
                     </TableCell>
@@ -219,7 +224,7 @@ export function ProgressPanel({
               {tableRows.length === 0 && (
                 <TableRow>
                   <TableCell
-                    colSpan={8}
+                    colSpan={9}
                     className="h-24 text-center text-muted-foreground"
                   >
                     Nenhum terminal carregado. Insira o ID da corporação e inicie a busca.

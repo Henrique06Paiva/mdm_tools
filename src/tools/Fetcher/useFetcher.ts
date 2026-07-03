@@ -148,6 +148,9 @@ export function useFetcher() {
 
           const statusText = item.status === 1 ? "Ativo" : "Inativo";
 
+          const isBlocked = item.blocked === true || item.isBlocked === true;
+          const blockedText = isBlocked ? "Bloqueado" : "Desbloqueado";
+
           newRows.push({
             id,
             name,
@@ -156,6 +159,7 @@ export function useFetcher() {
             powerText,
             onlineText,
             statusText,
+            blockedText,
             lastUpdateText,
           });
 
@@ -167,6 +171,7 @@ export function useFetcher() {
             "Status de Energia": powerText,
             "Conexão": onlineText,
             "Status de Atividade": statusText,
+            "Bloqueio": blockedText,
             "Última Atualização": lastUpdateText,
           });
         });
