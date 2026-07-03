@@ -3,7 +3,7 @@ import { api } from "../api";
 import { Button } from "./ui/button";
 import { Input, Label } from "./ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { Lock, User, Loader2, ShieldAlert, Sun, Moon } from "lucide-react";
+import { Lock, User, Loader2, ShieldAlert, Sun, Moon, Eye, EyeOff } from "lucide-react";
 import { useTheme } from "../ThemeContext";
 
 interface LoginProps {
@@ -19,6 +19,7 @@ export default function Login({ onLoginSuccess, isOverlay = false, onCancel }: L
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasInitialUsername] = useState(() => !!(isOverlay && api.getUsername()));
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,7 +87,7 @@ export default function Login({ onLoginSuccess, isOverlay = false, onCancel }: L
             )}
           </CardHeader>
           <CardContent className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-5" noValidate>
               {error && (
                 <div className="flex items-center gap-2.5 p-3.5 rounded-lg border border-destructive/20 bg-destructive/10 text-destructive text-xs font-semibold animate-in shake duration-300">
                   <ShieldAlert size={16} className="shrink-0" />
@@ -124,15 +125,28 @@ export default function Login({ onLoginSuccess, isOverlay = false, onCancel }: L
                   />
                   <Input
                     id="password"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}
-                    className="pl-10 font-sans"
+                    className="pl-10 pr-12 font-sans"
                     autoComplete="current-password"
                     required
                   />
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setShowPassword(!showPassword)}
+                      disabled={loading}
+                      title={showPassword ? "Ocultar senha" : "Visualizar senha"}
+                      className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-md"
+                    >
+                      {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </Button>
+                  </div>
                 </div>
               </div>
 

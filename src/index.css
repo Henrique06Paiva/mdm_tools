@@ -72,8 +72,18 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased selection:bg-primary/20 selection:text-primary transition-colors duration-300;
+    @apply bg-background text-foreground antialiased selection:bg-primary selection:text-primary-foreground transition-colors duration-300;
     font-family: var(--font-sans);
+  }
+
+  /* Autofill Styles */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-text-fill-color: var(--color-foreground) !important;
+    transition: background-color 5000s ease-in-out 0s;
+    box-shadow: inset 0 0 0px 9999px var(--color-background) !important;
   }
 
   /* Custom Scrollbar */
