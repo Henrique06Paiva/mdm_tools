@@ -243,6 +243,101 @@ class ApiService {
   getTenant(): string {
     return CONFIG.TENANT;
   }
+
+  getUserInfo(): any {
+    if (!this.token) return null;
+    return parseJwt(this.token);
+  }
+
+  getRestrictions() {
+    const info = this.getUserInfo();
+    const res = {
+      corpDisabled: false,
+      companyDisabled: false,
+      subsidiaryDisabled: false,
+      defaultCorpId: "",
+      defaultCompanyId: "",
+      defaultSubsidiaryId: "",
+      allowedCorps: [] as number[],
+      allowedCompanies: [] as number[],
+      allowedSubsidiaries: [] as number[],
+      isRoot: true,
+      isCorp: false,
+      isCompany: false,
+    };
+
+    if (!info) return res;
+
+    const isRoot = info.isRootUser === true;
+    const isCorp = info.isCorpUser === true;
+    const isCompany = info.isCompanyUser === true;
+
+    res.isRoot = isRoot;
+    res.isCorp = isCorp;
+    res.isCompany = isCompany;
+
+    if (isRoot) {
+      if (info.corporationId) res.defaultCorpId = String(info.corporationId);
+      return res;
+    }
+
+    // 1. Corporation restriction
+    const allowedCorps = info.corporationWithFullAccess || (info.corporationId ? [info.corporationId] : []);
+    res.allowedCorps = allowedCorps;
+    if (info.corporationId) res.defaultCorpId = String(info.corporationId);
+    else if (allowedCorps.length > 0) res.defaultCorpId = String(allowedCorps[0]);
+    if (allowedCorps.length <= 1) {
+      res.corpDisabled = true;
+    }
+
+    // 2. Company restriction
+    if (isCorp) {
+      // Corporation users have optional company/subsidiary
+      res.companyDisabled = false;
+      res.subsidiaryDisabled = false;
+    } else if (isCompany) {
+      res.corpDisabled = true; // fixed corp
+      const allowedComps = info.companyIds && info.companyIds.length > 0 ? info.companyIds : (info.companyId ? [info.companyId] : []);
+      res.allowedCompanies = allowedComps;
+      if (info.companyId) res.defaultCompanyId = String(info.companyId);
+      else if (allowedComps.length > 0) res.defaultCompanyId = String(allowedComps[0]);
+      if (allowedComps.length <= 1) {
+        res.companyDisabled = true;
+      }
+    } else {
+      // Subsidiary/Local user
+      res.corpDisabled = true; // fixed corp
+      res.companyDisabled = true; // fixed company
+      if (info.companyId) res.defaultCompanyId = String(info.companyId);
+
+      const allowedSubs = info.subsidiaryIds && info.subsidiaryIds.length > 0 ? info.subsidiaryIds : (info.subsidiaryId ? [info.subsidiaryId] : []);
+      res.allowedSubsidiaries = allowedSubs;
+      if (info.subsidiaryId) res.defaultSubsidiaryId = String(info.subsidiaryId);
+      else if (allowedSubs.length > 0) res.defaultSubsidiaryId = String(allowedSubs[0]);
+      if (allowedSubs.length <= 1) {
+        res.subsidiaryDisabled = true;
+      }
+    }
+
+    return res;
+  }
+}
+
+function parseJwt(token: string) {
+  try {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      window.atob(base64)
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error("Erro ao decodificar JWT", error);
+    return null;
+  }
 }
 
 export const api = new ApiService();

@@ -3,9 +3,11 @@ import * as XLSX from "xlsx";
 import { api, CONFIG } from "../../api";
 
 export function useFetcher() {
-  const [corporationId, setCorporationId] = useState<string>("");
-  const [companyId, setCompanyId] = useState<string>("");
-  const [subsidiaryId, setSubsidiaryId] = useState<string>("");
+  const restrictions = api.getRestrictions();
+
+  const [corporationId, setCorporationId] = useState<string>(restrictions.defaultCorpId);
+  const [companyId, setCompanyId] = useState<string>(restrictions.defaultCompanyId);
+  const [subsidiaryId, setSubsidiaryId] = useState<string>(restrictions.defaultSubsidiaryId);
   
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -231,6 +233,20 @@ export function useFetcher() {
       return;
     }
 
+    const r = api.getRestrictions();
+    if (r.allowedCorps.length > 0 && !r.allowedCorps.includes(Number(corporationId))) {
+      addLog("Corporação não permitida para o seu usuário.", "err");
+      return;
+    }
+    if (companyId.trim() && r.allowedCompanies.length > 0 && !r.allowedCompanies.includes(Number(companyId))) {
+      addLog("Empresa não permitida para o seu usuário.", "err");
+      return;
+    }
+    if (subsidiaryId.trim() && r.allowedSubsidiaries.length > 0 && !r.allowedSubsidiaries.includes(Number(subsidiaryId))) {
+      addLog("Filial não permitida para o seu usuário.", "err");
+      return;
+    }
+
     setIsProcessing(true);
     isProcessingRef.current = true;
     setIsPaused(false);
@@ -332,5 +348,6 @@ export function useFetcher() {
     resetProcess,
     clearLogs,
     exportExcel,
+    restrictions,
   };
 }

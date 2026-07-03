@@ -32,6 +32,14 @@ interface SearchFormProps {
   resetSearch: () => void;
   results: any[];
   clearFilters: () => void;
+  restrictions: {
+    corpDisabled: boolean;
+    companyDisabled: boolean;
+    subsidiaryDisabled: boolean;
+    allowedCorps: number[];
+    allowedCompanies: number[];
+    allowedSubsidiaries: number[];
+  };
 }
 
 export const SearchForm = memo(function SearchForm({
@@ -54,6 +62,7 @@ export const SearchForm = memo(function SearchForm({
   resetSearch,
   results,
   clearFilters,
+  restrictions,
 }: SearchFormProps) {
   const [appFilter, setAppFilter] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -115,14 +124,31 @@ export const SearchForm = memo(function SearchForm({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div className="space-y-2 md:col-span-2 lg:col-span-1 max-w-xs">
             <Label htmlFor="corpId">ID da Corporação *</Label>
-            <Input 
-              id="corpId"
-              type="number" 
-              value={corpId} 
-              onChange={e => setCorpId(e.target.value)} 
-              placeholder="Ex: 10" 
-              required 
-            />
+            {restrictions.allowedCorps.length > 1 ? (
+              <select
+                id="corpId"
+                value={corpId}
+                onChange={(e) => setCorpId(e.target.value)}
+                disabled={isProcessing || restrictions.corpDisabled}
+                className="flex h-10 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {restrictions.allowedCorps.map((id) => (
+                  <option key={id} value={id} className="bg-popover text-popover-foreground">
+                    Corporação {id}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <Input 
+                id="corpId"
+                type="number" 
+                value={corpId} 
+                onChange={e => setCorpId(e.target.value)} 
+                placeholder="Ex: 10" 
+                disabled={isProcessing || restrictions.corpDisabled}
+                required 
+              />
+            )}
           </div>
         </div>
 

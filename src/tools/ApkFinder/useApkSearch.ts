@@ -2,7 +2,8 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { api, CONFIG } from "../../api";
 
 export function useApkSearch() {
-  const [corpId, setCorpId] = useState("");
+  const restrictions = api.getRestrictions();
+  const [corpId, setCorpId] = useState(restrictions.defaultCorpId);
   const [packages, setPackages] = useState<string[]>([]);
   const [versions, setVersions] = useState<string[]>([]);
   const [availableApps, setAvailableApps] = useState<any[]>([]);
@@ -241,6 +242,12 @@ export function useApkSearch() {
       return;
     }
 
+    const r = api.getRestrictions();
+    if (r.allowedCorps.length > 0 && !r.allowedCorps.includes(Number(cId))) {
+      addLog("Corporação não permitida para o seu usuário.", "err");
+      return;
+    }
+
     setIsProcessing(true);
     setIsPaused(false);
     isPausedRef.current = false;
@@ -323,19 +330,18 @@ export function useApkSearch() {
     setIsPaused(false);
     isPausedRef.current = false;
     currentIndexRef.current = 0;
-    matchingAppsRef.current = [];
-    setPackages([]);
-    setVersions([]);
     addLog("Busca interrompida pelo usuário.", "warn");
   }, [addLog]);
 
   const resetSearch = useCallback(() => {
     setResults([]);
-    setLogs([]);
+    setIsProcessing(false);
+    setIsPaused(false);
+    isPausedRef.current = false;
     currentIndexRef.current = 0;
     matchingAppsRef.current = [];
-    logIdRef.current = 0;
-  }, []);
+    addLog("Resultados limpos.", "info");
+  }, [addLog]);
 
   const clearLogs = useCallback(() => {
     setLogs([]);
@@ -343,7 +349,8 @@ export function useApkSearch() {
   }, []);
 
   const clearFilters = useCallback(() => {
-    setCorpId("");
+    const r = api.getRestrictions();
+    setCorpId(r.defaultCorpId);
     setPackages([]);
     setVersions([]);
   }, []);
@@ -371,5 +378,6 @@ export function useApkSearch() {
     resetSearch,
     clearLogs,
     clearFilters,
+    restrictions,
   };
 }

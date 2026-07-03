@@ -41,6 +41,7 @@ export default function Checker() {
     exportExcel,
     resetProcess,
     clearLogs,
+    restrictions,
   } = useChecker();
 
   return (
@@ -119,6 +120,7 @@ export default function Checker() {
         subsidiaryId={subsidiaryId}
         setSubsidiaryId={setSubsidiaryId}
         isProcessing={isProcessing}
+        restrictions={restrictions}
       />
 
       <ProgressPanel

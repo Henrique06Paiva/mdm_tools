@@ -27,6 +27,7 @@ export default function ApkFinder() {
     resetSearch,
     clearLogs,
     clearFilters,
+    restrictions,
   } = useApkSearch();
 
   return (
@@ -93,6 +94,7 @@ export default function ApkFinder() {
         resetSearch={resetSearch}
         clearFilters={clearFilters}
         results={results}
+        restrictions={restrictions}
       />
 
       <ResultsTable results={results} />

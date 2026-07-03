@@ -25,6 +25,7 @@ export default function Fetcher() {
     resetProcess,
     clearLogs,
     exportExcel,
+    restrictions,
   } = useFetcher();
 
   return (
@@ -78,6 +79,7 @@ export default function Fetcher() {
         subsidiaryId={subsidiaryId}
         setSubsidiaryId={setSubsidiaryId}
         isProcessing={isProcessing}
+        restrictions={restrictions}
       />
 
       <ProgressPanel
