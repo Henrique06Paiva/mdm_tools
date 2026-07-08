@@ -113,8 +113,9 @@ export function useCloner() {
 
     addLog(`Iniciando processo de clonagem para o usuário: ${userFullName} (${user.username})`, "info");
     
-    // Mapeamento dos cargos defensivo
     const getRoleIds = (u: any) => {
+      if (u.role && typeof u.role === "object" && u.role.id) return [u.role.id];
+      if (u.profile?.role && typeof u.profile.role === "object" && u.profile.role.id) return [u.profile.role.id];
       if (u.roleIds && Array.isArray(u.roleIds)) return u.roleIds;
       if (u.profile?.roleIds && Array.isArray(u.profile?.roleIds)) return u.profile.roleIds;
       

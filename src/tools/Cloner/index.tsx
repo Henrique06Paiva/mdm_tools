@@ -42,6 +42,12 @@ export default function Cloner() {
   const getDocument = (u: any) => u.profile?.document ?? u.document ?? "";
   const getPhone = (u: any) => u.profile?.phone ?? u.phone ?? "";
   const getRolesNames = (u: any) => {
+    if (u.role && typeof u.role === "object") {
+      return [u.role];
+    }
+    if (u.profile?.role && typeof u.profile.role === "object") {
+      return [u.profile.role];
+    }
     const rolesList =
       u.roles ?? u.profile?.roles ?? u.userRoles ?? u.profile?.userRoles;
     if (Array.isArray(rolesList)) return rolesList;
@@ -349,8 +355,38 @@ export default function Cloner() {
                   </div>
                 </div>
 
-                <div className="border-t border-border/40 pt-3">
-                  {/* Lista de cargos e permissões do usuário, se houver */}
+                 <div className="border-t border-border/40 pt-3">
+                  <span className="text-xs text-muted-foreground block mb-1">
+                    Cargos / Perfis Associados
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {getRolesNames(selectedUser).length > 0 ? (
+                      getRolesNames(selectedUser).map((r: any) => (
+                        <Badge
+                          key={r.id || r}
+                          variant="outline"
+                          className="font-mono text-xs"
+                        >
+                          {r.name ?? r.role?.name ?? `Role ${r.id ?? r}`}
+                        </Badge>
+                      ))
+                    ) : selectedUser.roleIds &&
+                      selectedUser.roleIds.length > 0 ? (
+                      selectedUser.roleIds.map((rId: any) => (
+                        <Badge
+                          key={rId}
+                          variant="outline"
+                          className="font-mono text-xs"
+                        >
+                          ID Cargo: {rId}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-xs text-muted-foreground">
+                        Nenhum cargo associado
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 <div className="border-t border-border/40 pt-4 flex flex-col gap-4">
