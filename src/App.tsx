@@ -11,12 +11,14 @@ import {
   LogOut,
   User,
   List,
+  UserCheck,
 } from "lucide-react";
 import Checker from "./tools/Checker";
 import Deleter from "./tools/Deleter";
 import ApkFinder from "./tools/ApkFinder";
 import Forcer from "./tools/Forcer";
 import Fetcher from "./tools/Fetcher";
+import Cloner from "./tools/Cloner";
 import { Button } from "./components/ui/button";
 import Login from "./components/Login";
 
@@ -120,7 +122,7 @@ const MainApp = ({
   onLogout: () => void;
 }) => {
   const [activeTab, setActiveTab] = useState<
-    "checker" | "deleter" | "apk" | "forcer" | "fetcher"
+    "checker" | "deleter" | "apk" | "forcer" | "fetcher" | "cloner"
   >("checker");
   const [authStatus] = useState("Autenticado");
   const [isAuthenticating] = useState(false);
@@ -169,6 +171,12 @@ const MainApp = ({
             isActive={activeTab === "fetcher"}
             onClick={() => setActiveTab("fetcher")}
           />
+          <TabButton
+            label="Clonar Usuário"
+            icon={UserCheck}
+            isActive={activeTab === "cloner"}
+            onClick={() => setActiveTab("cloner")}
+          />
         </div>
 
         <main className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -177,6 +185,7 @@ const MainApp = ({
           {activeTab === "apk" && <ApkFinder />}
           {activeTab === "forcer" && <Forcer />}
           {activeTab === "fetcher" && <Fetcher />}
+          {activeTab === "cloner" && <Cloner />}
         </main>
       </div>
     </div>
