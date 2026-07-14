@@ -216,7 +216,19 @@ class ApiService {
           continue;
         }
 
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        if (!response.ok) {
+          let errorMsg = `HTTP ${response.status}`;
+          try {
+            const errData: any = await response.json();
+            errorMsg = errData?.message ?? errData?.error ?? errorMsg;
+          } catch {
+            try {
+              const errText = await response.text();
+              if (errText) errorMsg = errText.slice(0, 150); // Limita tamanho da mensagem de texto puro
+            } catch {}
+          }
+          throw new Error(errorMsg);
+        }
         return await response.json().catch(() => ({ ok: true }));
       } catch (error: any) {
         if (error.message === "UNAUTHORIZED_EXPIRED") {

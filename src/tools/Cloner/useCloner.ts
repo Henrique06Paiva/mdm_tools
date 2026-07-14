@@ -127,11 +127,55 @@ export function useCloner() {
     };
     
     const mappedRoles = getRoleIds(user);
-    const mappedAccesses = (user.corporationAccesses || []).map((acc: any) => ({
-      corporationId: acc.corporationId ?? null,
-      companyId: acc.companyId ?? null,
-      subsidiaryId: acc.subsidiaryId ?? null
-    }));
+    const getAccesses = (u: any) => {
+      const list = u.corporationAccesses ?? u.profile?.corporationAccesses ?? u.accesses ?? u.profile?.accesses ?? u.userAccesses ?? u.profile?.userAccesses;
+      if (Array.isArray(list) && list.length > 0) {
+        return list.map((acc: any) => {
+          // Extrair a corporationId, suportando objetos aninhados como acc.corporation.id
+          let corpId = acc.corporationId;
+          if (corpId === undefined || corpId === null) {
+            corpId = acc.corporation?.id ?? acc.corporation?.corporationId ?? acc.corporation;
+          }
+          if (!corpId) {
+            corpId = u.corporationId ?? u.profile?.corporationId;
+          }
+          
+          // Extrair a companyId, suportando objetos aninhados como acc.company.id
+          let compId = acc.companyId;
+          if (compId === undefined || compId === null) {
+            compId = acc.company?.id ?? acc.company?.companyId ?? acc.company;
+          }
+          
+          // Extrair a subsidiaryId, suportando objetos aninhados como acc.subsidiary.id
+          let subId = acc.subsidiaryId;
+          if (subId === undefined || subId === null) {
+            subId = acc.subsidiary?.id ?? acc.subsidiary?.subsidiaryId ?? acc.subsidiary;
+          }
+
+          return {
+            corporationId: corpId && !isNaN(Number(corpId)) ? Number(corpId) : null,
+            companyId: compId && !isNaN(Number(compId)) ? Number(compId) : null,
+            subsidiaryId: subId && !isNaN(Number(subId)) ? Number(subId) : null
+          };
+        }).filter((acc: any) => acc.corporationId !== null);
+      }
+      
+      const corpId = u.corporationId ?? u.profile?.corporationId;
+      const compId = u.companyId ?? u.profile?.companyId;
+      const subId = u.subsidiaryId ?? u.profile?.subsidiaryId;
+      if (corpId) {
+        return [
+          {
+            corporationId: Number(corpId),
+            companyId: compId ? Number(compId) : null,
+            subsidiaryId: subId ? Number(subId) : null
+          }
+        ];
+      }
+      return [];
+    };
+    
+    const mappedAccesses = getAccesses(user);
 
     // 1. Criar o payload para Inativação (PATCH)
     const patchPayload = {
@@ -165,6 +209,7 @@ export function useCloner() {
 
     // Backup de emergência (em string JSON organizada) para o caso de falha no POST final
     const backupString = JSON.stringify(postPayload, null, 2);
+    let isDeleted = false;
 
     try {
       const userId = user.id;
@@ -180,6 +225,10 @@ export function useCloner() {
           body: JSON.stringify(patchPayload),
         });
         addLog("Usuário inativado com sucesso.", "ok");
+        
+        // Aguarda 1.5s para o banco persistir a inativação
+        addLog("Aguardando 1.5 segundos para o banco de dados processar o status...", "info");
+        await new Promise((resolve) => setTimeout(resolve, 1500));
       } else {
         addLog("Passo 1/3: Usuário já está inativo. Pulando etapa de inativação.", "ok");
       }
@@ -189,6 +238,7 @@ export function useCloner() {
       await api.fetch(`${CONFIG.BASE_URL}/api-acl/user/${userId}`, {
         method: "DELETE",
       });
+      isDeleted = true;
       addLog("Cadastro antigo removido com sucesso (e-mail e nome de usuário liberados).", "ok");
 
       // PASSO C: REAUTENTICAR / RECONECTAR SE NECESSÁRIO (feito por debaixo dos panos pelo ApiService)
@@ -210,12 +260,17 @@ export function useCloner() {
       setSelectedUser(null);
       setSearchResults([]);
     } catch (error: any) {
-      console.error(error);
-      addLog(`FALHA NO PROCESSO: ${error.message || error}`, "err");
+      const innerMessage = error.cause instanceof Error ? error.cause.message : (error.cause ? String(error.cause) : "");
+      const fullErrorMsg = innerMessage ? `${error.message} - Motivo: ${innerMessage}` : (error.message || String(error));
+      addLog(`FALHA NO PROCESSO: ${fullErrorMsg}`, "err");
       
-      // Salva o JSON de backup no estado para que a UI exiba-o para resgate
-      setBackupJson(backupString);
-      addLog("Backup de segurança dos dados gerado. Você pode copiar as configurações abaixo para recriar o usuário manualmente.", "warn");
+      if (isDeleted) {
+        // Salva o JSON de backup no estado para que a UI exiba-o para resgate
+        setBackupJson(backupString);
+        addLog("O usuário original foi deletado! Por favor, utilize o JSON abaixo para recuperá-lo manualmente se necessário.", "warn");
+      } else {
+        addLog("O usuário original NÃO foi excluído pois a falha ocorreu antes da remoção definitiva.", "info");
+      }
     } finally {
       setIsCloning(false);
     }
