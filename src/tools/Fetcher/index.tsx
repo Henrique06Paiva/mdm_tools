@@ -16,7 +16,9 @@ export default function Fetcher() {
     isPaused,
     logs,
     stats,
-    results,
+    columns,
+    toggleColumn,
+    moveColumn,
     tableRows,
     startProcess,
     resumeProcess,
@@ -80,10 +82,13 @@ export default function Fetcher() {
         setSubsidiaryId={setSubsidiaryId}
         isProcessing={isProcessing}
         restrictions={restrictions}
+        columns={columns}
+        toggleColumn={toggleColumn}
+        moveColumn={moveColumn}
       />
 
       <ProgressPanel
-        results={results}
+        columns={columns}
         exportExcel={exportExcel}
         startProcess={startProcess}
         resumeProcess={resumeProcess}

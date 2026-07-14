@@ -16,9 +16,10 @@ import {
   TableRow,
 } from "../../components/ui/table";
 import { Badge } from "../../components/ui/badge";
+import type { ColumnConfig, TerminalRow } from "./useFetcher";
 
 interface ProgressPanelProps {
-  results: any[];
+  columns: ColumnConfig[];
   exportExcel: () => void;
   startProcess: () => void;
   resumeProcess: () => void;
@@ -34,11 +35,11 @@ interface ProgressPanelProps {
     currentPage: number;
     processedItems: number;
   };
-  tableRows: any[];
+  tableRows: TerminalRow[];
 }
 
 export function ProgressPanel({
-  results,
+  columns,
   exportExcel,
   startProcess,
   resumeProcess,
@@ -73,14 +74,14 @@ export function ProgressPanel({
           )}
         </CardTitle>
         <div className="flex flex-wrap gap-2 items-center">
-          {results.length > 0 && (
+          {tableRows.length > 0 && (
             <Button variant="secondary" size="sm" onClick={exportExcel}>
               <Download size={14} className="mr-2" /> Baixar Relatório
             </Button>
           )}
           {!isProcessing ? (
             <>
-              {(results.length > 0 || tableRows.length > 0) && (
+              {tableRows.length > 0 && (
                 <Button
                   size="sm"
                   variant="outline"
@@ -179,52 +180,98 @@ export function ProgressPanel({
           <Table>
             <TableHeader className="sticky top-0 bg-muted/95 backdrop-blur-sm z-10">
               <TableRow>
-                <TableHead className="w-[80px]">ID</TableHead>
-                <TableHead className="min-w-[150px]">Nome do Eqp.</TableHead>
-                <TableHead className="min-w-[120px]">Número de Série</TableHead>
-                <TableHead className="min-w-[130px]">Grupo</TableHead>
-                <TableHead>Energia</TableHead>
-                <TableHead>Conexão</TableHead>
-                <TableHead>Atividade</TableHead>
-                <TableHead>Bloqueio</TableHead>
-                <TableHead className="min-w-[150px]">Última Atualização</TableHead>
+                {columns.filter((c) => c.enabled).map((col) => {
+                  let widthClass = "";
+                  if (col.id === "id") widthClass = "w-[80px]";
+                  else if (col.id === "name") widthClass = "min-w-[150px]";
+                  else if (col.id === "serial") widthClass = "min-w-[120px]";
+                  else if (col.id === "eqGroup") widthClass = "min-w-[130px]";
+                  else if (col.id === "lastUpdateText") widthClass = "min-w-[150px]";
+                  return (
+                    <TableHead key={col.id} className={widthClass}>
+                      {col.label}
+                    </TableHead>
+                  );
+                })}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {tableRows.map((row, idx) => {
-                const powerVariant = row.powerText === "Ligado" ? "success" : "destructive";
-                const onlineVariant = row.onlineText === "Online" ? "success" : "destructive";
-                const statusVariant = row.statusText === "Ativo" ? "success" : "destructive";
-                const blockedVariant = row.blockedText === "Bloqueado" ? "destructive" : "success";
-
-                return (
-                  <TableRow key={idx}>
-                    <TableCell className="font-mono text-xs">{row.id}</TableCell>
-                    <TableCell className="font-medium text-sm">{row.name}</TableCell>
-                    <TableCell className="font-mono text-sm">{row.serial}</TableCell>
-                    <TableCell className="text-muted-foreground text-sm">{row.eqGroup}</TableCell>
-                    <TableCell>
-                      <Badge variant={powerVariant}>{row.powerText}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={onlineVariant}>{row.onlineText}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={statusVariant}>{row.statusText}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={blockedVariant}>{row.blockedText}</Badge>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground font-mono text-xs">
-                      {row.lastUpdateText}
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
+              {tableRows.map((row, idx) => (
+                <TableRow key={idx}>
+                  {columns.filter((c) => c.enabled).map((col) => {
+                    const val = row[col.id];
+                    if (col.id === "powerText") {
+                      const powerVariant = val === "Ligado" ? "success" : "destructive";
+                      return (
+                        <TableCell key={col.id}>
+                          <Badge variant={powerVariant}>{val}</Badge>
+                        </TableCell>
+                      );
+                    }
+                    if (col.id === "onlineText") {
+                      const onlineVariant = val === "Online" ? "success" : "destructive";
+                      return (
+                        <TableCell key={col.id}>
+                          <Badge variant={onlineVariant}>{val}</Badge>
+                        </TableCell>
+                      );
+                    }
+                    if (col.id === "statusText") {
+                      const statusVariant = val === "Ativo" ? "success" : "destructive";
+                      return (
+                        <TableCell key={col.id}>
+                          <Badge variant={statusVariant}>{val}</Badge>
+                        </TableCell>
+                      );
+                    }
+                    if (col.id === "blockedText") {
+                      const blockedVariant = val === "Bloqueado" ? "destructive" : "success";
+                      return (
+                        <TableCell key={col.id}>
+                          <Badge variant={blockedVariant}>{val}</Badge>
+                        </TableCell>
+                      );
+                    }
+                    if (col.id === "id") {
+                      return (
+                        <TableCell key={col.id} className="font-mono text-xs">
+                          {val}
+                        </TableCell>
+                      );
+                    }
+                    if (col.id === "serial") {
+                      return (
+                        <TableCell key={col.id} className="font-mono text-sm">
+                          {val}
+                        </TableCell>
+                      );
+                    }
+                    if (col.id === "lastUpdateText") {
+                      return (
+                        <TableCell key={col.id} className="text-muted-foreground font-mono text-xs">
+                          {val}
+                        </TableCell>
+                      );
+                    }
+                    if (col.id === "eqGroup") {
+                      return (
+                        <TableCell key={col.id} className="text-muted-foreground text-sm">
+                          {val}
+                        </TableCell>
+                      );
+                    }
+                    return (
+                      <TableCell key={col.id} className="text-sm font-medium">
+                        {val}
+                      </TableCell>
+                    );
+                  })}
+                </TableRow>
+              ))}
               {tableRows.length === 0 && (
                 <TableRow>
                   <TableCell
-                    colSpan={9}
+                    colSpan={columns.filter((c) => c.enabled).length || 1}
                     className="h-24 text-center text-muted-foreground"
                   >
                     Nenhum terminal carregado. Insira o ID da corporação e inicie a busca.

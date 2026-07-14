@@ -2,6 +2,67 @@ import { useState, useRef, useCallback } from "react";
 import * as XLSX from "xlsx";
 import { api, CONFIG } from "../../api";
 
+export interface ColumnConfig {
+  id: string;
+  label: string;
+  enabled: boolean;
+}
+
+export interface TerminalRow {
+  id: string | number;
+  name: string;
+  serial: string;
+  eqGroup: string;
+  powerText: string;
+  onlineText: string;
+  statusText: string;
+  blockedText: string;
+  lastUpdateText: string;
+  [key: string]: string | number;
+}
+
+export interface EquipmentItem {
+  id: string | number;
+  name?: string;
+  serial?: string;
+  serialNumber?: string;
+  imei?: string;
+  equipmentGroup?: unknown;
+  group?: unknown;
+  equipmentGroupName?: string;
+  groupName?: string;
+  grupo?: { name?: string };
+  powerOn?: boolean;
+  lastUpdate?: string | number | Date;
+  status?: number;
+  blocked?: boolean;
+  isBlocked?: boolean;
+}
+
+export interface FetchResponse {
+  data?: EquipmentItem[];
+  items?: EquipmentItem[];
+  total?: number;
+  totalPages?: number;
+  meta?: {
+    totalItems?: number;
+    total?: number;
+    totalPages?: number;
+  };
+}
+
+const DEFAULT_COLUMNS: ColumnConfig[] = [
+  { id: "id", label: "ID do Terminal", enabled: true },
+  { id: "name", label: "Nome do Equipamento", enabled: true },
+  { id: "serial", label: "Número de Série", enabled: true },
+  { id: "eqGroup", label: "Grupo de Equipamento", enabled: true },
+  { id: "powerText", label: "Status de Energia", enabled: true },
+  { id: "onlineText", label: "Conexão", enabled: true },
+  { id: "statusText", label: "Status de Atividade", enabled: true },
+  { id: "blockedText", label: "Bloqueio", enabled: true },
+  { id: "lastUpdateText", label: "Última Atualização", enabled: true },
+];
+
 export function useFetcher() {
   const restrictions = api.getRestrictions();
 
@@ -17,6 +78,46 @@ export function useFetcher() {
   const currentPageRef = useRef(1);
   const logIdRef = useRef(0);
 
+  const [columns, setColumns] = useState<ColumnConfig[]>(() => {
+    const saved = localStorage.getItem("mdm_fetcher_columns");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length === DEFAULT_COLUMNS.length) {
+          const parsedIds = parsed.map(c => c.id);
+          const hasAllIds = DEFAULT_COLUMNS.every(dc => parsedIds.includes(dc.id));
+          if (hasAllIds) return parsed;
+        }
+      } catch {
+        // ignore
+      }
+    }
+    return DEFAULT_COLUMNS;
+  });
+
+  const toggleColumn = useCallback((id: string) => {
+    setColumns(prev => {
+      const updated = prev.map(col => col.id === id ? { ...col, enabled: !col.enabled } : col);
+      localStorage.setItem("mdm_fetcher_columns", JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
+  const moveColumn = useCallback((index: number, direction: "up" | "down") => {
+    setColumns(prev => {
+      const nextIndex = direction === "up" ? index - 1 : index + 1;
+      if (nextIndex < 0 || nextIndex >= prev.length) return prev;
+      
+      const updated = [...prev];
+      const temp = updated[index];
+      updated[index] = updated[nextIndex];
+      updated[nextIndex] = temp;
+      
+      localStorage.setItem("mdm_fetcher_columns", JSON.stringify(updated));
+      return updated;
+    });
+  }, []);
+
   const [logs, setLogs] = useState<
     { id: number; message: string; type: string; time: string }[]
   >([]);
@@ -27,9 +128,8 @@ export function useFetcher() {
     currentPage: 0,
     processedItems: 0,
   });
-  
-  const [results, setResults] = useState<any[]>([]);
-  const [tableRows, setTableRows] = useState<any[]>([]);
+
+  const [tableRows, setTableRows] = useState<TerminalRow[]>([]);
 
   const addLog = useCallback(
     (message: string, type: "info" | "warn" | "err" | "ok" = "info") => {
@@ -46,7 +146,7 @@ export function useFetcher() {
     [],
   );
 
-  const runLoop = async (corpId: string, compId?: string, subId?: string) => {
+  const runLoop = useCallback(async (corpId: string, compId?: string, subId?: string) => {
     const limit = 50;
 
     while (true) {
@@ -65,16 +165,15 @@ export function useFetcher() {
         if (compId) url += `&companyId=${compId}`;
         if (subId) url += `&subsidiaryId=${subId}`;
 
-        const response: any = await api.fetch(url);
+        const response = (await api.fetch(url)) as FetchResponse;
 
         if (!isProcessingRef.current) {
           break;
         }
 
-        const items =
-          response.data ??
+        const items = (response.data ??
           response.items ??
-          (Array.isArray(response) ? response : []);
+          (Array.isArray(response) ? response : [])) as EquipmentItem[];
 
         if (!items || items.length === 0) {
           addLog("Nenhum terminal retornado nesta página. Busca encerrada.", "ok");
@@ -114,11 +213,10 @@ export function useFetcher() {
           );
         }
 
-        const newRows: any[] = [];
-        const newResults: any[] = [];
+        const newRows: TerminalRow[] = [];
         const tenMinsAgo = new Date(Date.now() - 10 * 60 * 1000);
 
-        items.forEach((item: any) => {
+        items.forEach((item) => {
           const id = item.id;
           const name = item.name || "Sem informação";
           const serial =
@@ -126,8 +224,8 @@ export function useFetcher() {
             "Sem informação";
 
           const eqGroup =
-            item.equipmentGroup?.name ||
-            item.group?.name ||
+            (item.equipmentGroup && typeof item.equipmentGroup === "object" ? (item.equipmentGroup as { name?: string }).name : null) ||
+            (item.group && typeof item.group === "object" ? (item.group as { name?: string }).name : null) ||
             item.equipmentGroupName ||
             item.groupName ||
             item.grupo?.name ||
@@ -164,22 +262,9 @@ export function useFetcher() {
             blockedText,
             lastUpdateText,
           });
-
-          newResults.push({
-            "ID do Terminal": id,
-            "Nome do Equipamento": name,
-            "Número de Série": serial,
-            "Grupo de Equipamento": eqGroup,
-            "Status de Energia": powerText,
-            "Conexão": onlineText,
-            "Status de Atividade": statusText,
-            "Bloqueio": blockedText,
-            "Última Atualização": lastUpdateText,
-          });
         });
 
         setTableRows((prev) => [...prev, ...newRows]);
-        setResults((prev) => [...prev, ...newResults]);
 
         setStats((s) => {
           const nextProcessed = s.processedItems + items.length;
@@ -212,15 +297,15 @@ export function useFetcher() {
         // Wait to avoid aggressive rate limits
         await new Promise((resolve) => setTimeout(resolve, 150));
         currentPageRef.current = page + 1;
-      } catch (err: any) {
-        addLog(`Erro ao buscar página ${page}: ${err.message || err}`, "err");
+      } catch (err) {
+        addLog(`Erro ao buscar página ${page}: ${(err as Error).message || String(err)}`, "err");
         setIsProcessing(false);
         isProcessingRef.current = false;
         setIsPaused(false);
         break;
       }
     }
-  };
+  }, [addLog]);
 
   const startProcess = useCallback(async () => {
     if (!api.hasToken()) {
@@ -259,7 +344,6 @@ export function useFetcher() {
       currentPage: 0,
       processedItems: 0,
     });
-    setResults([]);
     setTableRows([]);
 
     addLog(
@@ -268,7 +352,7 @@ export function useFetcher() {
     );
 
     await runLoop(corporationId, companyId, subsidiaryId);
-  }, [corporationId, companyId, subsidiaryId, addLog]);
+  }, [corporationId, companyId, subsidiaryId, addLog, runLoop]);
 
   const resumeProcess = useCallback(async () => {
     if (!api.hasToken()) {
@@ -283,7 +367,7 @@ export function useFetcher() {
 
     addLog(`Retomando busca a partir da página ${currentPageRef.current}...`, "info");
     await runLoop(corporationId, companyId, subsidiaryId);
-  }, [corporationId, companyId, subsidiaryId, addLog]);
+  }, [corporationId, companyId, subsidiaryId, addLog, runLoop]);
 
   const pauseProcess = useCallback(() => {
     setIsPaused(true);
@@ -301,7 +385,6 @@ export function useFetcher() {
   }, [addLog]);
 
   const resetProcess = useCallback(() => {
-    setResults([]);
     setTableRows([]);
     setStats({
       totalItems: 0,
@@ -320,12 +403,22 @@ export function useFetcher() {
   }, []);
 
   const exportExcel = useCallback(() => {
-    if (results.length === 0) return;
+    if (tableRows.length === 0) return;
+
+    const enabledColumns = columns.filter((c) => c.enabled);
+    const dataToExport = tableRows.map((row) => {
+      const exportedRow: Record<string, string | number> = {};
+      enabledColumns.forEach((col) => {
+        exportedRow[col.label] = row[col.id];
+      });
+      return exportedRow;
+    });
+
     const wb = XLSX.utils.book_new();
-    const ws = XLSX.utils.json_to_sheet(results);
+    const ws = XLSX.utils.json_to_sheet(dataToExport);
     XLSX.utils.book_append_sheet(wb, ws, "Terminais");
     XLSX.writeFile(wb, `MDM_Terminais_Corp_${corporationId}_${new Date().getTime()}.xlsx`);
-  }, [results, corporationId]);
+  }, [tableRows, columns, corporationId]);
 
   return {
     corporationId,
@@ -339,7 +432,9 @@ export function useFetcher() {
     logs,
     addLog,
     stats,
-    results,
+    columns,
+    toggleColumn,
+    moveColumn,
     tableRows,
     startProcess,
     resumeProcess,
