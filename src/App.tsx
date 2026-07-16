@@ -21,6 +21,7 @@ import Fetcher from "./tools/Fetcher";
 import Cloner from "./tools/Cloner";
 import { Button } from "./components/ui/button";
 import Login from "./components/Login";
+import FeedbackModal from "./components/FeedbackModal";
 
 const Header = ({
   status,
@@ -256,6 +257,7 @@ function App() {
       ) : (
         <Login onLoginSuccess={handleLoginSuccess} />
       )}
+      <FeedbackModal isAuthenticated={isAuthenticated} username={username} />
     </ThemeProvider>
   );
 }
