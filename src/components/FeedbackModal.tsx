@@ -105,14 +105,16 @@ export default function FeedbackModal({
       <button
         onClick={() => setIsOpen(true)}
         title="Enviar Feedback"
-        className="fixed bottom-6 right-6 z-40 flex items-center bg-primary text-primary-foreground h-12 w-12 hover:w-32 rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 hover:shadow-primary/20 transition-all duration-300 border border-border cursor-pointer group px-3.5 overflow-hidden"
+        className="fixed bottom-6 right-6 z-40 flex items-center bg-primary text-primary-foreground h-12 w-12 hover:w-32 rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 hover:shadow-primary/20 transition-all duration-300 border border-border cursor-pointer group overflow-hidden"
       >
-        <div className="flex items-center gap-2">
-          <MessageSquare
-            size={18}
-            className="transition-transform duration-300 group-hover:rotate-6 shrink-0"
-          />
-          <span className="opacity-0 max-w-0 group-hover:opacity-100 group-hover:max-w-[80px] transition-all duration-300 text-sm font-semibold whitespace-nowrap overflow-hidden">
+        <div className="flex items-center h-full w-full">
+          <div className="w-12 h-12 flex items-center justify-center shrink-0">
+            <MessageSquare
+              size={18}
+              className="transition-transform duration-300 group-hover:rotate-6"
+            />
+          </div>
+          <span className="opacity-0 max-w-0 group-hover:opacity-100 group-hover:max-w-[70px] transition-all duration-300 text-sm font-semibold whitespace-nowrap overflow-hidden pr-4 -ml-1.5">
             Feedback
           </span>
         </div>
