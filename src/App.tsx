@@ -130,7 +130,7 @@ const MainApp = ({
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-24 sm:pt-10 sm:pb-32">
         <Header
           status={authStatus}
           isAuthenticating={isAuthenticating}

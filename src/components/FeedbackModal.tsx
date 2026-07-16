@@ -105,13 +105,17 @@ export default function FeedbackModal({
       <button
         onClick={() => setIsOpen(true)}
         title="Enviar Feedback"
-        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-primary text-primary-foreground sm:px-4 sm:py-3 p-3 rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 hover:shadow-primary/20 transition-all duration-300 border border-border cursor-pointer group"
+        className="fixed bottom-6 right-6 z-40 flex items-center bg-primary text-primary-foreground h-12 w-12 hover:w-32 rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 hover:shadow-primary/20 transition-all duration-300 border border-border cursor-pointer group px-3.5 overflow-hidden"
       >
-        <MessageSquare
-          size={18}
-          className="transition-transform duration-300 group-hover:rotate-6"
-        />
-        <span className="hidden sm:inline text-sm font-semibold">Feedback</span>
+        <div className="flex items-center gap-2">
+          <MessageSquare
+            size={18}
+            className="transition-transform duration-300 group-hover:rotate-6 shrink-0"
+          />
+          <span className="opacity-0 max-w-0 group-hover:opacity-100 group-hover:max-w-[80px] transition-all duration-300 text-sm font-semibold whitespace-nowrap overflow-hidden">
+            Feedback
+          </span>
+        </div>
       </button>
 
       {/* Modal Overlay */}
