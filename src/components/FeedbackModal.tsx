@@ -101,7 +101,7 @@ export default function FeedbackModal({
 
   return (
     <>
-      {/* Botão de FeedBack */}
+      {/* Botão de Feedback */}
       <button
         onClick={() => setIsOpen(true)}
         title="Enviar Feedback"
@@ -151,7 +151,7 @@ export default function FeedbackModal({
                   </p>
                 </div>
 
-                {/* Seletor de Tipo (Bug vs Sugestão) */}
+                {/* Seletor de Tipo */}
                 <div className="flex gap-3">
                   <button
                     type="button"
@@ -180,7 +180,7 @@ export default function FeedbackModal({
                   </button>
                 </div>
 
-                {/* Campo de Identificação (Só exibe se deslogado) */}
+                {/* Campo de Identificação */}
                 {!isAuthenticated ? (
                   <div>
                     <label className="text-xs font-semibold text-muted-foreground block mb-1">
@@ -275,12 +275,12 @@ export default function FeedbackModal({
                   Muito obrigado pela contribuição. O time de desenvolvimento
                   foi notificado e irá analisar.
                 </p>
-                {/* Nota para ativação se for o primeiro envio */}
+                {/* Nota para ativação se for o primeiro envio
                 <p className="text-[10px] text-muted-foreground/60 mt-4 max-w-xs italic">
                   Obs: Se for a primeira vez que você envia, verifique a caixa
                   de entrada de henriqueesteves06@gmail.com para ativar o
                   recebimento.
-                </p>
+                </p> */}
                 <Button
                   onClick={() => setIsOpen(false)}
                   className="mt-6 rounded-xl text-xs h-9 px-6 bg-primary text-primary-foreground hover:bg-primary/90 cursor-pointer"
