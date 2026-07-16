@@ -101,7 +101,7 @@ export default function FeedbackModal({
 
   return (
     <>
-      {/* Botão Flutuante (FAB) */}
+      {/* Botão de FeedBack */}
       <button
         onClick={() => setIsOpen(true)}
         title="Enviar Feedback"
@@ -114,7 +114,7 @@ export default function FeedbackModal({
               className="transition-transform duration-300 group-hover:rotate-6"
             />
           </div>
-          <span className="opacity-0 max-w-0 group-hover:opacity-100 group-hover:max-w-[70px] transition-all duration-300 text-sm font-semibold whitespace-nowrap overflow-hidden pr-4 -ml-1.5">
+          <span className="opacity-0 max-w-0 group-hover:opacity-100 group-hover:max-w-[78px] transition-all duration-400 text-sm font-semibold whitespace-nowrap overflow-hidden pr-4 -ml-1.5">
             Feedback
           </span>
         </div>
