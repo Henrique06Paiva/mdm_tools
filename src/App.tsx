@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { ThemeProvider, useTheme } from "./ThemeContext";
 import { api } from "./api";
 import {
@@ -178,6 +179,18 @@ const MainApp = ({
     setIsTourOpen(true);
   };
 
+  useEffect(() => {
+    const el = document.querySelector('[data-tour="tab-list"]');
+    if (el) {
+      const rect = el.getBoundingClientRect();
+      const style = window.getComputedStyle(el);
+      console.log(`TABLIST DEBUG - Rect: top=${rect.top} bottom=${rect.bottom} left=${rect.left} right=${rect.right} width=${rect.width} height=${rect.height}`);
+      console.log(`TABLIST DEBUG - Style: position=${style.position} bottom=${style.bottom} display=${style.display} visibility=${style.visibility} zIndex=${style.zIndex} opacity=${style.opacity}`);
+    } else {
+      console.log("TABLIST DEBUG: Element not found in DOM");
+    }
+  }, [activeTab]);
+
   return (
     <div className="min-h-screen bg-background">
       <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-32 sm:pt-10 sm:pb-32">
@@ -189,12 +202,12 @@ const MainApp = ({
           onStartTour={handleStartTour}
         />
 
+        {/* Desktop Tab Navigation */}
         <div
           role="tablist"
           data-tour="tab-list"
           className="
-            flex gap-2 mb-8 bg-muted/20 p-1.5 border border-border/40 w-full scrollbar-none
-            mobile-bottom-nav
+            hidden md:flex gap-2 mb-8 bg-muted/20 p-1.5 border border-border/40 w-full scrollbar-none
             md:flex-nowrap md:flex-wrap md:w-fit rounded-xl overflow-x-auto
           "
         >
@@ -251,6 +264,52 @@ const MainApp = ({
           {activeTab === "cloner" && <Cloner />}
         </main>
       </div>
+
+      {/* Mobile Floating Bottom Tab Navigation (via Portal to escape parenting context issues) */}
+      {createPortal(
+        <div
+          role="tablist"
+          className="mobile-bottom-nav flex gap-2 border border-border/40 scrollbar-none md:hidden"
+        >
+          <TabButton
+            label="Validação de versão"
+            icon={Smartphone}
+            isActive={activeTab === "checker"}
+            onClick={() => setActiveTab("checker")}
+          />
+          <TabButton
+            label="Busca de APKs"
+            icon={Package}
+            isActive={activeTab === "apk"}
+            onClick={() => setActiveTab("apk")}
+          />
+          <TabButton
+            label="Deleção em Massa"
+            icon={Trash2}
+            isActive={activeTab === "deleter"}
+            onClick={() => setActiveTab("deleter")}
+          />
+          <TabButton
+            label="Force Data em Massa"
+            icon={RefreshCw}
+            isActive={activeTab === "forcer"}
+            onClick={() => setActiveTab("forcer")}
+          />
+          <TabButton
+            label="Exportador de Terminais"
+            icon={List}
+            isActive={activeTab === "fetcher"}
+            onClick={() => setActiveTab("fetcher")}
+          />
+          <TabButton
+            label="Clonar Usuário"
+            icon={UserCheck}
+            isActive={activeTab === "cloner"}
+            onClick={() => setActiveTab("cloner")}
+          />
+        </div>,
+        document.body
+      )}
 
       <SystemTour
         isOpen={isTourOpen}
