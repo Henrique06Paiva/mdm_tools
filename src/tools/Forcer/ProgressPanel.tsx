@@ -175,7 +175,7 @@ export function ProgressPanel({
           />
         </div>
 
-        <div className="max-h-[400px] overflow-auto">
+        <div className="max-h-[400px] overflow-auto w-full max-w-full overflow-x-auto">
           <Table>
             <TableHeader className="sticky top-0 bg-muted/80 backdrop-blur-sm z-10">
               <TableRow>

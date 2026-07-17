@@ -106,7 +106,7 @@ export default function FeedbackModal({
         onClick={() => setIsOpen(true)}
         title="Enviar Feedback"
         data-tour="feedback-button"
-        className="fixed bottom-6 right-6 z-40 flex items-center bg-primary text-primary-foreground h-12 w-12 hover:w-32 rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 hover:shadow-primary/20 transition-all duration-300 border border-border cursor-pointer group overflow-hidden"
+        className="fixed bottom-6 right-6 max-md:bottom-[88px] max-md:right-4 z-40 flex items-center bg-primary text-primary-foreground h-12 w-12 hover:w-32 rounded-full shadow-lg hover:shadow-xl hover:scale-105 active:scale-95 hover:shadow-primary/20 transition-all duration-300 border border-border cursor-pointer group overflow-hidden"
       >
         <div className="flex items-center h-full w-full">
           <div className="w-12 h-12 flex items-center justify-center shrink-0">
