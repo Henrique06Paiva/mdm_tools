@@ -423,14 +423,16 @@ export const SearchForm = memo(function SearchForm({
           )}
         </div>
 
-        <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 mt-8 pt-6 border-t border-border/40">
+        <div className="flex flex-row justify-end flex-wrap gap-3 mt-8 pt-6 border-t border-border/40">
           {results.length > 0 && (
             <Button
               variant="secondary"
               onClick={exportExcel}
-              className="w-full sm:w-auto"
+              className="cursor-pointer"
+              aria-label="Baixar Planilha"
             >
-              <Download size={16} className="mr-2" /> Baixar Planilha
+              <Download size={16} className="sm:mr-2" />
+              <span className="hidden sm:inline">Baixar Planilha</span>
             </Button>
           )}
           {!isProcessing ? (
@@ -439,24 +441,30 @@ export const SearchForm = memo(function SearchForm({
                 <Button
                   variant="outline"
                   onClick={resetSearch}
-                  className="w-full sm:w-auto border-border hover:bg-muted cursor-pointer"
+                  className="border-border hover:bg-muted cursor-pointer"
+                  aria-label="Limpar Histórico"
                 >
-                  <RotateCcw size={16} className="mr-2" /> Limpar Histórico
+                  <RotateCcw size={16} className="sm:mr-2" />
+                  <span className="hidden sm:inline">Limpar Histórico</span>
                 </Button>
               )}
               <Button
                 variant="outline"
                 onClick={clearFilters}
-                className="w-full sm:w-auto border-border hover:bg-muted cursor-pointer"
+                className="border-border hover:bg-muted cursor-pointer"
+                aria-label="Limpar Filtros"
               >
-                <X size={16} className="mr-2" /> Limpar Filtros
+                <X size={16} className="sm:mr-2" />
+                <span className="hidden sm:inline">Limpar Filtros</span>
               </Button>
               <Button
                 onClick={startSearch}
                 disabled={!api.hasToken() || !corpId.trim()}
-                className="w-full sm:w-auto bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
+                aria-label="Buscar APK"
               >
-                <Search size={16} className="mr-2" /> Buscar APK
+                <Search size={16} className="sm:mr-2" />
+                <span className="hidden sm:inline">Buscar APK</span>
               </Button>
             </>
           ) : (
@@ -464,25 +472,31 @@ export const SearchForm = memo(function SearchForm({
               {isPaused ? (
                 <Button
                   onClick={resumeSearch}
-                  className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white"
+                  className="bg-green-600 hover:bg-green-700 text-white cursor-pointer"
+                  aria-label="Retomar Busca"
                 >
-                  <Search size={16} className="mr-2" /> Retomar
+                  <Search size={16} className="sm:mr-2" />
+                  <span className="hidden sm:inline">Retomar</span>
                 </Button>
               ) : (
                 <Button
                   variant="outline"
                   onClick={pauseSearch}
-                  className="w-full sm:w-auto"
+                  className="cursor-pointer"
+                  aria-label="Pausar Busca"
                 >
-                  <Pause size={16} className="mr-2" /> Pausar
+                  <Pause size={16} className="sm:mr-2" />
+                  <span className="hidden sm:inline">Pausar</span>
                 </Button>
               )}
               <Button
                 variant="destructive"
                 onClick={stopSearch}
-                className="w-full sm:w-auto"
+                className="cursor-pointer"
+                aria-label="Parar Busca"
               >
-                <Square size={16} className="mr-2" /> Parar
+                <Square size={16} className="sm:mr-2" />
+                <span className="hidden sm:inline">Parar</span>
               </Button>
             </>
           )}

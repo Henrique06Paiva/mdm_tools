@@ -117,10 +117,13 @@ const TabButton = ({
     onClick={onClick}
     role="tab"
     aria-selected={isActive}
+    aria-label={label}
     data-tour={dataTour}
     className={`
-      flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 shrink-0 cursor-pointer
+      flex items-center justify-center transition-all duration-200 shrink-0 cursor-pointer
       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
+      max-sm:p-3.5 max-sm:rounded-xl max-sm:flex-1
+      sm:gap-2 sm:px-4 sm:py-2.5 sm:rounded-lg text-sm font-semibold
       ${
         isActive
           ? "bg-primary text-primary-foreground shadow-md shadow-primary/20 scale-[1.02]"
@@ -129,10 +132,10 @@ const TabButton = ({
     `}
   >
     <Icon
-      size={16}
+      size={18}
       className={isActive ? "text-primary-foreground" : "text-muted-foreground"}
     />
-    {label}
+    <span className="hidden sm:inline">{label}</span>
   </button>
 );
 
@@ -177,7 +180,7 @@ const MainApp = ({
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-24 sm:pt-10 sm:pb-32">
+      <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-32 sm:pt-10 sm:pb-32">
         <Header
           status={authStatus}
           isAuthenticating={isAuthenticating}
@@ -189,7 +192,11 @@ const MainApp = ({
         <div
           role="tablist"
           data-tour="tab-list"
-          className="flex overflow-x-auto flex-nowrap md:flex-wrap gap-2 mb-8 bg-muted/20 p-1.5 rounded-xl border border-border/40 w-full md:w-fit scrollbar-none"
+          className="
+            flex gap-2 mb-8 bg-muted/20 p-1.5 border border-border/40 w-full scrollbar-none
+            max-sm:fixed max-sm:bottom-0 max-sm:left-0 max-sm:right-0 max-sm:z-50 max-sm:bg-background max-sm:border-t max-sm:rounded-none max-sm:shadow-[0_-4px_12px_rgba(0,0,0,0.15)] max-sm:mb-0 max-sm:p-3 max-sm:justify-around max-sm:flex-row
+            sm:flex-nowrap md:flex-wrap md:w-fit rounded-xl overflow-x-auto
+          "
         >
           <TabButton
             label="Validação de versão"

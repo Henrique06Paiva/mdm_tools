@@ -78,8 +78,10 @@ export function ProgressPanel({
                   variant="outline"
                   onClick={resetProcess}
                   className="border-border hover:bg-muted cursor-pointer"
+                  aria-label="Limpar Histórico"
                 >
-                  <RotateCcw size={14} className="mr-2" /> Limpar Histórico
+                  <RotateCcw size={14} className="sm:mr-2" />
+                  <span className="hidden sm:inline">Limpar Histórico</span>
                 </Button>
               )}
               <Button
@@ -88,8 +90,10 @@ export function ProgressPanel({
                 onClick={startProcess}
                 disabled={serials.length === 0 || !api.hasToken()}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground cursor-pointer"
+                aria-label="Iniciar Processo"
               >
-                <Play size={14} className="mr-2" /> Iniciar Processo
+                <Play size={14} className="sm:mr-2" />
+                <span className="hidden sm:inline">Iniciar Processo</span>
               </Button>
             </>
           ) : (
@@ -99,16 +103,30 @@ export function ProgressPanel({
                   size="sm"
                   onClick={resumeProcess}
                   className="bg-green-600 hover:bg-green-700 text-white"
+                  aria-label="Retomar Processo"
                 >
-                  <Play size={14} className="mr-2" /> Retomar
+                  <Play size={14} className="sm:mr-2" />
+                  <span className="hidden sm:inline">Retomar</span>
                 </Button>
               ) : (
-                <Button size="sm" variant="outline" onClick={pauseProcess}>
-                  <Pause size={14} className="mr-2" /> Pausar
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={pauseProcess}
+                  aria-label="Pausar Processo"
+                >
+                  <Pause size={14} className="sm:mr-2" />
+                  <span className="hidden sm:inline">Pausar</span>
                 </Button>
               )}
-              <Button size="sm" variant="destructive" onClick={stopProcess}>
-                <Square size={14} className="mr-2" /> Parar
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={stopProcess}
+                aria-label="Parar Processo"
+              >
+                <Square size={14} className="sm:mr-2" />
+                <span className="hidden sm:inline">Parar</span>
               </Button>
             </>
           )}

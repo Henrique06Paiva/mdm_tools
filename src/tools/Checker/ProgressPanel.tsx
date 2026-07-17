@@ -98,8 +98,14 @@ export function ProgressPanel({
         </CardTitle>
         <div className="flex flex-wrap gap-2 items-center">
           {results.length > 0 && (
-            <Button variant="secondary" size="sm" onClick={exportExcel}>
-              <Download size={14} className="mr-2" /> Baixar Relatório
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={exportExcel}
+              aria-label="Baixar Relatório"
+            >
+              <Download size={14} className="sm:mr-2" />
+              <span className="hidden sm:inline">Baixar Relatório</span>
             </Button>
           )}
           {!isProcessing ? (
@@ -110,8 +116,10 @@ export function ProgressPanel({
                   variant="outline"
                   onClick={handleReset}
                   className="border-border hover:bg-muted cursor-pointer"
+                  aria-label="Limpar Histórico"
                 >
-                  <RotateCcw size={14} className="mr-2" /> Limpar Histórico
+                  <RotateCcw size={14} className="sm:mr-2" />
+                  <span className="hidden sm:inline">Limpar Histórico</span>
                 </Button>
               )}
               <Button
@@ -119,8 +127,10 @@ export function ProgressPanel({
                 onClick={startProcess}
                 disabled={isStartDisabled}
                 className="cursor-pointer"
+                aria-label="Iniciar Consulta"
               >
-                <Play size={14} className="mr-2" /> Iniciar Consulta
+                <Play size={14} className="sm:mr-2" />
+                <span className="hidden sm:inline">Iniciar Consulta</span>
               </Button>
             </>
           ) : (
@@ -130,24 +140,30 @@ export function ProgressPanel({
                   size="sm"
                   onClick={resumeProcess}
                   className="bg-green-600 hover:bg-green-700 text-white"
+                  aria-label="Retomar Consulta"
                 >
-                  <Play size={14} className="mr-2" /> Retomar
+                  <Play size={14} className="sm:mr-2" />
+                  <span className="hidden sm:inline">Retomar</span>
                 </Button>
               ) : (
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={pauseProcess}
+                  aria-label="Pausar Consulta"
                 >
-                  <Pause size={14} className="mr-2" /> Pausar
+                  <Pause size={14} className="sm:mr-2" />
+                  <span className="hidden sm:inline">Pausar</span>
                 </Button>
               )}
               <Button
                 size="sm"
                 variant="destructive"
                 onClick={stopProcess}
+                aria-label="Parar Consulta"
               >
-                <Square size={14} className="mr-2" /> Parar
+                <Square size={14} className="sm:mr-2" />
+                <span className="hidden sm:inline">Parar</span>
               </Button>
             </>
           )}

@@ -180,13 +180,14 @@ export default function Cloner() {
                   type="submit"
                   disabled={isSearching || isCloning}
                   className="cursor-pointer"
+                  aria-label="Pesquisar"
                 >
                   {isSearching ? (
-                    <RefreshCw className="animate-spin mr-1" size={16} />
+                    <RefreshCw className="animate-spin sm:mr-1" size={16} />
                   ) : (
-                    <Search className="mr-1" size={16} />
+                    <Search className="sm:mr-1" size={16} />
                   )}
-                  Pesquisar
+                  <span className="hidden sm:inline">Pesquisar</span>
                 </Button>
               </div>
             </form>
@@ -217,13 +218,14 @@ export default function Cloner() {
                   variant="secondary"
                   disabled={isFetchingDetails || isCloning}
                   className="cursor-pointer"
+                  aria-label="Carregar"
                 >
                   {isFetchingDetails ? (
-                    <RefreshCw className="animate-spin mr-1" size={16} />
+                    <RefreshCw className="animate-spin sm:mr-1" size={16} />
                   ) : (
-                    <User className="mr-1" size={16} />
+                    <User className="sm:mr-1" size={16} />
                   )}
-                  Carregar
+                  <span className="hidden sm:inline">Carregar</span>
                 </Button>
               </div>
             </form>
@@ -407,9 +409,10 @@ export default function Cloner() {
                       onClick={() => setIsConfirmOpen(true)}
                       disabled={isCloning}
                       className="w-full sm:w-auto font-semibold cursor-pointer"
+                      aria-label="Iniciar Clonagem"
                     >
-                      <Copy size={16} className="mr-2" />
-                      Iniciar Clonagem
+                      <Copy size={16} className="sm:mr-2" />
+                      <span className="hidden sm:inline">Iniciar Clonagem</span>
                     </Button>
                   </div>
                   {showRawJson && (
