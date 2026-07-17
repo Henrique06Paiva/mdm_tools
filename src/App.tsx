@@ -42,26 +42,26 @@ const Header = ({
   const { theme, toggleTheme } = useTheme();
 
   return (
-    <header className="flex justify-between items-center mb-8 pb-4 border-b border-border/40">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight mb-1 text-foreground">
+    <header className="flex justify-between items-center mb-8 pb-4 border-b border-border/40 gap-4">
+      <div className="min-w-0">
+        <h1 className="text-lg sm:text-2xl font-bold tracking-tight text-foreground whitespace-nowrap">
           MDM Hub - Tools
         </h1>
       </div>
-      <div className="flex items-center gap-4" data-tour="header-controls">
+      <div className="flex items-center gap-1.5 sm:gap-4 flex-shrink-0" data-tour="header-controls">
         {username && (
           <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/20 px-2.5 py-1 rounded-md border border-border/30">
             <User size={12} className="text-muted-foreground/80" />
             <span className="font-mono">{username}</span>
           </div>
         )}
-        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground bg-muted/30 px-3 py-1.5 rounded-full border border-border/50">
+        <div className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-muted-foreground bg-muted/30 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border border-border/50">
           <div
             className={`w-2 h-2 rounded-full ${isAuthenticating ? "bg-amber-500 animate-pulse" : "bg-green-500"}`}
           ></div>
           {status}
         </div>
-        <div className="w-px h-6 bg-border"></div>
+        <div className="w-px h-6 bg-border hidden sm:block"></div>
         {username && (
           <>
             <Button
@@ -69,11 +69,11 @@ const Header = ({
               size="icon"
               onClick={onStartTour}
               title="Iniciar Tour"
-              className="text-muted-foreground hover:text-foreground rounded-full cursor-pointer"
+              className="text-muted-foreground hover:text-foreground rounded-full cursor-pointer h-8 w-8 sm:h-9 sm:w-9"
             >
-              <HelpCircle size={18} />
+              <HelpCircle size={16} className="sm:w-[18px] sm:h-[18px]" />
             </Button>
-            <div className="w-px h-6 bg-border"></div>
+            <div className="w-px h-6 bg-border hidden sm:block"></div>
           </>
         )}
         <Button
@@ -81,9 +81,13 @@ const Header = ({
           size="icon"
           onClick={toggleTheme}
           title="Alternar Tema"
-          className="text-muted-foreground hover:text-foreground rounded-full cursor-pointer"
+          className="text-muted-foreground hover:text-foreground rounded-full cursor-pointer h-8 w-8 sm:h-9 sm:w-9"
         >
-          {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+          {theme === "dark" ? (
+            <Sun size={16} className="sm:w-[18px] sm:h-[18px]" />
+          ) : (
+            <Moon size={16} className="sm:w-[18px] sm:h-[18px]" />
+          )}
         </Button>
         {username && (
           <Button
@@ -91,9 +95,9 @@ const Header = ({
             size="icon"
             onClick={onLogout}
             title="Sair"
-            className="text-muted-foreground hover:text-destructive rounded-full cursor-pointer"
+            className="text-muted-foreground hover:text-destructive rounded-full cursor-pointer h-8 w-8 sm:h-9 sm:w-9"
           >
-            <LogOut size={18} />
+            <LogOut size={16} className="sm:w-[18px] sm:h-[18px]" />
           </Button>
         )}
       </div>
