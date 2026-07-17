@@ -27,14 +27,10 @@ import FeedbackModal from "./components/FeedbackModal";
 import SystemTour from "./components/SystemTour";
 
 const Header = ({
-  status,
-  isAuthenticating,
   username,
   onLogout,
   onStartTour,
 }: {
-  status: string;
-  isAuthenticating: boolean;
   username: string | null;
   onLogout: () => void;
   onStartTour: () => void;
@@ -55,13 +51,6 @@ const Header = ({
             <span className="font-mono">{username}</span>
           </div>
         )}
-        <div className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-muted-foreground bg-muted/30 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full border border-border/50">
-          <div
-            className={`w-2 h-2 rounded-full ${isAuthenticating ? "bg-amber-500 animate-pulse" : "bg-green-500"}`}
-          ></div>
-          {status}
-        </div>
-        <div className="w-px h-6 bg-border hidden sm:block"></div>
         {username && (
           <>
             <Button
@@ -154,8 +143,6 @@ const MainApp = ({
   const [activeTab, setActiveTab] = useState<
     "checker" | "deleter" | "apk" | "forcer" | "fetcher" | "cloner"
   >("checker");
-  const [authStatus] = useState("Autenticado");
-  const [isAuthenticating] = useState(false);
   const [isTourOpen, setIsTourOpen] = useState(false);
 
   // Trigger tour automatically on first access (per username)
@@ -199,8 +186,6 @@ const MainApp = ({
     <div className="min-h-screen bg-background">
       <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-32 sm:pt-10 sm:pb-32">
         <Header
-          status={authStatus}
-          isAuthenticating={isAuthenticating}
           username={username}
           onLogout={onLogout}
           onStartTour={handleStartTour}
