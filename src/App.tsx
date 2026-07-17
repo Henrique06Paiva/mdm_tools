@@ -170,18 +170,6 @@ const MainApp = ({
     setIsTourOpen(true);
   };
 
-  useEffect(() => {
-    const el = document.querySelector('[data-tour="tab-list"]');
-    if (el) {
-      const rect = el.getBoundingClientRect();
-      const style = window.getComputedStyle(el);
-      console.log(`TABLIST DEBUG - Rect: top=${rect.top} bottom=${rect.bottom} left=${rect.left} right=${rect.right} width=${rect.width} height=${rect.height}`);
-      console.log(`TABLIST DEBUG - Style: position=${style.position} bottom=${style.bottom} display=${style.display} visibility=${style.visibility} zIndex=${style.zIndex} opacity=${style.opacity}`);
-    } else {
-      console.log("TABLIST DEBUG: Element not found in DOM");
-    }
-  }, [activeTab]);
-
   return (
     <div className="min-h-screen bg-background">
       <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 pt-6 pb-32 sm:pt-10 sm:pb-32">
