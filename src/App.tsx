@@ -122,8 +122,8 @@ const TabButton = ({
     className={`
       flex items-center justify-center transition-all duration-200 shrink-0 cursor-pointer
       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2
-      max-sm:p-3.5 max-sm:rounded-xl max-sm:flex-1
-      sm:gap-2 sm:px-4 sm:py-2.5 sm:rounded-lg text-sm font-semibold
+      mobile-bottom-nav-btn
+      md:gap-2 md:px-4 md:py-2.5 md:rounded-lg text-sm font-semibold
       ${
         isActive
           ? "bg-primary text-primary-foreground shadow-md shadow-primary/20 scale-[1.02]"
@@ -135,7 +135,7 @@ const TabButton = ({
       size={18}
       className={isActive ? "text-primary-foreground" : "text-muted-foreground"}
     />
-    <span className="hidden sm:inline">{label}</span>
+    <span className="hidden md:inline">{label}</span>
   </button>
 );
 
@@ -194,8 +194,8 @@ const MainApp = ({
           data-tour="tab-list"
           className="
             flex gap-2 mb-8 bg-muted/20 p-1.5 border border-border/40 w-full scrollbar-none
-            max-sm:fixed max-sm:bottom-0 max-sm:left-0 max-sm:right-0 max-sm:z-50 max-sm:bg-background max-sm:border-t max-sm:rounded-none max-sm:shadow-[0_-4px_12px_rgba(0,0,0,0.15)] max-sm:mb-0 max-sm:p-3 max-sm:justify-around max-sm:flex-row
-            sm:flex-nowrap md:flex-wrap md:w-fit rounded-xl overflow-x-auto
+            mobile-bottom-nav
+            md:flex-nowrap md:flex-wrap md:w-fit rounded-xl overflow-x-auto
           "
         >
           <TabButton
