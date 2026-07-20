@@ -67,6 +67,12 @@
       "skillPath": ".claude/skills/release-skills/SKILL.md",
       "computedHash": "5409cb532b40552f455827f69938193f6b3f3b7e853565e816eee4fa147ab8c7"
     },
+    "supabase-server": {
+      "source": "supabase/server",
+      "sourceType": "github",
+      "skillPath": "skills/supabase-server/SKILL.md",
+      "computedHash": "de3068fa3b606fa50a661992ab7e3a8570d310d793b7b8a7e6ddb1a9b716b1a6"
+    },
     "tailwind-design-system": {
       "source": "wshobson/agents",
       "sourceType": "github",
