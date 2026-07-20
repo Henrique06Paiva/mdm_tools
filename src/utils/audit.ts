@@ -6,6 +6,11 @@ export async function logAudit(
   payload: any,
   status: "SUCCESS" | "FAILED" = "SUCCESS"
 ) {
+  const envUrl = import.meta.env.VITE_SUPABASE_URL;
+  if (!envUrl || envUrl.includes("placeholder")) {
+    return;
+  }
+
   try {
     const username = localStorage.getItem("mdm_username") || "Desconhecido";
     

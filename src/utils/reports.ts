@@ -7,6 +7,11 @@ export async function uploadReport(
   totalItems: number,
   fileBlob: Blob
 ): Promise<string | null> {
+  const envUrl = import.meta.env.VITE_SUPABASE_URL;
+  if (!envUrl || envUrl.includes("placeholder")) {
+    return null;
+  }
+
   try {
     const username = localStorage.getItem("mdm_username") || "Desconhecido";
     const filename = `report_${toolType}_${new Date().getTime()}.xlsx`;

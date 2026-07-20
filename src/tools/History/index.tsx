@@ -37,6 +37,10 @@ export default function History() {
   const [selectedPayload, setSelectedPayload] = useState<string | null>(null);
 
   const fetchReports = async () => {
+    const envUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (!envUrl || envUrl.includes("placeholder")) {
+      return;
+    }
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -54,6 +58,10 @@ export default function History() {
   };
 
   const fetchAudits = async () => {
+    const envUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (!envUrl || envUrl.includes("placeholder")) {
+      return;
+    }
     setLoading(true);
     try {
       const { data, error } = await supabase
