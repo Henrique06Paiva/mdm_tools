@@ -1,6 +1,8 @@
 import { useState, useRef, useCallback } from "react";
 import * as XLSX from "xlsx";
 import { api, CONFIG } from "../../api";
+import { logAudit } from "../../utils/audit";
+import { uploadReport } from "../../utils/reports";
 
 export function useChecker() {
   const [packages, setPackages] = useState<string[]>(["com.mdmservice"]);
@@ -359,6 +361,12 @@ export function useChecker() {
             setIsProcessing(false);
             isProcessingRef.current = false;
             setIsPaused(false);
+
+            logAudit("CHECKER_FINISH", corporationId, {
+              searchSource,
+              packages: validPackages,
+              totalItems: results.length + items.length
+            });
             break;
           }
 
@@ -529,6 +537,12 @@ export function useChecker() {
         isProcessingRef.current = false;
         setIsPaused(false);
         addLog("Consulta finalizada com sucesso.", "ok");
+
+        logAudit("CHECKER_FINISH", corporationId || api.getRestrictions()?.defaultCorpId || "N/A", {
+          searchSource,
+          packages: validPackages,
+          totalItems: totalSerials
+        });
       }
     }
   };
@@ -596,6 +610,12 @@ export function useChecker() {
       addLog(`Iniciando consulta completa para corporação ID ${corporationId}.`, "info");
     }
 
+    logAudit("CHECKER_START", corporationId || api.getRestrictions()?.defaultCorpId || "N/A", {
+      searchSource,
+      packages: validPackages,
+      totalItems
+    });
+
     await runLoop(validPackages);
   }, [searchSource, serials, packages, corporationId, companyId, subsidiaryId, fetchAllApps, includeSystemApps, addLog]);
 
@@ -637,6 +657,13 @@ export function useChecker() {
     } else {
       addLog(`Retomando busca a partir da página ${currentPageRef.current}...`, "info");
     }
+
+    logAudit("CHECKER_RESUME", corporationId || api.getRestrictions()?.defaultCorpId || "N/A", {
+      searchSource,
+      currentIndex: currentIndexRef.current,
+      currentPage: currentPageRef.current
+    });
+
     await runLoop(validPackages);
   }, [searchSource, serials, packages, corporationId, companyId, subsidiaryId, fetchAllApps, includeSystemApps, addLog]);
 
@@ -644,19 +671,33 @@ export function useChecker() {
     setIsPaused(true);
     isPausedRef.current = true;
     addLog("Processo pausado pelo usuário.", "warn");
-  }, [addLog]);
+
+    logAudit("CHECKER_PAUSE", corporationId || api.getRestrictions()?.defaultCorpId || "N/A", {
+      searchSource,
+      currentIndex: currentIndexRef.current,
+      currentPage: currentPageRef.current
+    });
+  }, [addLog, corporationId, searchSource]);
 
   const stopProcess = useCallback(() => {
     setIsProcessing(false);
     isProcessingRef.current = false;
     setIsPaused(false);
     isPausedRef.current = false;
+
+    logAudit("CHECKER_STOP", corporationId || api.getRestrictions()?.defaultCorpId || "N/A", {
+      searchSource,
+      currentIndex: currentIndexRef.current,
+      currentPage: currentPageRef.current,
+      processedCount: results.length
+    });
+
     currentIndexRef.current = 0;
     currentPageRef.current = 1;
     addLog("Processo interrompido pelo usuário.", "warn");
-  }, [addLog]);
+  }, [addLog, corporationId, searchSource, results.length]);
 
-  const exportExcel = useCallback(() => {
+  const exportExcel = useCallback(async () => {
     if (results.length === 0) return;
 
     // Detect all unique keys
@@ -697,8 +738,24 @@ export function useChecker() {
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(formattedResults, { header });
     XLSX.utils.book_append_sheet(wb, ws, "Versões");
+
+    // Gera arquivo array buffer
+    try {
+      const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+      const blob = new Blob([wbout], { type: "application/octet-stream" });
+      uploadReport(
+        "CHECKER",
+        corporationId || api.getRestrictions()?.defaultCorpId || "N/A",
+        { packages, fetchAllApps, includeSystemApps, searchSource, companyId, subsidiaryId },
+        results.length,
+        blob
+      );
+    } catch (err) {
+      console.warn("Erro ao preparar e fazer upload do excel para o Supabase:", err);
+    }
+
     XLSX.writeFile(wb, `MDM_Versoes_${new Date().getTime()}.xlsx`);
-  }, [results]);
+  }, [results, corporationId, packages, fetchAllApps, includeSystemApps, searchSource, companyId, subsidiaryId]);
 
   const resetProcess = useCallback(() => {
     setResults([]);

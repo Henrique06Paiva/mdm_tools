@@ -1,6 +1,8 @@
 import { useState, useRef, useCallback } from "react";
 import * as XLSX from "xlsx";
 import { api, CONFIG } from "../../api";
+import { logAudit } from "../../utils/audit";
+import { uploadReport } from "../../utils/reports";
 
 export interface ColumnConfig {
   id: string;
@@ -291,6 +293,12 @@ export function useFetcher() {
           setIsProcessing(false);
           isProcessingRef.current = false;
           setIsPaused(false);
+
+          logAudit("FETCHER_FINISH", corporationId, {
+            companyId,
+            subsidiaryId,
+            totalItems: tableRows.length + items.length
+          });
           break;
         }
 
@@ -351,6 +359,11 @@ export function useFetcher() {
       "info"
     );
 
+    logAudit("FETCHER_START", corporationId, {
+      companyId,
+      subsidiaryId
+    });
+
     await runLoop(corporationId, companyId, subsidiaryId);
   }, [corporationId, companyId, subsidiaryId, addLog, runLoop]);
 
@@ -366,6 +379,13 @@ export function useFetcher() {
     isPausedRef.current = false;
 
     addLog(`Retomando busca a partir da página ${currentPageRef.current}...`, "info");
+
+    logAudit("FETCHER_RESUME", corporationId, {
+      companyId,
+      subsidiaryId,
+      currentPage: currentPageRef.current
+    });
+
     await runLoop(corporationId, companyId, subsidiaryId);
   }, [corporationId, companyId, subsidiaryId, addLog, runLoop]);
 
@@ -373,16 +393,30 @@ export function useFetcher() {
     setIsPaused(true);
     isPausedRef.current = true;
     addLog("Processo pausado pelo usuário.", "warn");
-  }, [addLog]);
+
+    logAudit("FETCHER_PAUSE", corporationId, {
+      companyId,
+      subsidiaryId,
+      currentPage: currentPageRef.current
+    });
+  }, [addLog, corporationId, companyId, subsidiaryId]);
 
   const stopProcess = useCallback(() => {
     setIsProcessing(false);
     isProcessingRef.current = false;
     setIsPaused(false);
     isPausedRef.current = false;
+
+    logAudit("FETCHER_STOP", corporationId, {
+      companyId,
+      subsidiaryId,
+      currentPage: currentPageRef.current,
+      processedCount: tableRows.length
+    });
+
     currentPageRef.current = 1;
     addLog("Processo interrompido pelo usuário.", "warn");
-  }, [addLog]);
+  }, [addLog, corporationId, companyId, subsidiaryId, tableRows.length]);
 
   const resetProcess = useCallback(() => {
     setTableRows([]);
@@ -402,7 +436,7 @@ export function useFetcher() {
     logIdRef.current = 0;
   }, []);
 
-  const exportExcel = useCallback(() => {
+  const exportExcel = useCallback(async () => {
     if (tableRows.length === 0) return;
 
     const enabledColumns = columns.filter((c) => c.enabled);
@@ -417,8 +451,24 @@ export function useFetcher() {
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(dataToExport);
     XLSX.utils.book_append_sheet(wb, ws, "Terminais");
+
+    // Gera arquivo array buffer
+    try {
+      const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+      const blob = new Blob([wbout], { type: "application/octet-stream" });
+      uploadReport(
+        "FETCHER",
+        corporationId,
+        { companyId, subsidiaryId, columns: enabledColumns.map(c => c.id) },
+        tableRows.length,
+        blob
+      );
+    } catch (err) {
+      console.warn("Erro ao preparar e fazer upload do excel para o Supabase:", err);
+    }
+
     XLSX.writeFile(wb, `MDM_Terminais_Corp_${corporationId}_${new Date().getTime()}.xlsx`);
-  }, [tableRows, columns, corporationId]);
+  }, [tableRows, columns, corporationId, companyId, subsidiaryId]);
 
   return {
     corporationId,

@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import * as XLSX from "xlsx";
 import { api, CONFIG } from "../../api";
+import { logAudit } from "../../utils/audit";
 
 export function useDeleter() {
   const [serials, setSerials] = useState<string[]>([]);
@@ -12,6 +13,7 @@ export function useDeleter() {
   const failRef = useRef(0);
   const skipRef = useRef(0);
   const groupRef = useRef(0);
+  const resultsAccumulatorRef = useRef<any[]>([]);
   const [logs, setLogs] = useState<
     { id: number; message: string; type: string; time: string }[]
   >([]);
@@ -199,6 +201,7 @@ export function useDeleter() {
         }
 
         const row = { serial, eqId, statusBadge, detailText };
+        resultsAccumulatorRef.current.push(row);
         setTableRows((prev) => [...prev, row]);
         setStats((s) => ({
           ...s,
@@ -226,6 +229,15 @@ export function useDeleter() {
       setIsProcessing(false);
       setIsPaused(false);
       addLog("Processo de deleção em massa finalizado.", "ok");
+      
+      logAudit("DELETER_FINISH", api.getRestrictions()?.defaultCorpId || "N/A", {
+        total: serials.length,
+        done: doneRef.current,
+        fail: failRef.current,
+        skip: skipRef.current,
+        group: groupRef.current,
+        rows: resultsAccumulatorRef.current,
+      });
     }
   };
 
@@ -243,6 +255,7 @@ export function useDeleter() {
     failRef.current = 0;
     skipRef.current = 0;
     groupRef.current = 0;
+    resultsAccumulatorRef.current = [];
 
     setStats({ total: serials.length, done: 0, fail: 0, skip: 0, group: 0 });
     setTableRows([]);
@@ -250,6 +263,10 @@ export function useDeleter() {
       `Iniciando processo de deleção para ${serials.length} seriais.`,
       "info",
     );
+
+    logAudit("DELETER_START", api.getRestrictions()?.defaultCorpId || "N/A", {
+      total: serials.length,
+    });
 
     await runLoop();
   }, [serials, addLog]);
@@ -265,6 +282,11 @@ export function useDeleter() {
     isPausedRef.current = false;
     addLog("Retomando deleção em massa...", "info");
 
+    logAudit("DELETER_RESUME", api.getRestrictions()?.defaultCorpId || "N/A", {
+      total: serials.length,
+      currentIndex: currentIndexRef.current,
+    });
+
     await runLoop();
   }, [serials, addLog]);
 
@@ -272,19 +294,40 @@ export function useDeleter() {
     setIsPaused(true);
     isPausedRef.current = true;
     addLog("Processo pausado pelo usuário.", "warn");
-  }, [addLog]);
+
+    logAudit("DELETER_PAUSE", api.getRestrictions()?.defaultCorpId || "N/A", {
+      total: serials.length,
+      currentIndex: currentIndexRef.current,
+      done: doneRef.current,
+      fail: failRef.current,
+      skip: skipRef.current,
+      group: groupRef.current,
+    });
+  }, [addLog, serials]);
 
   const stopProcess = useCallback(() => {
     setIsProcessing(false);
     setIsPaused(false);
     isPausedRef.current = false;
+
+    logAudit("DELETER_STOP", api.getRestrictions()?.defaultCorpId || "N/A", {
+      total: serials.length,
+      currentIndex: currentIndexRef.current,
+      done: doneRef.current,
+      fail: failRef.current,
+      skip: skipRef.current,
+      group: groupRef.current,
+      rows: resultsAccumulatorRef.current,
+    });
+
     currentIndexRef.current = 0;
     doneRef.current = 0;
     failRef.current = 0;
     skipRef.current = 0;
     groupRef.current = 0;
+    resultsAccumulatorRef.current = [];
     addLog("Processo interrompido pelo usuário.", "warn");
-  }, [addLog]);
+  }, [addLog, serials]);
 
   const resetProcess = useCallback(() => {
     setTableRows([]);

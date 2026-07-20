@@ -21,6 +21,8 @@ import ApkFinder from "./tools/ApkFinder";
 import Forcer from "./tools/Forcer";
 import Fetcher from "./tools/Fetcher";
 import Cloner from "./tools/Cloner";
+import HistoryTool from "./tools/History";
+import { History as HistoryIcon } from "lucide-react";
 import { Button } from "./components/ui/button";
 import Login from "./components/Login";
 import FeedbackModal from "./components/FeedbackModal";
@@ -141,7 +143,7 @@ const MainApp = ({
   onLogout: () => void;
 }) => {
   const [activeTab, setActiveTab] = useState<
-    "checker" | "deleter" | "apk" | "forcer" | "fetcher" | "cloner"
+    "checker" | "deleter" | "apk" | "forcer" | "fetcher" | "cloner" | "history"
   >("checker");
   const [isTourOpen, setIsTourOpen] = useState(false);
 
@@ -230,6 +232,13 @@ const MainApp = ({
             onClick={() => setActiveTab("cloner")}
             data-tour="tab-cloner"
           />
+          <TabButton
+            label="Histórico & Auditoria"
+            icon={HistoryIcon}
+            isActive={activeTab === "history"}
+            onClick={() => setActiveTab("history")}
+            data-tour="tab-history"
+          />
         </div>
 
         <main className="animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -239,6 +248,7 @@ const MainApp = ({
           {activeTab === "forcer" && <Forcer />}
           {activeTab === "fetcher" && <Fetcher />}
           {activeTab === "cloner" && <Cloner />}
+          {activeTab === "history" && <HistoryTool />}
         </main>
       </div>
 
@@ -283,6 +293,12 @@ const MainApp = ({
             icon={UserCheck}
             isActive={activeTab === "cloner"}
             onClick={() => setActiveTab("cloner")}
+          />
+          <TabButton
+            label="Histórico"
+            icon={HistoryIcon}
+            isActive={activeTab === "history"}
+            onClick={() => setActiveTab("history")}
           />
         </div>,
         document.body

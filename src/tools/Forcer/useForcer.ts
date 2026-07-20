@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import * as XLSX from "xlsx";
 import { api, CONFIG } from "../../api";
+import { logAudit } from "../../utils/audit";
 
 export interface Log {
   id: number;
@@ -32,6 +33,7 @@ export function useForcer() {
   const doneRef = useRef(0);
   const failRef = useRef(0);
   const skipRef = useRef(0);
+  const resultsAccumulatorRef = useRef<TableRow[]>([]);
   const [logs, setLogs] = useState<Log[]>([]);
   const [stats, setStats] = useState<ForcerStats>({
     total: 0,
@@ -139,6 +141,7 @@ export function useForcer() {
             detailText,
             time: queryTime,
           };
+          resultsAccumulatorRef.current.push(row);
           setTableRows((prev) => [...prev, row]);
           setStats((s) => ({ ...s, skip: skipRef.current }));
           return;
@@ -177,6 +180,7 @@ export function useForcer() {
           detailText,
           time: queryTime,
         };
+        resultsAccumulatorRef.current.push(row);
         setTableRows((prev) => [...prev, row]);
         setStats((s) => ({
           ...s,
@@ -205,6 +209,14 @@ export function useForcer() {
       setIsProcessing(false);
       setIsPaused(false);
       addLog("Processo de envio de Force Data em massa finalizado.", "ok");
+
+      logAudit("FORCER_FINISH", api.getRestrictions()?.defaultCorpId || "N/A", {
+        total: serials.length,
+        done: doneRef.current,
+        fail: failRef.current,
+        skip: skipRef.current,
+        rows: resultsAccumulatorRef.current,
+      });
     }
   }, [serials, addLog, setTableRows, setStats, setIsProcessing, setIsPaused]);
 
@@ -226,6 +238,7 @@ export function useForcer() {
     doneRef.current = 0;
     failRef.current = 0;
     skipRef.current = 0;
+    resultsAccumulatorRef.current = [];
 
     setStats({ total: serials.length, done: 0, fail: 0, skip: 0 });
     setTableRows([]);
@@ -233,6 +246,10 @@ export function useForcer() {
       `Iniciando envio de Force Data para ${serials.length} seriais.`,
       "info",
     );
+
+    logAudit("FORCER_START", api.getRestrictions()?.defaultCorpId || "N/A", {
+      total: serials.length,
+    });
 
     await runLoop();
   }, [serials.length, addLog, runLoop]);
@@ -248,25 +265,49 @@ export function useForcer() {
     isPausedRef.current = false;
     addLog("Retomando envio de Force Data...", "info");
 
+    logAudit("FORCER_RESUME", api.getRestrictions()?.defaultCorpId || "N/A", {
+      total: serials.length,
+      currentIndex: currentIndexRef.current,
+    });
+
     await runLoop();
-  }, [addLog, runLoop]);
+  }, [addLog, runLoop, serials.length]);
 
   const pauseProcess = useCallback(() => {
     setIsPaused(true);
     isPausedRef.current = true;
     addLog("Processo pausado pelo usuário.", "warn");
-  }, [addLog]);
+
+    logAudit("FORCER_PAUSE", api.getRestrictions()?.defaultCorpId || "N/A", {
+      total: serials.length,
+      currentIndex: currentIndexRef.current,
+      done: doneRef.current,
+      fail: failRef.current,
+      skip: skipRef.current,
+    });
+  }, [addLog, serials.length]);
 
   const stopProcess = useCallback(() => {
     setIsProcessing(false);
     setIsPaused(false);
     isPausedRef.current = false;
+
+    logAudit("FORCER_STOP", api.getRestrictions()?.defaultCorpId || "N/A", {
+      total: serials.length,
+      currentIndex: currentIndexRef.current,
+      done: doneRef.current,
+      fail: failRef.current,
+      skip: skipRef.current,
+      rows: resultsAccumulatorRef.current,
+    });
+
     currentIndexRef.current = 0;
     doneRef.current = 0;
     failRef.current = 0;
     skipRef.current = 0;
+    resultsAccumulatorRef.current = [];
     addLog("Processo interrompido pelo usuário.", "warn");
-  }, [addLog]);
+  }, [addLog, serials.length]);
 
   const resetProcess = useCallback(() => {
     setTableRows([]);
