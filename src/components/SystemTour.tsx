@@ -52,14 +52,14 @@ export default function SystemTour({
       title: "Menu de Ferramentas 🛠️",
       content:
         "Aqui você encontra todos os utilitários disponíveis. Cada aba oferece uma funcionalidade específica para facilitar seu dia a dia.",
-      position: "bottom",
+      position: "right",
     },
     {
       selector: '[data-tour="tab-checker"]',
       title: "Validação de Versão 📱",
       content:
         "Consulte e compare se as versões de firmware, pacotes e do agente instaladas nos dispositivos estão corretas e em conformidade.\n\nComo usar:\n1. Selecione a corporação/empresa e defina os pacotes de apps (ex: com.mdmservice).\n2. Insira ou envie uma lista de números de série dos terminais.\n3. O sistema fará a varredura automática, destacando em vermelho as versões desatualizadas e em verde as corretas.",
-      position: "bottom",
+      position: "right",
       tabToActivate: "checker",
     },
     {
@@ -67,7 +67,7 @@ export default function SystemTour({
       title: "Busca de APKs 📦",
       content:
         "Localize e baixe os arquivos de instalação (.apk) e versões de aplicativos cadastrados em uma determinada corporação no MDM.\n\nComo usar:\n1. Insira o ID da Corporação (campo obrigatório).\n2. Opcionalmente, especifique o Package Name e a versão que deseja encontrar.\n3. Clique em Buscar APK para listar as correspondências e obter os links diretos para download.",
-      position: "bottom",
+      position: "right",
       tabToActivate: "apk",
     },
     {
@@ -75,7 +75,7 @@ export default function SystemTour({
       title: "Deleção em Massa 🗑️",
       content:
         "Exclua múltiplos terminais inativos, obsoletos ou duplicados do MDM de uma única vez.\n\nComo usar:\n1. Insira os IDs dos aparelhos diretamente ou faça o upload de uma planilha Excel (.xlsx).\n2. Revise a lista de exclusão carregada na tabela.\n3. Confirme a ação no modal para iniciar a deleção em lote, acompanhando o progresso e os logs em tempo real.",
-      position: "bottom",
+      position: "right",
       tabToActivate: "deleter",
     },
     {
@@ -83,7 +83,7 @@ export default function SystemTour({
       title: "Forçar Sincronização 🔄",
       content:
         "Envie comandos em lote para forçar a atualização imediata dos dados dos aparelhos com o servidor de MDM.\n\nComo usar:\n1. Digite ou faça o upload da lista de identificadores dos terminais.\n2. Clique em iniciar para enviar o comando de sincronismo forçado.\n3. Acompanhe a taxa de sucesso no painel estatístico e nos logs de processamento.",
-      position: "bottom",
+      position: "right",
       tabToActivate: "forcer",
     },
     {
@@ -91,7 +91,7 @@ export default function SystemTour({
       title: "Exportador de Terminais 📋",
       content:
         "Gere relatórios completos de todos os terminais registrados sob determinadas corporações, empresas ou filiais.\n\nComo usar:\n1. Filtre informando o ID da Corporação (e opcionalmente Empresa/Filial).\n2. Clique em Iniciar Busca para carregar os dados de forma paginada.\n3. Ao terminar, clique em Baixar Relatório para exportar todos os dados em uma planilha Excel (.xlsx) contendo seriais, grupos e status.",
-      position: "bottom",
+      position: "right",
       tabToActivate: "fetcher",
     },
     {
@@ -99,7 +99,7 @@ export default function SystemTour({
       title: "Clonar Usuário 👥",
       content:
         "Resolva problemas de permissões ou ACLs corrompidas de um usuário copiando suas credenciais de forma limpa.\n\nComo usar:\n1. Busque o usuário por e-mail/nome ou insira diretamente seu ID.\n2. Revise os detalhes carregados na tela.\n3. Clique em Iniciar Clonagem. O sistema fará backup, inativará e excluirá a conta antiga e, em seguida, recriará uma idêntica e ativa.",
-      position: "bottom",
+      position: "right",
       tabToActivate: "cloner",
     },
     {
@@ -107,7 +107,7 @@ export default function SystemTour({
       title: "Configurações e Tema ⚙️",
       content:
         "Acompanhe seu status de conexão com os serviços do MDM, alterne entre tema claro e escuro para maior conforto visual, ou finalize sua sessão com segurança.",
-      position: "bottom",
+      position: "right",
     },
     {
       selector: '[data-tour="feedback-button"]',
@@ -151,7 +151,12 @@ export default function SystemTour({
         return;
       }
 
-      const element = document.querySelector(step.selector);
+      const element = Array.from(document.querySelectorAll(step.selector)).find(
+        (el) => {
+          const rect = el.getBoundingClientRect();
+          return rect.width > 0 && rect.height > 0;
+        }
+      );
       if (element) {
         // Smoothly scroll the element into view if not fully visible
         element.scrollIntoView({ behavior: "smooth", block: "nearest" });
@@ -210,7 +215,12 @@ export default function SystemTour({
 
     let top = 0;
     let left = 0;
-    const pos = step.position || "bottom";
+
+    const isMobile = window.innerWidth < 768;
+    let pos = step.position || "bottom";
+    if (isMobile && pos === "right") {
+      pos = "bottom";
+    }
 
     if (pos === "bottom") {
       top = targetRect.top + targetRect.height + margin;
