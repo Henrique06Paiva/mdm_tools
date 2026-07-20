@@ -42,6 +42,16 @@ CREATE POLICY "Allow anonymous inserts to reports" ON reports
 CREATE POLICY "Allow anonymous select from reports" ON reports 
     FOR SELECT USING (true);
 
--- 5. Configurar Bucket de Storage para os arquivos Excel
--- Nota: Crie manualmente um Bucket de Storage no painel do Supabase com o nome: "reports"
--- E marque a opção "Public" ou configure políticas para acesso público de leitura.
+-- 5. Configurar Bucket de Storage e suas políticas para os arquivos Excel
+-- Criar o bucket "reports" caso não exista
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('reports', 'reports', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Permitir uploads públicos (qualquer usuário/anon) para o bucket "reports"
+CREATE POLICY "Allow public uploads to reports bucket" ON storage.objects
+    FOR INSERT WITH CHECK (bucket_id = 'reports');
+
+-- Permitir leitura pública de arquivos do bucket "reports"
+CREATE POLICY "Allow public select from reports bucket" ON storage.objects
+    FOR SELECT USING (bucket_id = 'reports');
