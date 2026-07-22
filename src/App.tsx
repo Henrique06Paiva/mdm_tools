@@ -190,7 +190,7 @@ const MainApp = ({
             className="flex flex-col gap-1.5"
           >
             <TabButton
-              label="Validação de versão"
+              label="Versões"
               icon={Smartphone}
               isActive={activeTab === "checker"}
               onClick={() => setActiveTab("checker")}
@@ -321,7 +321,7 @@ const MainApp = ({
           className="mobile-bottom-nav flex gap-2 border border-border/40 scrollbar-none md:hidden"
         >
           <TabButton
-            label="Validação de versão"
+            label="Versões"
             icon={Smartphone}
             isActive={activeTab === "checker"}
             onClick={() => setActiveTab("checker")}

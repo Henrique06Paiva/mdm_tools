@@ -56,7 +56,7 @@ export default function SystemTour({
     },
     {
       selector: '[data-tour="tab-checker"]',
-      title: "Validação de Versão 📱",
+      title: "Versões 📱",
       content:
         "Consulte e compare se as versões de firmware, pacotes e do agente instaladas nos dispositivos estão corretas e em conformidade.\n\nComo usar:\n1. Selecione a corporação/empresa e defina os pacotes de apps (ex: com.mdmservice).\n2. Insira ou envie uma lista de números de série dos terminais.\n3. O sistema fará a varredura automática, destacando em vermelho as versões desatualizadas e em verde as corretas.",
       position: "right",
@@ -155,7 +155,7 @@ export default function SystemTour({
         (el) => {
           const rect = el.getBoundingClientRect();
           return rect.width > 0 && rect.height > 0;
-        }
+        },
       );
       if (element) {
         // Smoothly scroll the element into view if not fully visible
