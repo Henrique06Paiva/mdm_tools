@@ -1,6 +1,6 @@
 # MDM Hub Tools — Documentação Técnica
 
-> **Versão:** 1.2.0 | **Stack:** React 19 + TypeScript + Vite + Tailwind CSS v4
+> **Versão:** 1.2.1 | **Stack:** React 19 + TypeScript + Vite + Tailwind CSS v4
 
 ---
 
@@ -12,12 +12,12 @@ A aplicação funciona como um painel centralizado de ferramentas que se comunic
 
 ### Propósito Central
 
-| Problema | Solução |
-|---|---|
-| Verificar versão de apps em centenas de terminais manualmente | **Validação de Versão** em massa via planilha |
-| Localizar o link de download de um APK específico | **Busca de APKs** por package name e versão |
-| Remover dispositivos obsoletos do inventário em bulk | **Deleção em Massa** a partir de lista de seriais |
-| Forçar sincronização de dados em terminais offline | **Force Data em Massa** via lista de seriais |
+| Problema                                                      | Solução                                           |
+| ------------------------------------------------------------- | ------------------------------------------------- |
+| Verificar versão de apps em centenas de terminais manualmente | **Versões** em massa via planilha                 |
+| Localizar o link de download de um APK específico             | **Busca de APKs** por package name e versão       |
+| Remover dispositivos obsoletos do inventário em bulk          | **Deleção em Massa** a partir de lista de seriais |
+| Forçar sincronização de dados em terminais offline            | **Force Data em Massa** via lista de seriais      |
 
 ---
 
@@ -72,7 +72,7 @@ mdm_tools/
 │   │       ├── input.tsx
 │   │       └── table.tsx
 │   └── tools/
-│       ├── Checker/              — Ferramenta: Validação de versão
+│       ├── Checker/              — Ferramenta: Versões
 │       ├── ApkFinder/            — Ferramenta: Busca de APKs
 │       ├── Deleter/              — Ferramenta: Deleção em massa
 │       └── Forcer/               — Ferramenta: Force Data em massa
@@ -88,27 +88,27 @@ mdm_tools/
 
 ### Dependências de Produção
 
-| Pacote | Versão | Uso |
-|---|---|---|
-| `react` | ^19.2 | Framework UI principal |
-| `react-dom` | ^19.2 | Renderização no DOM |
-| `tailwindcss` | ^4.3 | Utilitários CSS |
-| `@tailwindcss/vite` | ^4.3 | Plugin Vite para Tailwind v4 |
-| `lucide-react` | ^1.16 | Ícones SVG |
-| `xlsx` | ^0.18.5 | Leitura e escrita de planilhas Excel/CSV |
-| `@radix-ui/react-slot` | ^1.2 | Composição de componentes (botão) |
-| `class-variance-authority` | ^0.7 | Variantes de classes CSS |
-| `clsx` | ^2.1 | Utilitário para classes condicionais |
-| `tailwind-merge` | ^3.6 | Merge de classes Tailwind sem conflitos |
+| Pacote                     | Versão  | Uso                                      |
+| -------------------------- | ------- | ---------------------------------------- |
+| `react`                    | ^19.2.8 | Framework UI principal                   |
+| `react-dom`                | ^19.2.8 | Renderização no DOM                      |
+| `tailwindcss`              | ^4.3.3  | Utilitários CSS                          |
+| `@tailwindcss/vite`        | ^4.3.3  | Plugin Vite para Tailwind v4             |
+| `lucide-react`             | ^1.25.0 | Ícones SVG                               |
+| `xlsx`                     | ^0.18.5 | Leitura e escrita de planilhas Excel/CSV |
+| `@radix-ui/react-slot`     | ^1.3.0  | Composição de componentes (botão)        |
+| `class-variance-authority` | ^0.7.1  | Variantes de classes CSS                 |
+| `clsx`                     | ^2.1.1  | Utilitário para classes condicionais     |
+| `tailwind-merge`           | ^3.6.0  | Merge de classes Tailwind sem conflitos  |
 
 ### Dependências de Desenvolvimento
 
-| Pacote | Versão | Uso |
-|---|---|---|
-| `vite` | ^8.0 | Bundler e dev server |
-| `typescript` | ~6.0 | Tipagem estática |
-| `@vitejs/plugin-react` | ^6.0 | Plugin React para Vite (usa Oxc) |
-| `eslint` | ^10.3 | Linting de código |
+| Pacote                 | Versão  | Uso                              |
+| ---------------------- | ------- | -------------------------------- |
+| `vite`                 | ^8.1.5  | Bundler e dev server             |
+| `typescript`           | ~6.0.3  | Tipagem estática                 |
+| `@vitejs/plugin-react` | ^6.0.4  | Plugin React para Vite (usa Oxc) |
+| `eslint`               | ^10.7.0 | Linting de código                |
 
 ---
 
@@ -143,18 +143,19 @@ A classe `ApiService` implementa renovação transparente de token:
 ### Rate Limiting (HTTP 429)
 
 O serviço detecta respostas `429 Too Many Requests` e aplica **exponential backoff**:
+
 - Aguarda `backoff` ms (inicialmente 1000ms)
 - Dobra o tempo a cada tentativa: 1s → 2s → 4s
 - Máximo de 3 tentativas por requisição
 
 ### Persistência de Sessão
 
-| Dado | Storage | Motivo |
-|---|---|---|
-| `mdm_token` | `localStorage` | Persiste entre abas e sessões do browser |
-| `mdm_username` | `sessionStorage` | Limpo ao fechar a aba |
-| `mdm_password` | `sessionStorage` | Limpo ao fechar a aba |
-| `mdm_theme` | `localStorage` | Persiste preferência de tema |
+| Dado           | Storage          | Motivo                                   |
+| -------------- | ---------------- | ---------------------------------------- |
+| `mdm_token`    | `localStorage`   | Persiste entre abas e sessões do browser |
+| `mdm_username` | `sessionStorage` | Limpo ao fechar a aba                    |
+| `mdm_password` | `sessionStorage` | Limpo ao fechar a aba                    |
+| `mdm_theme`    | `localStorage`   | Persiste preferência de tema             |
 
 > ⚠️ **Atenção:** A senha é armazenada em `sessionStorage` para viabilizar o auto-refresh silencioso do token. Isso é um trade-off de segurança: garante UX sem interrupções em sessões longas, mas a senha fica em texto claro no storage do browser durante a sessão ativa.
 
@@ -171,27 +172,28 @@ A classe `ApiService` é instanciada como singleton exportado (`export const api
 ### Configuração
 
 ```typescript
-CONFIG.BASE_URL = process.env.VITE_API_BASE_URL || "https://api.gateway.mdm-hub.com"
-CONFIG.TENANT   = process.env.VITE_API_TENANT   || "portal"
+CONFIG.BASE_URL =
+  process.env.VITE_API_BASE_URL || "https://api.gateway.mdm-hub.com";
+CONFIG.TENANT = process.env.VITE_API_TENANT || "portal";
 ```
 
 ### Métodos Públicos
 
-| Método | Descrição |
-|---|---|
-| `login(username, password)` | Autentica e salva o token |
-| `logout()` | Limpa sessão e notifica listeners |
-| `fetch(url, options, retries, backoff)` | Wrapper de fetch com auth, retry e rate-limit |
-| `hasToken()` | Retorna `true` se há um token ativo |
-| `getUsername()` | Retorna o username da sessão atual |
-| `getTenant()` | Retorna o código do tenant ativo |
-| `registerOnUnauthorized(callback)` | Registra callback para evento de logout forçado |
+| Método                                  | Descrição                                       |
+| --------------------------------------- | ----------------------------------------------- |
+| `login(username, password)`             | Autentica e salva o token                       |
+| `logout()`                              | Limpa sessão e notifica listeners               |
+| `fetch(url, options, retries, backoff)` | Wrapper de fetch com auth, retry e rate-limit   |
+| `hasToken()`                            | Retorna `true` se há um token ativo             |
+| `getUsername()`                         | Retorna o username da sessão atual              |
+| `getTenant()`                           | Retorna o código do tenant ativo                |
+| `registerOnUnauthorized(callback)`      | Registra callback para evento de logout forçado |
 
 ---
 
 ## 7. Ferramentas
 
-### 7.1 Validação de Versão (Checker)
+### 7.1 Versões (Checker)
 
 **Localização:** `src/tools/Checker/`
 
@@ -227,16 +229,16 @@ Para cada serial (em lotes de 5 simultâneos):
 
 #### Dados gerados por serial
 
-| Campo | Fonte API |
-|---|---|
-| Serial Number | Input da planilha |
-| Nome do Equipamento | `eq.name` |
-| Grupo de Equipamento | `eq.equipmentGroup.name` (vários fallbacks) |
-| Política de Uso | `eq.usePolicy.name` (vários fallbacks) |
-| Status | `eq.status === 1` → Ativo / Inativo |
-| Conexão | `eq.powerOn && lastUpdate < 10min` → Online / Offline |
-| Versão por package | `applicationVersionHistoric[].version` |
-| Horário da Consulta | Timestamp local |
+| Campo                | Fonte API                                             |
+| -------------------- | ----------------------------------------------------- |
+| Serial Number        | Input da planilha                                     |
+| Nome do Equipamento  | `eq.name`                                             |
+| Grupo de Equipamento | `eq.equipmentGroup.name` (vários fallbacks)           |
+| Política de Uso      | `eq.usePolicy.name` (vários fallbacks)                |
+| Status               | `eq.status === 1` → Ativo / Inativo                   |
+| Conexão              | `eq.powerOn && lastUpdate < 10min` → Online / Offline |
+| Versão por package   | `applicationVersionHistoric[].version`                |
+| Horário da Consulta  | Timestamp local                                       |
 
 #### Exportação
 
@@ -277,14 +279,14 @@ O resultado é exportado como arquivo `MDM_Versoes_<timestamp>.xlsx` via bibliot
 
 #### Dados retornados
 
-| Campo | Descrição |
-|---|---|
-| ID | ID interno do app |
-| Nome | Nome do aplicativo |
-| Package Name | Identificador do pacote Android |
-| Versão | Versão do APK encontrada |
-| Tamanho | Tamanho do arquivo (se disponível) |
-| Link | URL direta para download do APK |
+| Campo        | Descrição                          |
+| ------------ | ---------------------------------- |
+| ID           | ID interno do app                  |
+| Nome         | Nome do aplicativo                 |
+| Package Name | Identificador do pacote Android    |
+| Versão       | Versão do APK encontrada           |
+| Tamanho      | Tamanho do arquivo (se disponível) |
+| Link         | URL direta para download do APK    |
 
 ---
 
@@ -325,12 +327,12 @@ Para cada serial (em lotes de 5 simultâneos):
 
 #### Estatísticas monitoradas
 
-| Contador | Significado |
-|---|---|
-| Total | Total de seriais carregados |
-| Feitos | Deletados com sucesso |
-| Falhas | Erros durante o processo |
-| Pulados | Não encontrados (N/E) |
+| Contador | Significado                 |
+| -------- | --------------------------- |
+| Total    | Total de seriais carregados |
+| Feitos   | Deletados com sucesso       |
+| Falhas   | Erros durante o processo    |
+| Pulados  | Não encontrados (N/E)       |
 
 ---
 
@@ -343,6 +345,7 @@ Para cada serial (em lotes de 5 simultâneos):
 #### O que é Force Data?
 
 O comando Force Data instrui o agente MDM instalado no terminal a coletar e enviar imediatamente todos os dados de inventário (apps instalados, configurações, status de hardware, etc.) para o servidor, sem aguardar o ciclo de sincronização agendado. Útil quando:
+
 - Um terminal acabou de receber um novo app e precisa reportar a versão
 - O terminal está desatualizado no portal e você precisa dos dados mais recentes
 
@@ -390,7 +393,9 @@ A aplicação suporta temas **claro** e **escuro**, gerenciados via React Contex
 O tema é aplicado via atributo HTML no elemento raiz:
 
 ```html
-<html data-theme="dark">   <!-- ou data-theme="light" -->
+<html data-theme="dark">
+  <!-- ou data-theme="light" -->
+</html>
 ```
 
 O Tailwind CSS v4 utiliza este atributo para alternar os tokens de cor CSS definidos em `index.css`.
@@ -409,13 +414,13 @@ const { theme, toggleTheme } = useTheme();
 
 Biblioteca de componentes primitivos, construída sobre Radix UI e Tailwind, seguindo o padrão **shadcn/ui**.
 
-| Componente | Arquivo | Uso |
-|---|---|---|
-| `Button` | `button.tsx` | Botões com variantes: `default`, `ghost`, `outline`, `destructive` |
-| `Input` / `Label` | `input.tsx` | Campos de texto estilizados |
-| `Card` / `CardHeader` / `CardContent` / `CardTitle` | `card.tsx` | Contêineres de seção |
-| `Badge` | `badge.tsx` | Tags de status: `default`, `secondary`, `destructive` |
-| `Table` e sub-componentes | `table.tsx` | Tabela de resultados estilizada |
+| Componente                                          | Arquivo      | Uso                                                                |
+| --------------------------------------------------- | ------------ | ------------------------------------------------------------------ |
+| `Button`                                            | `button.tsx` | Botões com variantes: `default`, `ghost`, `outline`, `destructive` |
+| `Input` / `Label`                                   | `input.tsx`  | Campos de texto estilizados                                        |
+| `Card` / `CardHeader` / `CardContent` / `CardTitle` | `card.tsx`   | Contêineres de seção                                               |
+| `Badge`                                             | `badge.tsx`  | Tags de status: `default`, `secondary`, `destructive`              |
+| `Table` e sub-componentes                           | `table.tsx`  | Tabela de resultados estilizada                                    |
 
 ---
 
@@ -433,6 +438,7 @@ for (let i = 0; i < serials.length; i += concurrency) {
 ```
 
 Isso garante:
+
 - **Throughput alto**: 5 terminais processados em paralelo
 - **Segurança**: Não satura a API com centenas de requisições simultâneas
 - **Progressividade**: A UI atualiza a cada lote concluído
@@ -443,12 +449,12 @@ Isso garante:
 
 Todas as ferramentas utilizam um painel de logs em tempo real com 4 tipos de mensagem:
 
-| Tipo | Cor visual | Quando usar |
-|---|---|---|
-| `info` | Azul/neutro | Informações gerais, início de processos |
-| `ok` | Verde | Operações concluídas com sucesso |
+| Tipo   | Cor visual    | Quando usar                                     |
+| ------ | ------------- | ----------------------------------------------- |
+| `info` | Azul/neutro   | Informações gerais, início de processos         |
+| `ok`   | Verde         | Operações concluídas com sucesso                |
 | `warn` | Amarelo/âmbar | Avisos não críticos (ex: serial não encontrado) |
-| `err` | Vermelho | Erros que afetam a operação |
+| `err`  | Vermelho      | Erros que afetam a operação                     |
 
 Os logs são exibidos em **ordem cronológica inversa** (mais recentes no topo) e incluem o horário de cada evento.
 
@@ -458,10 +464,10 @@ Os logs são exibidos em **ordem cronológica inversa** (mais recentes no topo) 
 
 Configure no arquivo `.env` na raiz do projeto:
 
-| Variável | Padrão | Descrição |
-|---|---|---|
-| `VITE_API_BASE_URL` | `https://api.gateway.mdm-hub.com` | URL base da API MDM Hub |
-| `VITE_API_TENANT` | `portal` | Código do tenant/corporação padrão |
+| Variável            | Padrão                            | Descrição                          |
+| ------------------- | --------------------------------- | ---------------------------------- |
+| `VITE_API_BASE_URL` | `https://api.gateway.mdm-hub.com` | URL base da API MDM Hub            |
+| `VITE_API_TENANT`   | `portal`                          | Código do tenant/corporação padrão |
 
 ### Exemplo de `.env`
 
@@ -476,16 +482,16 @@ VITE_API_TENANT=minha-empresa
 
 ## 13. Endpoints da API Consumidos
 
-| Ferramenta | Método | Endpoint | Descrição |
-|---|---|---|---|
-| Todas | `POST` | `/api-acl/authentication/login` | Autenticação |
-| Checker, Deleter | `GET` | `/api-eqp/equipment?key={serial}` | Busca equipamento por serial |
-| Checker | `GET` | `/api-eqp/equipment-application-historic/{id}` | Histórico de apps do equipamento |
-| ApkFinder | `GET` | `/api-application/application?corporationId={id}` | Lista apps de uma corporação |
-| ApkFinder | `GET` | `/api-application/application/{id}` | Detalhes e versões de um app |
-| Deleter | `PATCH` | `/api-eqp/equipment/{id}` | Inativar equipamento |
-| Deleter | `DELETE` | `/api-eqp/equipment/{id}` | Deletar equipamento |
-| Forcer | `POST` | `/api-eqp/device-data/device/{serial}/force-data` | Forçar sincronização |
+| Ferramenta       | Método   | Endpoint                                          | Descrição                        |
+| ---------------- | -------- | ------------------------------------------------- | -------------------------------- |
+| Todas            | `POST`   | `/api-acl/authentication/login`                   | Autenticação                     |
+| Checker, Deleter | `GET`    | `/api-eqp/equipment?key={serial}`                 | Busca equipamento por serial     |
+| Checker          | `GET`    | `/api-eqp/equipment-application-historic/{id}`    | Histórico de apps do equipamento |
+| ApkFinder        | `GET`    | `/api-application/application?corporationId={id}` | Lista apps de uma corporação     |
+| ApkFinder        | `GET`    | `/api-application/application/{id}`               | Detalhes e versões de um app     |
+| Deleter          | `PATCH`  | `/api-eqp/equipment/{id}`                         | Inativar equipamento             |
+| Deleter          | `DELETE` | `/api-eqp/equipment/{id}`                         | Deletar equipamento              |
+| Forcer           | `POST`   | `/api-eqp/device-data/device/{serial}/force-data` | Forçar sincronização             |
 
 ---
 
@@ -540,12 +546,12 @@ npm run dev
 
 ### Scripts disponíveis
 
-| Script | Comando | Descrição |
-|---|---|---|
-| Dev server | `npm run dev` | Inicia Vite HMR em modo desenvolvimento |
-| Build | `npm run build` | Compila TypeScript e gera bundle de produção em `dist/` |
-| Lint | `npm run lint` | Executa ESLint em todo o projeto |
-| Preview | `npm run preview` | Serve o build de produção localmente |
+| Script     | Comando           | Descrição                                               |
+| ---------- | ----------------- | ------------------------------------------------------- |
+| Dev server | `npm run dev`     | Inicia Vite HMR em modo desenvolvimento                 |
+| Build      | `npm run build`   | Compila TypeScript e gera bundle de produção em `dist/` |
+| Lint       | `npm run lint`    | Executa ESLint em todo o projeto                        |
+| Preview    | `npm run preview` | Serve o build de produção localmente                    |
 
 ### Adicionando uma nova ferramenta
 
@@ -570,15 +576,15 @@ npm run build
 
 ## 16. Considerações de Segurança
 
-| Risco | Status | Mitigação |
-|---|---|---|
-| Token JWT exposto no localStorage | ⚠️ Conhecido | Padrão comum em SPAs; token tem vida curta via auto-refresh |
-| Senha em sessionStorage | ⚠️ Necessário | Limitado ao ciclo de vida da aba do browser |
-| CORS | ✅ Gerenciado | Controlado pela API do MDM Hub |
-| HTTPS | ✅ Obrigatório | URL base usa HTTPS por padrão |
-| XSS | ✅ Protegido | React escapa automaticamente conteúdo dinâmico |
-| Deleção sem confirmação dupla | ⚠️ Atenção | Considerar adicionar modal de confirmação no Deleter |
+| Risco                             | Status         | Mitigação                                                   |
+| --------------------------------- | -------------- | ----------------------------------------------------------- |
+| Token JWT exposto no localStorage | ⚠️ Conhecido   | Padrão comum em SPAs; token tem vida curta via auto-refresh |
+| Senha em sessionStorage           | ⚠️ Necessário  | Limitado ao ciclo de vida da aba do browser                 |
+| CORS                              | ✅ Gerenciado  | Controlado pela API do MDM Hub                              |
+| HTTPS                             | ✅ Obrigatório | URL base usa HTTPS por padrão                               |
+| XSS                               | ✅ Protegido   | React escapa automaticamente conteúdo dinâmico              |
+| Deleção sem confirmação dupla     | ⚠️ Atenção     | Considerar adicionar modal de confirmação no Deleter        |
 
 ---
 
-*Documentação gerada com base na análise do código-fonte — v1.2.0 — Amazonas Inovare Tecnologia.*
+_Documentação gerada com base na análise do código-fonte — v1.2.1 — Amazonas Inovare Tecnologia._
