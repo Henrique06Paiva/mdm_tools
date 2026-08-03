@@ -8,19 +8,29 @@ export interface TourStep {
   content: string;
   position?: "top" | "bottom" | "left" | "right" | "center";
   tabToActivate?:
+    | "home"
     | "checker"
     | "deleter"
     | "apk"
     | "forcer"
     | "fetcher"
-    | "cloner";
+    | "cloner"
+    | "history";
 }
 
 interface SystemTourProps {
   isOpen: boolean;
   onClose: () => void;
   onActivateTab: (
-    tab: "checker" | "deleter" | "apk" | "forcer" | "fetcher" | "cloner",
+    tab:
+      | "home"
+      | "checker"
+      | "deleter"
+      | "apk"
+      | "forcer"
+      | "fetcher"
+      | "cloner"
+      | "history",
   ) => void;
 }
 

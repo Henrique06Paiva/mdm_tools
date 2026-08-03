@@ -14,6 +14,7 @@ import {
   List,
   UserCheck,
   HelpCircle,
+  Home as HomeIcon,
 } from "lucide-react";
 import Checker from "./tools/Checker";
 import Deleter from "./tools/Deleter";
@@ -22,6 +23,7 @@ import Forcer from "./tools/Forcer";
 import Fetcher from "./tools/Fetcher";
 import Cloner from "./tools/Cloner";
 import HistoryTool from "./tools/History";
+import Home from "./tools/Home/Home";
 import { History as HistoryIcon } from "lucide-react";
 import { Button } from "./components/ui/button";
 import Login from "./components/Login";
@@ -143,8 +145,8 @@ const MainApp = ({
   onLogout: () => void;
 }) => {
   const [activeTab, setActiveTab] = useState<
-    "checker" | "deleter" | "apk" | "forcer" | "fetcher" | "cloner" | "history"
-  >("checker");
+    "home" | "checker" | "deleter" | "apk" | "forcer" | "fetcher" | "cloner" | "history"
+  >("home");
   const [isTourOpen, setIsTourOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
 
@@ -189,6 +191,13 @@ const MainApp = ({
             data-tour="tab-list"
             className="flex flex-col gap-1.5"
           >
+            <TabButton
+              label="Início"
+              icon={HomeIcon}
+              isActive={activeTab === "home"}
+              onClick={() => setActiveTab("home")}
+              data-tour="tab-home"
+            />
             <TabButton
               label="Versões"
               icon={Smartphone}
@@ -303,6 +312,13 @@ const MainApp = ({
           </div>
 
           <main className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {activeTab === "home" && (
+              <Home
+                username={username}
+                onNavigate={setActiveTab}
+                onStartTour={handleStartTour}
+              />
+            )}
             {activeTab === "checker" && <Checker />}
             {activeTab === "deleter" && <Deleter />}
             {activeTab === "apk" && <ApkFinder />}
@@ -320,6 +336,12 @@ const MainApp = ({
           role="tablist"
           className="mobile-bottom-nav flex gap-2 border border-border/40 scrollbar-none md:hidden"
         >
+          <TabButton
+            label="Início"
+            icon={HomeIcon}
+            isActive={activeTab === "home"}
+            onClick={() => setActiveTab("home")}
+          />
           <TabButton
             label="Versões"
             icon={Smartphone}
