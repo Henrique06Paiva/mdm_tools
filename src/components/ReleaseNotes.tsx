@@ -1,7 +1,6 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import {
   releaseNotesData,
-  type ReleaseNote,
   type ChangeType,
 } from "../data/releaseNotes";
 import {
@@ -11,7 +10,6 @@ import {
   Tag,
   Calendar,
   Search,
-  CheckCircle2,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
