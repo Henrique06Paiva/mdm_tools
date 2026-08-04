@@ -24,6 +24,11 @@ export default function Checker() {
     setCompanyId,
     subsidiaryId,
     setSubsidiaryId,
+    availableCorpApps,
+    isLoadingCorpApps,
+    loadCorpApps,
+    onlyWithApp,
+    setOnlyWithApp,
     isProcessing,
     isPaused,
     logs,
@@ -67,29 +72,21 @@ export default function Checker() {
               }}
             >
               <li>
-                Insira os <strong>Package Names</strong> dos aplicativos que
-                deseja verificar (ex: <code>com.mdmservice</code>). Use o botão
-                "Adicionar Pacote" para incluir mais de um.
+                Escolha o <strong>Aplicativo da Corporação</strong> via seletor (carregado automaticamente via API Report) ou digite o <strong>Package Name</strong> manualmente.
               </li>
               <li>
                 Escolha a fonte de dados na aba de seleção:
                 <ul style={{ marginLeft: "15px", listStyleType: "disc", marginTop: "4px" }}>
                   <li>
-                    <strong>Filtros de Corporação:</strong> Insira o ID da Corporação (obrigatório) e, opcionalmente, os IDs de Empresa/Filial para obter a lista de terminais direto da API de 50 em 50.
+                    <strong>Filtros de Corporação:</strong> Insira o ID da Corporação (obrigatório). Os aplicativos disponíveis serão carregados instantaneamente via API Report.
                   </li>
                   <li>
-                    <strong>Importar Planilha:</strong> Clique para fazer o upload de uma planilha (<strong>.xlsx</strong> ou <strong>.csv</strong>, limite de 10.000 terminais) e selecione a coluna contendo os números de série.
+                    <strong>Importar Planilha:</strong> Clique para fazer o upload de uma planilha (<strong>.xlsx</strong> ou <strong>.csv</strong>) e selecione a coluna com os números de série.
                   </li>
                 </ul>
               </li>
               <li>
-                Clique em <strong>Iniciar Consulta</strong>. A ferramenta processará os terminais em lotes de 50 por vez.
-              </li>
-              <li>
-                Acompanhe o andamento no painel. A tabela de resultados é paginada exibindo <strong>50 registros por página</strong>.
-              </li>
-              <li>
-                Após finalizar (ou quando preferir), você poderá baixar a planilha Excel com todos os dados padronizados clicando em <strong>Baixar Relatório</strong>.
+                Clique em <strong>Iniciar Consulta</strong>. A ferramenta trará os terminais e as versões instaladas.
               </li>
             </ol>
           </div>
@@ -119,6 +116,11 @@ export default function Checker() {
         setCompanyId={setCompanyId}
         subsidiaryId={subsidiaryId}
         setSubsidiaryId={setSubsidiaryId}
+        availableCorpApps={availableCorpApps}
+        isLoadingCorpApps={isLoadingCorpApps}
+        loadCorpApps={loadCorpApps}
+        onlyWithApp={onlyWithApp}
+        setOnlyWithApp={setOnlyWithApp}
         isProcessing={isProcessing}
         restrictions={restrictions}
       />

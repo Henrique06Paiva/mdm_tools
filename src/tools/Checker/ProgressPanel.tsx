@@ -228,7 +228,7 @@ export function ProgressPanel({
                 <TableHead>Energia</TableHead>
                 <TableHead>Conexão</TableHead>
                 <TableHead className="min-w-[150px]">Última Atualização</TableHead>
-                <TableHead className="min-w-[180px]">Versões</TableHead>
+                <TableHead className="min-w-[180px]">Versão Instalada</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -251,7 +251,7 @@ export function ProgressPanel({
                       {row.lastUpdateText}
                     </TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground">
-                      {row.versionStr.includes(" | ") ? (
+                      {row.versionStr?.includes(" | ") ? (
                         <div className="max-h-24 overflow-y-auto space-y-1 pr-1 scrollbar-thin">
                           {row.versionStr.split(" | ").map((val: string, i: number) => (
                             <div key={i} className="whitespace-nowrap border-b border-border/20 last:border-0 pb-0.5">
@@ -272,7 +272,7 @@ export function ProgressPanel({
                     colSpan={7}
                     className="h-24 text-center text-muted-foreground"
                   >
-                    Nenhum terminal carregado. Configure as opções e inicie a consulta.
+                    Nenhum registro carregado. Configure as opções e inicie a consulta.
                   </TableCell>
                 </TableRow>
               )}

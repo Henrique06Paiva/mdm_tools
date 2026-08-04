@@ -68,7 +68,7 @@ export default function SystemTour({
       selector: '[data-tour="tab-checker"]',
       title: "Versões 📱",
       content:
-        "Consulte e compare se as versões de firmware, pacotes e do agente instaladas nos dispositivos estão corretas e em conformidade.\n\nComo usar:\n1. Selecione a corporação/empresa e defina os pacotes de apps (ex: com.mdmservice).\n2. Insira ou envie uma lista de números de série dos terminais.\n3. O sistema fará a varredura automática, destacando em vermelho as versões desatualizadas e em verde as corretas.",
+        "Consulte em massa se os aplicativos instalados nos terminais estão corretos e em conformidade.\n\nComo usar:\n1. Digite o ID da Corporação para carregar automaticamente a lista de aplicativos cadastrados (via API Report).\n2. Selecione o aplicativo desejado no seletor e use o filtro opcional 'Exibir apenas terminais que possuem o aplicativo instalado'.\n3. Clique em Iniciar Consulta para visualizar a lista de terminais com seus respectivos status (Nome, Série, Grupo, Energia, Conexão) e a versão exata do aplicativo.",
       position: "right",
       tabToActivate: "checker",
     },

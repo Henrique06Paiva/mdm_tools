@@ -15,11 +15,25 @@ export function useChecker() {
 
   const restrictions = api.getRestrictions();
 
+  const getTodayStr = () => new Date().toISOString().split("T")[0];
+  const getSevenDaysAgoStr = () => {
+    const d = new Date();
+    d.setDate(d.getDate() - 7);
+    return d.toISOString().split("T")[0];
+  };
+
   // New Filters and Search Source
   const [searchSource, setSearchSource] = useState<"filters" | "file">("filters");
   const [corporationId, setCorporationId] = useState<string>(restrictions.defaultCorpId);
   const [companyId, setCompanyId] = useState<string>(restrictions.defaultCompanyId);
   const [subsidiaryId, setSubsidiaryId] = useState<string>(restrictions.defaultSubsidiaryId);
+
+  // App discovery via API Report
+  const [availableCorpApps, setAvailableCorpApps] = useState<
+    { appName: string; packageName: string; version?: string }[]
+  >([]);
+  const [isLoadingCorpApps, setIsLoadingCorpApps] = useState(false);
+  const [onlyWithApp, setOnlyWithApp] = useState(false);
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -59,6 +73,56 @@ export function useChecker() {
       ]);
     },
     [],
+  );
+
+  const loadCorpApps = useCallback(
+    async (corpId: string) => {
+      const cId = corpId.trim();
+      if (!cId || !api.hasToken()) {
+        setAvailableCorpApps([]);
+        return;
+      }
+
+      setIsLoadingCorpApps(true);
+      try {
+        const todayStr = getTodayStr();
+        const sevenDaysAgoStr = getSevenDaysAgoStr();
+        const url = `${CONFIG.BASE_URL}/api-report/apps/app-frequency/list?page=1&limit=200&date=${todayStr}&startDate=${sevenDaysAgoStr}&endDate=${todayStr}&corporationId=${cId}`;
+        const response: any = await api.fetch(url);
+        const items =
+          response.data ??
+          response.items ??
+          (Array.isArray(response) ? response : []);
+
+        const appsList: { appName: string; packageName: string; version?: string }[] = [];
+        items.forEach((item: any) => {
+          const appName = item.appName || item.name || item.applicationName;
+          const packageName =
+            item.packageName || item.package || item.appPackage || item.appId;
+          const version = item.versionName || item.version || item.appVersion;
+          if (packageName && !appsList.some((a) => a.packageName === packageName)) {
+            appsList.push({
+              appName: appName || packageName,
+              packageName,
+              version,
+            });
+          }
+        });
+
+        setAvailableCorpApps(appsList);
+        if (appsList.length > 0) {
+          addLog(
+            `Carregados ${appsList.length} aplicativos da corporação ${cId} via API Report.`,
+            "ok"
+          );
+        }
+      } catch (err: any) {
+        console.warn("Erro ao carregar apps da corporação:", err);
+      } finally {
+        setIsLoadingCorpApps(false);
+      }
+    },
+    [addLog]
   );
 
   const applyColumn = useCallback(
@@ -189,12 +253,8 @@ export function useChecker() {
       let page = currentPageRef.current;
 
       while (true) {
-        if (!isProcessingRef.current) {
-          break;
-        }
-        if (isPausedRef.current) {
-          break;
-        }
+        if (!isProcessingRef.current) break;
+        if (isPausedRef.current) break;
 
         addLog(`Consultando página ${page}...`, "info");
 
@@ -288,6 +348,24 @@ export function useChecker() {
 
             const versionStr = await fetchAppVersions(id, validPackages);
 
+            const hasInstalledApp =
+              validPackages.some(() => {
+                const vSplit = versionStr.split(" | ");
+                return vSplit.some(
+                  (v) =>
+                    v &&
+                    v !== "Sem informação" &&
+                    v !== "Nenhum aplicativo encontrado"
+                );
+              }) ||
+              (fetchAllApps &&
+                versionStr !== "Nenhum aplicativo encontrado" &&
+                versionStr !== "Sem informação");
+
+            if (onlyWithApp && !hasInstalledApp) {
+              return;
+            }
+
             newRows.push({
               serial,
               eqName: name,
@@ -308,7 +386,11 @@ export function useChecker() {
             };
 
             if (fetchAllApps) {
-              if (versionStr && versionStr !== "Nenhum aplicativo encontrado" && versionStr !== "Sem informação") {
+              if (
+                versionStr &&
+                versionStr !== "Nenhum aplicativo encontrado" &&
+                versionStr !== "Sem informação"
+              ) {
                 const apps = versionStr.split(" | ");
                 apps.forEach((app) => {
                   const match = app.match(/^(.*?)\s*\((.*?)\)$/);
@@ -357,7 +439,7 @@ export function useChecker() {
                 ) || 1;
 
           if (page >= totalPages || items.length < limit) {
-            addLog("Busca completa finalizada com sucesso.", "ok");
+            addLog("Busca de terminais finalizada com sucesso.", "ok");
             setIsProcessing(false);
             isProcessingRef.current = false;
             setIsPaused(false);
@@ -365,7 +447,7 @@ export function useChecker() {
             logAudit("CHECKER_FINISH", corporationId, {
               searchSource,
               packages: validPackages,
-              totalItems: results.length + items.length
+              totalItems: results.length + items.length,
             });
             break;
           }
@@ -800,6 +882,11 @@ export function useChecker() {
     setCompanyId,
     subsidiaryId,
     setSubsidiaryId,
+    availableCorpApps,
+    isLoadingCorpApps,
+    loadCorpApps,
+    onlyWithApp,
+    setOnlyWithApp,
     isProcessing,
     isPaused,
     logs,

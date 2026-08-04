@@ -16,12 +16,36 @@ export interface ReleaseNote {
 
 export const releaseNotesData: ReleaseNote[] = [
   {
+    version: "v1.5.0",
+    date: "04 de Agosto de 2026",
+    title: "Descoberta de Apps via API Report & Checagem por Terminal 📱",
+    summary:
+      "Integração do microserviço de relatórios (api-report) no MDM Checker para listagem automática dos aplicativos da corporação e auditoria detalhada de versões por terminal.",
+    isLatest: true,
+    changes: [
+      {
+        type: "feat",
+        description:
+          "Seletor automático de Aplicativos da Corporação carregado via API Report (`app-frequency/list`), permitindo escolher um app cadastrado sem precisar digitar o package name manualmente.",
+      },
+      {
+        type: "feat",
+        description:
+          "Filtro opcional 'Exibir apenas terminais que possuem o aplicativo instalado' para auditoria focada.",
+      },
+      {
+        type: "improvement",
+        description:
+          "Tabela de resultados padronizada exibindo o status de cada terminal (Nome, Série, Grupo, Conexão e Energia) e a versão exata do aplicativo selecionado.",
+      },
+    ],
+  },
+  {
     version: "v1.4.0",
     date: "23 de Julho de 2026",
     title: "Nova Home Page & Central de Release Notes ✨",
     summary:
       "Apresentamos a nova tela inicial do MDM Hub Tools com visão geral, atalhos rápidos para ferramentas e acompanhamento contínuo de novidades do sistema.",
-    isLatest: true,
     changes: [
       {
         type: "feat",
