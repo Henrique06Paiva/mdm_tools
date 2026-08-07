@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   FileSpreadsheet,
   Zap,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import ReleaseNotes from "../../components/ReleaseNotes";
@@ -24,15 +25,22 @@ export type ToolTabType =
   | "forcer"
   | "fetcher"
   | "cloner"
-  | "history";
+  | "history"
+  | "incidents";
 
 interface HomeProps {
   username: string | null;
   onNavigate: (tab: ToolTabType) => void;
   onStartTour: () => void;
+  isRootUser?: boolean;
 }
 
-export default function Home({ username, onNavigate, onStartTour }: HomeProps) {
+export default function Home({
+  username,
+  onNavigate,
+  onStartTour,
+  isRootUser = false,
+}: HomeProps) {
   // Determine time-based greeting in Portuguese
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -41,7 +49,22 @@ export default function Home({ username, onNavigate, onStartTour }: HomeProps) {
     return "Boa noite";
   };
 
-  const tools = [
+  const supportTools = [
+    {
+      id: "incidents" as ToolTabType,
+      title: "Gestão de Chamados",
+      shortName: "Chamados",
+      icon: AlertCircle,
+      category: "Gestão de Chamados (Root)",
+      description:
+        "Abertura manual padronizada de chamados com os 6 campos obrigatórios e deduplicação em Corpo Único de Bugs.",
+      tags: ["Chamados", "Formulário Padrão", "Deduplicação"],
+      color:
+        "from-amber-500/10 to-rose-500/10 border-amber-500/20 text-amber-500",
+    },
+  ];
+
+  const automationTools = [
     {
       id: "checker" as ToolTabType,
       title: "Inspecionar Versões",
@@ -132,10 +155,7 @@ export default function Home({ username, onNavigate, onStartTour }: HomeProps) {
       {/* Hero Welcome Banner */}
       <section className="rounded-2xl bg-card border border-border/40 p-6 sm:p-8">
         <div className="space-y-4 max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold border border-primary/20">
-            <Sparkles size={14} />
-            <span>Plataforma Unificada MDM Hub</span>
-          </div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold border border-primary/20"></div>
 
           <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground">
             {getGreeting()}
@@ -143,9 +163,8 @@ export default function Home({ username, onNavigate, onStartTour }: HomeProps) {
           </h1>
 
           <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-            Bem-vindo ao seu portal de utilitários para diagnóstico,
-            gerenciamento em massa, relatórios e auditoria de dispositivos MDM.
-            Selecione uma ferramenta abaixo para começar.
+            Bem-vindo ao portal MDM Hub. Selecione os utilitários de gestão de
+            chamados ou de automação abaixo para começar.
           </p>
 
           <div className="flex flex-wrap gap-3 pt-2">
@@ -178,10 +197,12 @@ export default function Home({ username, onNavigate, onStartTour }: HomeProps) {
           </div>
           <div>
             <div className="text-sm font-bold text-foreground">
-              7 Ferramentas Ativas
+              {isRootUser ? "Gestão & Automação" : "Automação MDM"}
             </div>
             <div className="text-xs text-muted-foreground">
-              Diagnósticos e ações em lote
+              {isRootUser
+                ? "Chamados e Utilitários"
+                : "Ações em lote e diagnósticos"}
             </div>
           </div>
         </div>
@@ -215,22 +236,99 @@ export default function Home({ username, onNavigate, onStartTour }: HomeProps) {
         </div>
       </section>
 
-      {/* Tools Section Grid (Caminhos para Ferramentas) */}
+      {/* Section 1: Gestão de Chamados (Exclusivo Root) */}
+      {isRootUser && (
+        <section className="space-y-5">
+          <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-2">
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+                  Gestão de Chamados & Suporte
+                </h2>
+                <span className="text-[10px] font-bold uppercase tracking-wider bg-primary/15 text-primary px-2 py-0.5 rounded-full border border-primary/20">
+                  Exclusivo Root
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-muted-foreground">
+                Módulo restrito para triagem, cadastro manual de Chamados e
+                deduplicação de chamados.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {supportTools.map((tool) => {
+              const Icon = tool.icon;
+              return (
+                <div
+                  key={tool.id}
+                  onClick={() => onNavigate(tool.id)}
+                  className="group relative rounded-2xl border border-primary/30 bg-card p-5 sm:p-6 transition-all duration-200 hover:border-primary hover:shadow-md hover:scale-[1.01] cursor-pointer flex flex-col justify-between"
+                >
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`p-3 rounded-2xl bg-gradient-to-br border ${tool.color}`}
+                        >
+                          <Icon size={22} />
+                        </div>
+                        <div>
+                          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+                            {tool.category}
+                          </span>
+                          <h3 className="text-base sm:text-lg font-bold text-foreground group-hover:text-primary transition-colors">
+                            {tool.title}
+                          </h3>
+                        </div>
+                      </div>
+                    </div>
+
+                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+                      {tool.description}
+                    </p>
+                  </div>
+
+                  <div className="pt-4 mt-2 border-t border-border/30 flex items-center justify-between gap-2">
+                    <div className="flex flex-wrap gap-1.5">
+                      {tool.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-primary/10 text-primary"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+
+                    <span className="text-xs font-semibold text-primary flex items-center gap-1 group-hover:translate-x-1 transition-transform shrink-0">
+                      Acessar Módulo
+                      <ArrowRight size={14} />
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* Section 2: Automação & Utilitários MDM */}
       <section className="space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-2">
           <div>
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-              Ferramentas Disponíveis
+              Módulo de Automação & Utilitários MDM
             </h2>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              Acesse rapidamente os utilitários de gerenciamento e automação do
-              MDM Hub.
+              Utilitários para gerenciamento em lote, inspeção de pacotes e
+              ações operacionais.
             </p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {tools.map((tool) => {
+          {automationTools.map((tool) => {
             const Icon = tool.icon;
             return (
               <div

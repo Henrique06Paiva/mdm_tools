@@ -18,7 +18,7 @@ export const releaseNotesData: ReleaseNote[] = [
   {
     version: "v1.5.0",
     date: "04 de Agosto de 2026",
-    title: "Descoberta de Apps via API Report & Checagem por Terminal 📱",
+    title: "Descoberta de Apps via API Report & Checagem por Terminal",
     summary:
       "Integração do microserviço de relatórios (api-report) no MDM Checker para listagem automática dos aplicativos da corporação e auditoria detalhada de versões por terminal.",
     isLatest: true,
@@ -26,7 +26,7 @@ export const releaseNotesData: ReleaseNote[] = [
       {
         type: "feat",
         description:
-          "Seletor automático de Aplicativos da Corporação carregado via API Report (`app-frequency/list`), permitindo escolher um app cadastrado sem precisar digitar o package name manualmente.",
+          "Seletor automático de Aplicativos da Corporação carregado via API Report, permitindo escolher um app cadastrado sem precisar digitar o package name manualmente.",
       },
       {
         type: "feat",
@@ -43,7 +43,7 @@ export const releaseNotesData: ReleaseNote[] = [
   {
     version: "v1.4.0",
     date: "23 de Julho de 2026",
-    title: "Nova Home Page & Central de Release Notes ✨",
+    title: "Nova Home Page & Central de Release Notes",
     summary:
       "Apresentamos a nova tela inicial do MDM Hub Tools com visão geral, atalhos rápidos para ferramentas e acompanhamento contínuo de novidades do sistema.",
     changes: [
@@ -67,7 +67,7 @@ export const releaseNotesData: ReleaseNote[] = [
   {
     version: "v1.3.0",
     date: "23 de Julho de 2026",
-    title: "Ajustes de Tema Escuro & Acessibilidade Mobile 🌙",
+    title: "Ajustes de Tema Escuro & Acessibilidade Mobile",
     summary:
       "Melhorias no contraste de cores do modo escuro e aprimoramento da navegação flutuante em dispositivos móveis.",
     changes: [
@@ -91,7 +91,7 @@ export const releaseNotesData: ReleaseNote[] = [
   {
     version: "v1.2.0",
     date: "15 de Julho de 2026",
-    title: "Histórico de Auditoria & Ferramenta de Clonagem de Usuário 👥",
+    title: "Histórico de Auditoria & Ferramenta de Clonagem de Usuário",
     summary:
       "Lançamento de novas ferramentas para auditoria de ações e duplicação ágil de permissões de usuários.",
     changes: [
@@ -115,7 +115,7 @@ export const releaseNotesData: ReleaseNote[] = [
   {
     version: "v1.1.0",
     date: "01 de Julho de 2026",
-    title: "Operações em Massa (Deleção, Sync & Exportação) 🚀",
+    title: "Operações em Massa (Deleção, Sync & Exportação)",
     summary:
       "Conjunto de ferramentas para gestão em lote de dispositivos via upload de planilhas Excel.",
     changes: [
@@ -139,7 +139,7 @@ export const releaseNotesData: ReleaseNote[] = [
   {
     version: "v1.0.0",
     date: "10 de Junho de 2026",
-    title: "Lançamento do MDM Hub - Tools 📦",
+    title: "Lançamento do MDM Hub - Tools",
     summary:
       "Versão inicial da plataforma unificada para validação de versões de firmware, busca de APKs e gestão de MDM.",
     changes: [
