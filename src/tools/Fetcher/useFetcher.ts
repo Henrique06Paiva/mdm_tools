@@ -42,6 +42,15 @@ export interface EquipmentItem {
   isBlocked?: boolean;
 }
 
+export interface DeviceDataResponse {
+  updatedAt?: string;
+  release?: string;
+  imei?: string;
+  screenHeight?: number;
+  screenWidth?: number;
+  language?: string;
+}
+
 export interface FetchResponse {
   data?: EquipmentItem[];
   items?: EquipmentItem[];
@@ -131,6 +140,9 @@ export function useFetcher() {
       return updated;
     });
   }, []);
+
+  const columnsRef = useRef(columns);
+  columnsRef.current = columns;
 
   const [logs, setLogs] = useState<
     { id: number; message: string; type: string; time: string }[]
@@ -231,6 +243,42 @@ export function useFetcher() {
             );
           }
 
+          // Se a coluna de IMEI estiver ativada, busca dados detalhados via concorrência paralela
+          const shouldFetchImei = columnsRef.current.some(
+            (c) => c.id === "imei" && c.enabled,
+          );
+          const imeiMap = new Map<string | number, string>();
+
+          if (shouldFetchImei && items.length > 0) {
+            addLog(
+              `Obtendo IMEI detalhado de ${items.length} terminais (Pág. ${page})...`,
+              "info",
+            );
+            const concurrency = 8;
+            for (let i = 0; i < items.length; i += concurrency) {
+              if (!isProcessingRef.current || isPausedRef.current) break;
+              const chunk = items.slice(i, i + concurrency);
+              await Promise.all(
+                chunk.map(async (item) => {
+                  try {
+                    const devData = (await api.fetch(
+                      `${CONFIG.BASE_URL}/api-eqp/device-data/device/${encodeURIComponent(String(item.id))}`,
+                    )) as DeviceDataResponse;
+                    const imeiVal =
+                      String(devData?.imei || "").trim() || "Sem informação";
+                    imeiMap.set(item.id, imeiVal);
+                  } catch {
+                    imeiMap.set(item.id, "Sem informação");
+                  }
+                }),
+              );
+            }
+          }
+
+          if (!isProcessingRef.current || isPausedRef.current) {
+            break;
+          }
+
           const newRows: TerminalRow[] = [];
           const tenMinsAgo = new Date(Date.now() - 10 * 60 * 1000);
 
@@ -242,7 +290,9 @@ export function useFetcher() {
                 item.serial || item.serialNumber || "",
               ).trim() || "Sem informação";
 
-            const imei = String(item.imei || "").trim() || "Sem informação";
+            const imei = shouldFetchImei
+              ? imeiMap.get(item.id) || "Sem informação"
+              : "Não consultado";
 
             const eqGroup =
               (item.equipmentGroup && typeof item.equipmentGroup === "object"
