@@ -201,6 +201,7 @@ export function ProgressPanel({
                   if (col.id === "id") widthClass = "w-[80px]";
                   else if (col.id === "name") widthClass = "min-w-[150px]";
                   else if (col.id === "serial") widthClass = "min-w-[120px]";
+                  else if (col.id === "imei") widthClass = "min-w-[140px]";
                   else if (col.id === "eqGroup") widthClass = "min-w-[130px]";
                   else if (col.id === "lastUpdateText") widthClass = "min-w-[150px]";
                   return (

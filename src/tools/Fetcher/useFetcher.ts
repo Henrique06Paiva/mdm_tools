@@ -14,6 +14,7 @@ export interface TerminalRow {
   id: string | number;
   name: string;
   serial: string;
+  imei: string;
   eqGroup: string;
   powerText: string;
   onlineText: string;
@@ -57,6 +58,7 @@ const DEFAULT_COLUMNS: ColumnConfig[] = [
   { id: "id", label: "ID do Terminal", enabled: true },
   { id: "name", label: "Nome do Equipamento", enabled: true },
   { id: "serial", label: "Número de Série", enabled: true },
+  { id: "imei", label: "IMEI", enabled: true },
   { id: "eqGroup", label: "Grupo de Equipamento", enabled: true },
   { id: "powerText", label: "Status de Energia", enabled: true },
   { id: "onlineText", label: "Conexão", enabled: true },
@@ -68,13 +70,19 @@ const DEFAULT_COLUMNS: ColumnConfig[] = [
 export function useFetcher() {
   const restrictions = api.getRestrictions();
 
-  const [corporationId, setCorporationId] = useState<string>(restrictions.defaultCorpId);
-  const [companyId, setCompanyId] = useState<string>(restrictions.defaultCompanyId);
-  const [subsidiaryId, setSubsidiaryId] = useState<string>(restrictions.defaultSubsidiaryId);
-  
+  const [corporationId, setCorporationId] = useState<string>(
+    restrictions.defaultCorpId,
+  );
+  const [companyId, setCompanyId] = useState<string>(
+    restrictions.defaultCompanyId,
+  );
+  const [subsidiaryId, setSubsidiaryId] = useState<string>(
+    restrictions.defaultSubsidiaryId,
+  );
+
   const [isProcessing, setIsProcessing] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  
+
   const isPausedRef = useRef(false);
   const isProcessingRef = useRef(false);
   const currentPageRef = useRef(1);
@@ -86,8 +94,10 @@ export function useFetcher() {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length === DEFAULT_COLUMNS.length) {
-          const parsedIds = parsed.map(c => c.id);
-          const hasAllIds = DEFAULT_COLUMNS.every(dc => parsedIds.includes(dc.id));
+          const parsedIds = parsed.map((c) => c.id);
+          const hasAllIds = DEFAULT_COLUMNS.every((dc) =>
+            parsedIds.includes(dc.id),
+          );
           if (hasAllIds) return parsed;
         }
       } catch {
@@ -98,23 +108,25 @@ export function useFetcher() {
   });
 
   const toggleColumn = useCallback((id: string) => {
-    setColumns(prev => {
-      const updated = prev.map(col => col.id === id ? { ...col, enabled: !col.enabled } : col);
+    setColumns((prev) => {
+      const updated = prev.map((col) =>
+        col.id === id ? { ...col, enabled: !col.enabled } : col,
+      );
       localStorage.setItem("mdm_fetcher_columns", JSON.stringify(updated));
       return updated;
     });
   }, []);
 
   const moveColumn = useCallback((index: number, direction: "up" | "down") => {
-    setColumns(prev => {
+    setColumns((prev) => {
       const nextIndex = direction === "up" ? index - 1 : index + 1;
       if (nextIndex < 0 || nextIndex >= prev.length) return prev;
-      
+
       const updated = [...prev];
       const temp = updated[index];
       updated[index] = updated[nextIndex];
       updated[nextIndex] = temp;
-      
+
       localStorage.setItem("mdm_fetcher_columns", JSON.stringify(updated));
       return updated;
     });
@@ -148,172 +160,198 @@ export function useFetcher() {
     [],
   );
 
-  const runLoop = useCallback(async (corpId: string, compId?: string, subId?: string) => {
-    const limit = 50;
+  const runLoop = useCallback(
+    async (corpId: string, compId?: string, subId?: string) => {
+      const limit = 50;
 
-    while (true) {
-      if (!isProcessingRef.current) {
-        break;
-      }
-      if (isPausedRef.current) {
-        break;
-      }
-
-      const page = currentPageRef.current;
-      addLog(`Consultando página ${page}...`, "info");
-
-      try {
-        let url = `${CONFIG.BASE_URL}/api-eqp/equipment?page=${page}&limit=${limit}&corporationId=${corpId}`;
-        if (compId) url += `&companyId=${compId}`;
-        if (subId) url += `&subsidiaryId=${subId}`;
-
-        const response = (await api.fetch(url)) as FetchResponse;
-
+      while (true) {
         if (!isProcessingRef.current) {
           break;
         }
-
-        const items = (response.data ??
-          response.items ??
-          (Array.isArray(response) ? response : [])) as EquipmentItem[];
-
-        if (!items || items.length === 0) {
-          addLog("Nenhum terminal retornado nesta página. Busca encerrada.", "ok");
-          setIsProcessing(false);
-          isProcessingRef.current = false;
-          setIsPaused(false);
+        if (isPausedRef.current) {
           break;
         }
 
-        // Initialize total counts on page 1
-        if (page === 1) {
-          const total =
-            typeof response?.total === "number"
-              ? response.total
-              : typeof response?.meta?.totalItems === "number"
-              ? response.meta.totalItems
-              : typeof response?.meta?.total === "number"
-              ? response.meta.total
-              : items.length;
+        const page = currentPageRef.current;
+        addLog(`Consultando página ${page}...`, "info");
 
-          const pages =
+        try {
+          let url = `${CONFIG.BASE_URL}/api-eqp/equipment?page=${page}&limit=${limit}&corporationId=${corpId}`;
+          if (compId) url += `&companyId=${compId}`;
+          if (subId) url += `&subsidiaryId=${subId}`;
+
+          const response = (await api.fetch(url)) as FetchResponse;
+
+          if (!isProcessingRef.current) {
+            break;
+          }
+
+          const items = (response.data ??
+            response.items ??
+            (Array.isArray(response) ? response : [])) as EquipmentItem[];
+
+          if (!items || items.length === 0) {
+            addLog(
+              "Nenhum terminal retornado nesta página. Busca encerrada.",
+              "ok",
+            );
+            setIsProcessing(false);
+            isProcessingRef.current = false;
+            setIsPaused(false);
+            break;
+          }
+
+          // Initialize total counts on page 1
+          if (page === 1) {
+            const total =
+              typeof response?.total === "number"
+                ? response.total
+                : typeof response?.meta?.totalItems === "number"
+                  ? response.meta.totalItems
+                  : typeof response?.meta?.total === "number"
+                    ? response.meta.total
+                    : items.length;
+
+            const pages =
+              typeof response?.totalPages === "number"
+                ? response.totalPages
+                : typeof response?.meta?.totalPages === "number"
+                  ? response.meta.totalPages
+                  : Math.ceil(total / limit) || 1;
+
+            setStats((s) => ({
+              ...s,
+              totalItems: total,
+              totalPages: pages,
+            }));
+
+            addLog(
+              `Encontrados no total ${total} terminais distribuídos em ${pages} páginas.`,
+              "ok",
+            );
+          }
+
+          const newRows: TerminalRow[] = [];
+          const tenMinsAgo = new Date(Date.now() - 10 * 60 * 1000);
+
+          items.forEach((item) => {
+            const id = item.id;
+            const name = item.name || "Sem informação";
+            const serial =
+              String(
+                item.serial || item.serialNumber || "",
+              ).trim() || "Sem informação";
+
+            const imei = String(item.imei || "").trim() || "Sem informação";
+
+            const eqGroup =
+              (item.equipmentGroup && typeof item.equipmentGroup === "object"
+                ? (item.equipmentGroup as { name?: string }).name
+                : null) ||
+              (item.group && typeof item.group === "object"
+                ? (item.group as { name?: string }).name
+                : null) ||
+              item.equipmentGroupName ||
+              item.groupName ||
+              item.grupo?.name ||
+              (typeof item.equipmentGroup === "string"
+                ? item.equipmentGroup
+                : "") ||
+              (typeof item.group === "string" ? item.group : "") ||
+              "Sem informação";
+
+            const isPowerOn = item.powerOn === true;
+            const powerText = isPowerOn ? "Ligado" : "Desligado";
+
+            const lastUpdate = item.lastUpdate
+              ? new Date(item.lastUpdate)
+              : null;
+            const lastUpdateText = lastUpdate
+              ? lastUpdate.toLocaleString("pt-BR")
+              : "Sem informação";
+
+            let onlineText = "Offline";
+            if (isPowerOn && lastUpdate && lastUpdate >= tenMinsAgo) {
+              onlineText = "Online";
+            }
+
+            const statusText = item.status === 1 ? "Ativo" : "Inativo";
+
+            const isBlocked = item.blocked === true || item.isBlocked === true;
+            const blockedText = isBlocked ? "Bloqueado" : "Desbloqueado";
+
+            newRows.push({
+              id,
+              name,
+              serial,
+              imei,
+              eqGroup,
+              powerText,
+              onlineText,
+              statusText,
+              blockedText,
+              lastUpdateText,
+            });
+          });
+
+          setTableRows((prev) => [...prev, ...newRows]);
+
+          setStats((s) => {
+            const nextProcessed = s.processedItems + items.length;
+            return {
+              ...s,
+              currentPage: page,
+              processedItems: nextProcessed,
+            };
+          });
+
+          addLog(
+            `Página ${page} processada com sucesso (${items.length} terminais obtidos).`,
+            "ok",
+          );
+
+          const totalPages =
             typeof response?.totalPages === "number"
               ? response.totalPages
               : typeof response?.meta?.totalPages === "number"
-              ? response.meta.totalPages
-              : Math.ceil(total / limit) || 1;
+                ? response.meta.totalPages
+                : Math.ceil(
+                    (response.total ??
+                      response.meta?.totalItems ??
+                      items.length) / limit,
+                  ) || 1;
 
-          setStats((s) => ({
-            ...s,
-            totalItems: total,
-            totalPages: pages,
-          }));
+          if (page >= totalPages || items.length < limit) {
+            addLog("Busca completa finalizada com sucesso.", "ok");
+            setIsProcessing(false);
+            isProcessingRef.current = false;
+            setIsPaused(false);
 
-          addLog(
-            `Encontrados no total ${total} terminais distribuídos em ${pages} páginas.`,
-            "ok"
-          );
-        }
-
-        const newRows: TerminalRow[] = [];
-        const tenMinsAgo = new Date(Date.now() - 10 * 60 * 1000);
-
-        items.forEach((item) => {
-          const id = item.id;
-          const name = item.name || "Sem informação";
-          const serial =
-            String(item.serial || item.serialNumber || item.imei || "").trim() ||
-            "Sem informação";
-
-          const eqGroup =
-            (item.equipmentGroup && typeof item.equipmentGroup === "object" ? (item.equipmentGroup as { name?: string }).name : null) ||
-            (item.group && typeof item.group === "object" ? (item.group as { name?: string }).name : null) ||
-            item.equipmentGroupName ||
-            item.groupName ||
-            item.grupo?.name ||
-            (typeof item.equipmentGroup === "string" ? item.equipmentGroup : "") ||
-            (typeof item.group === "string" ? item.group : "") ||
-            "Sem informação";
-
-          const isPowerOn = item.powerOn === true;
-          const powerText = isPowerOn ? "Ligado" : "Desligado";
-
-          const lastUpdate = item.lastUpdate ? new Date(item.lastUpdate) : null;
-          const lastUpdateText = lastUpdate
-            ? lastUpdate.toLocaleString("pt-BR")
-            : "Sem informação";
-
-          let onlineText = "Offline";
-          if (isPowerOn && lastUpdate && lastUpdate >= tenMinsAgo) {
-            onlineText = "Online";
+            logAudit("FETCHER_FINISH", corporationId, {
+              companyId,
+              subsidiaryId,
+              totalItems: tableRows.length + items.length,
+            });
+            break;
           }
 
-          const statusText = item.status === 1 ? "Ativo" : "Inativo";
-
-          const isBlocked = item.blocked === true || item.isBlocked === true;
-          const blockedText = isBlocked ? "Bloqueado" : "Desbloqueado";
-
-          newRows.push({
-            id,
-            name,
-            serial,
-            eqGroup,
-            powerText,
-            onlineText,
-            statusText,
-            blockedText,
-            lastUpdateText,
-          });
-        });
-
-        setTableRows((prev) => [...prev, ...newRows]);
-
-        setStats((s) => {
-          const nextProcessed = s.processedItems + items.length;
-          return {
-            ...s,
-            currentPage: page,
-            processedItems: nextProcessed,
-          };
-        });
-
-        addLog(`Página ${page} processada com sucesso (${items.length} terminais obtidos).`, "ok");
-
-        const totalPages =
-          typeof response?.totalPages === "number"
-            ? response.totalPages
-            : typeof response?.meta?.totalPages === "number"
-            ? response.meta.totalPages
-            : Math.ceil(
-                (response.total ?? response.meta?.totalItems ?? items.length) / limit
-              ) || 1;
-
-        if (page >= totalPages || items.length < limit) {
-          addLog("Busca completa finalizada com sucesso.", "ok");
+          // Wait to avoid aggressive rate limits
+          await new Promise((resolve) => setTimeout(resolve, 150));
+          currentPageRef.current = page + 1;
+        } catch (err) {
+          addLog(
+            `Erro ao buscar página ${page}: ${(err as Error).message || String(err)}`,
+            "err",
+          );
           setIsProcessing(false);
           isProcessingRef.current = false;
           setIsPaused(false);
-
-          logAudit("FETCHER_FINISH", corporationId, {
-            companyId,
-            subsidiaryId,
-            totalItems: tableRows.length + items.length
-          });
           break;
         }
-
-        // Wait to avoid aggressive rate limits
-        await new Promise((resolve) => setTimeout(resolve, 150));
-        currentPageRef.current = page + 1;
-      } catch (err) {
-        addLog(`Erro ao buscar página ${page}: ${(err as Error).message || String(err)}`, "err");
-        setIsProcessing(false);
-        isProcessingRef.current = false;
-        setIsPaused(false);
-        break;
       }
-    }
-  }, [addLog]);
+    },
+    [addLog],
+  );
 
   const startProcess = useCallback(async () => {
     if (!api.hasToken()) {
@@ -327,15 +365,26 @@ export function useFetcher() {
     }
 
     const r = api.getRestrictions();
-    if (r.allowedCorps.length > 0 && !r.allowedCorps.includes(Number(corporationId))) {
+    if (
+      r.allowedCorps.length > 0 &&
+      !r.allowedCorps.includes(Number(corporationId))
+    ) {
       addLog("Corporação não permitida para o seu usuário.", "err");
       return;
     }
-    if (companyId.trim() && r.allowedCompanies.length > 0 && !r.allowedCompanies.includes(Number(companyId))) {
+    if (
+      companyId.trim() &&
+      r.allowedCompanies.length > 0 &&
+      !r.allowedCompanies.includes(Number(companyId))
+    ) {
       addLog("Empresa não permitida para o seu usuário.", "err");
       return;
     }
-    if (subsidiaryId.trim() && r.allowedSubsidiaries.length > 0 && !r.allowedSubsidiaries.includes(Number(subsidiaryId))) {
+    if (
+      subsidiaryId.trim() &&
+      r.allowedSubsidiaries.length > 0 &&
+      !r.allowedSubsidiaries.includes(Number(subsidiaryId))
+    ) {
       addLog("Filial não permitida para o seu usuário.", "err");
       return;
     }
@@ -356,12 +405,12 @@ export function useFetcher() {
 
     addLog(
       `Iniciando busca completa de terminais para a corporação ID ${corporationId}.`,
-      "info"
+      "info",
     );
 
     logAudit("FETCHER_START", corporationId, {
       companyId,
-      subsidiaryId
+      subsidiaryId,
     });
 
     await runLoop(corporationId, companyId, subsidiaryId);
@@ -378,12 +427,15 @@ export function useFetcher() {
     setIsPaused(false);
     isPausedRef.current = false;
 
-    addLog(`Retomando busca a partir da página ${currentPageRef.current}...`, "info");
+    addLog(
+      `Retomando busca a partir da página ${currentPageRef.current}...`,
+      "info",
+    );
 
     logAudit("FETCHER_RESUME", corporationId, {
       companyId,
       subsidiaryId,
-      currentPage: currentPageRef.current
+      currentPage: currentPageRef.current,
     });
 
     await runLoop(corporationId, companyId, subsidiaryId);
@@ -397,7 +449,7 @@ export function useFetcher() {
     logAudit("FETCHER_PAUSE", corporationId, {
       companyId,
       subsidiaryId,
-      currentPage: currentPageRef.current
+      currentPage: currentPageRef.current,
     });
   }, [addLog, corporationId, companyId, subsidiaryId]);
 
@@ -411,7 +463,7 @@ export function useFetcher() {
       companyId,
       subsidiaryId,
       currentPage: currentPageRef.current,
-      processedCount: tableRows.length
+      processedCount: tableRows.length,
     });
 
     currentPageRef.current = 1;
@@ -459,15 +511,21 @@ export function useFetcher() {
       uploadReport(
         "FETCHER",
         corporationId,
-        { companyId, subsidiaryId, columns: enabledColumns.map(c => c.id) },
+        { companyId, subsidiaryId, columns: enabledColumns.map((c) => c.id) },
         tableRows.length,
-        blob
+        blob,
       );
     } catch (err) {
-      console.warn("Erro ao preparar e fazer upload do excel para o Supabase:", err);
+      console.warn(
+        "Erro ao preparar e fazer upload do excel para o Supabase:",
+        err,
+      );
     }
 
-    XLSX.writeFile(wb, `MDM_Terminais_Corp_${corporationId}_${new Date().getTime()}.xlsx`);
+    XLSX.writeFile(
+      wb,
+      `MDM_Terminais_Corp_${corporationId}_${new Date().getTime()}.xlsx`,
+    );
   }, [tableRows, columns, corporationId, companyId, subsidiaryId]);
 
   return {

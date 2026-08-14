@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import type { BugIncident, CreateIncidentPayload } from '../../types/incidents';
-import type { KnownBug } from '../../types/bugs';
-import { fetchIncidents, createIncident } from '../../utils/incidentsService';
-import { fetchKnownBugs } from '../../utils/bugsService';
+import { useState, useEffect } from "react";
+import type { BugIncident, CreateIncidentPayload } from "../../types/incidents";
+import type { KnownBug } from "../../types/bugs";
+import { fetchIncidents, createIncident } from "../../utils/incidentsService";
+import { fetchKnownBugs } from "../../utils/bugsService";
 
 export function useIncidents() {
   const [incidents, setIncidents] = useState<BugIncident[]>([]);
@@ -21,7 +21,7 @@ export function useIncidents() {
       setIncidents(incidentsData);
       setKnownBugs(bugsData);
     } catch (err: any) {
-      setError(err.message || 'Erro ao carregar chamado.');
+      setError(err.message || "Erro ao carregar chamado.");
     } finally {
       setIsLoading(false);
     }
@@ -37,7 +37,9 @@ export function useIncidents() {
       const newInc = await createIncident(payload);
       setIncidents((prev) => [newInc, ...prev]);
     } catch (err: any) {
-      alert('Erro ao salvar incidente no Supabase. Verifique se as tabelas foram criadas.');
+      alert(
+        "Erro ao salvar incidente no Supabase. Verifique se as tabelas foram criadas.",
+      );
     } finally {
       setIsLoading(false);
     }
