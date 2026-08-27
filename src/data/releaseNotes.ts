@@ -16,12 +16,46 @@ export interface ReleaseNote {
 
 export const releaseNotesData: ReleaseNote[] = [
   {
+    version: "v1.6.0",
+    date: "27 de Agosto de 2026",
+    title: "Redesign de UI/UX, Paleta Azul Cobalto e Simplificação Operacional",
+    summary:
+      "Identidade visual corporativa renovada com paleta Azul Cobalto de alto contraste, sidebar expandida e responsiva, telas despoluídas e realocação dos manuais de uso para o rodapé.",
+    isLatest: true,
+    changes: [
+      {
+        type: "feat",
+        description:
+          "Nova paleta de cores Azul Cobalto (Light Enterprise & Dark Cyber Slate) oferecendo excelente contraste e legibilidade para inputs, botões e dados.",
+      },
+      {
+        type: "improvement",
+        description:
+          "Expansão da sidebar para 280px com tipografia maior (14px), ícones mais visíveis e melhor aproveitamento do espaço em telas widescreen (max-w-6xl).",
+      },
+      {
+        type: "improvement",
+        description:
+          "Realocação dos blocos de Instruções e Ajuda (Manual de Uso) para o rodapé em todas as ferramentas e no módulo de chamados, dando foco imediato às ações.",
+      },
+      {
+        type: "improvement",
+        description:
+          "Eliminação de legendas e textos redundantes em formulários, tornando o preenchimento mais ágil e intuitivo.",
+      },
+      {
+        type: "improvement",
+        description:
+          "Redesign limpo e objetivo da tela Home, padronização completa dos módulos de Chamados e Bugs Conhecidos.",
+      },
+    ],
+  },
+  {
     version: "v1.5.0",
     date: "04 de Agosto de 2026",
     title: "Descoberta de Apps via API Report & Checagem por Terminal",
     summary:
       "Integração do microserviço de relatórios (api-report) no MDM Checker para listagem automática dos aplicativos da corporação e auditoria detalhada de versões por terminal.",
-    isLatest: true,
     changes: [
       {
         type: "feat",
