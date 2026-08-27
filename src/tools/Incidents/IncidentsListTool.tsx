@@ -4,6 +4,9 @@ import { IncidentListTable } from "./IncidentListTable";
 import { IncidentDetailModal } from "./IncidentDetailModal";
 import type { BugIncident } from "../../types/incidents";
 import { Download, Search } from "lucide-react";
+import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
+import { Input } from "../../components/ui/input";
+import { Button } from "../../components/ui/button";
 
 export function IncidentsListTool() {
   const { incidents, knownBugs, isLoading } = useIncidents();
@@ -70,53 +73,57 @@ export function IncidentsListTool() {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      <div className="bg-card text-card-foreground border border-border/40 rounded-2xl p-6 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+      <Card className="border-border/50 shadow-sm">
+        <CardHeader className="bg-muted/10 py-3.5 px-5 border-b border-border/40 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h3 className="text-xl font-bold tracking-tight">
+            <CardTitle className="text-foreground text-xs font-bold tracking-wider uppercase">
               Lista & Relatórios de Chamados
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Consulte, pesquise, inspecione detalhes e exporte os relatórios dos chamados registrados.
+            </CardTitle>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Consulte, filtre e exporte chamados registrados no sistema.
             </p>
           </div>
 
           {filteredIncidents.length > 0 && (
-            <button
+            <Button
               onClick={handleExportCSV}
-              className="px-4 py-2.5 bg-secondary text-secondary-foreground font-semibold text-xs rounded-xl hover:bg-secondary/80 transition-colors flex items-center gap-2 cursor-pointer shadow-xs border border-border/40 shrink-0"
+              variant="outline"
+              size="sm"
+              className="h-8 text-xs gap-1.5 cursor-pointer shrink-0"
             >
-              <Download size={15} />
-              Exportar Relatório (CSV)
-            </button>
+              <Download size={13} />
+              Exportar CSV
+            </Button>
           )}
-        </div>
+        </CardHeader>
 
-        {/* Barra de Pesquisa */}
-        <div className="relative mb-4">
-          <Search size={16} className="absolute left-3 top-3 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Pesquisar por ticket, título, corporação, ambiente ou erro..."
-            className="w-full bg-background border border-input rounded-xl pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-            value={searchFilter}
-            onChange={(e) => setSearchFilter(e.target.value)}
-          />
-        </div>
-
-        {/* Tabela de Chamados */}
-        {isLoading ? (
-          <div className="p-8 text-center text-muted-foreground text-sm">
-            Carregando chamados...
+        <CardContent className="p-5 space-y-4">
+          {/* Barra de Pesquisa */}
+          <div className="relative max-w-md">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Buscar por ticket, título, corporação ou erro..."
+              className="h-9 pl-9 text-xs font-sans"
+              value={searchFilter}
+              onChange={(e) => setSearchFilter(e.target.value)}
+            />
           </div>
-        ) : (
-          <IncidentListTable
-            incidents={filteredIncidents}
-            knownBugs={knownBugs}
-            onSelectIncident={(incident) => setSelectedIncident(incident)}
-          />
-        )}
-      </div>
+
+          {/* Tabela de Chamados */}
+          {isLoading ? (
+            <div className="p-8 text-center text-muted-foreground text-xs">
+              Carregando chamados...
+            </div>
+          ) : (
+            <IncidentListTable
+              incidents={filteredIncidents}
+              knownBugs={knownBugs}
+              onSelectIncident={(incident) => setSelectedIncident(incident)}
+            />
+          )}
+        </CardContent>
+      </Card>
 
       {/* Modal de Detalhes do Chamado */}
       <IncidentDetailModal
