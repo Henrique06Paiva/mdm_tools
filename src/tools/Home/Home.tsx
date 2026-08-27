@@ -7,12 +7,9 @@ import {
   UserCheck,
   History as HistoryIcon,
   ArrowRight,
-  Sparkles,
   HelpCircle,
-  ShieldCheck,
-  FileSpreadsheet,
-  Zap,
   AlertCircle,
+  FileText,
 } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import ReleaseNotes from "../../components/ReleaseNotes";
@@ -35,356 +32,189 @@ interface HomeProps {
   isRootUser?: boolean;
 }
 
+interface ToolItem {
+  id: ToolTabType;
+  title: string;
+  description: string;
+  icon: React.ElementType;
+}
+
+function ToolCard({
+  tool,
+  onNavigate,
+}: {
+  tool: ToolItem;
+  onNavigate: (tab: ToolTabType) => void;
+}) {
+  const Icon = tool.icon;
+
+  return (
+    <div
+      onClick={() => onNavigate(tool.id)}
+      className="group relative rounded-xl border border-border/50 bg-card p-4.5 cursor-pointer transition-all duration-150 hover:border-primary/50 hover:bg-muted/10 hover:shadow-xs flex flex-col justify-between"
+    >
+      <div className="flex items-start gap-3.5">
+        <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center text-primary shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+          <Icon size={18} />
+        </div>
+        <div className="space-y-1 min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-sm font-bold text-foreground group-hover:text-primary transition-colors truncate">
+              {tool.title}
+            </h3>
+            <ArrowRight
+              size={14}
+              className="text-muted-foreground/40 group-hover:text-primary group-hover:translate-x-0.5 transition-all shrink-0"
+            />
+          </div>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            {tool.description}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Home({
   username,
   onNavigate,
   onStartTour,
   isRootUser = false,
 }: HomeProps) {
-  // Determine time-based greeting in Portuguese
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) return "Bom dia";
-    if (hour >= 12 && hour < 18) return "Boa tarde";
-    return "Boa noite";
-  };
-
-  const supportTools = [
+  const supportTools: ToolItem[] = [
     {
-      id: "incidents" as ToolTabType,
-      title: "Gestão de Chamados",
-      shortName: "Chamados",
-      icon: AlertCircle,
-      category: "Gestão de Chamados (Root)",
+      id: "incidents",
+      title: "Gestao de Chamados",
       description:
-        "Abertura manual padronizada de chamados com os 6 campos obrigatórios e deduplicação em Corpo Único de Bugs.",
-      tags: ["Chamados", "Formulário Padrão", "Deduplicação"],
-      color:
-        "from-amber-500/10 to-rose-500/10 border-amber-500/20 text-amber-500",
+        "Abertura padronizada de chamados operacionais e vinculacao a falhas sistemicas.",
+      icon: AlertCircle,
     },
   ];
 
-  const automationTools = [
+  const automationTools: ToolItem[] = [
     {
-      id: "checker" as ToolTabType,
-      title: "Inspecionar Versões",
-      shortName: "Versões",
+      id: "checker",
+      title: "Inspecionar Versoes",
+      description:
+        "Consulta e comparacao de versoes de aplicativos e status de conexao em lote.",
       icon: Smartphone,
-      category: "Diagnóstico & Conformidade",
-      description:
-        "Valide e compare em tempo real as versões de firmware, pacotes e do agente instaladas nos dispositivos da corporação.",
-      tags: ["Firmware", "Agente", "Comparador"],
-      color:
-        "from-blue-500/10 to-indigo-500/10 border-blue-500/20 text-blue-500",
     },
     {
-      id: "apk" as ToolTabType,
+      id: "apk",
       title: "Busca de APKs",
-      shortName: "Busca APKs",
+      description:
+        "Localizacao de versoes de aplicativos cadastradas com links diretos de download.",
       icon: Package,
-      category: "Instaladores & Pacotes",
-      description:
-        "Localize e baixe diretamente os arquivos de instalação (.apk) cadastrados nas corporações cadastradas no MDM.",
-      tags: ["Downloads", "MDM", "Package Name"],
-      color:
-        "from-purple-500/10 to-pink-500/10 border-purple-500/20 text-purple-500",
     },
     {
-      id: "deleter" as ToolTabType,
-      title: "Deleção em Massa",
-      shortName: "Deleção em Lote",
+      id: "deleter",
+      title: "Delecao em Massa",
+      description:
+        "Inativacao e remocao permanente de terminais a partir de lista de seriais.",
       icon: Trash2,
-      category: "Gestão & Limpeza",
-      description:
-        "Remova múltiplos terminais inativos, duplicados ou obsoletos importando planilhas Excel (.xlsx) com acompanhamento em tempo real.",
-      tags: ["Lote", "Excel", "Limpeza"],
-      color:
-        "from-rose-500/10 to-orange-500/10 border-rose-500/20 text-rose-500",
     },
     {
-      id: "forcer" as ToolTabType,
+      id: "forcer",
       title: "Force Data em Massa",
-      shortName: "Force Data",
+      description:
+        "Envio de comandos em lote para forcar atualizacao imediata dos dispositivos.",
       icon: RefreshCw,
-      category: "Sincronização & Comandos",
-      description:
-        "Envie comandos em lote para forçar a atualização imediata dos dados dos dispositivos cadastrados com o servidor.",
-      tags: ["Sincronia", "Comandos", "Painel"],
-      color:
-        "from-amber-500/10 to-yellow-500/10 border-amber-500/20 text-amber-500",
     },
     {
-      id: "fetcher" as ToolTabType,
+      id: "fetcher",
       title: "Exportador de Terminais",
-      shortName: "Exportador",
+      description:
+        "Extracao estruturada e exportacao para planilha de todos os terminais por corporacao.",
       icon: List,
-      category: "Relatórios & Planilhas",
-      description:
-        "Gere relatórios completos de terminais registrados por corporação ou empresa e exporte dados estruturados em Excel (.xlsx).",
-      tags: ["Relatórios", "Exportar", "Excel"],
-      color:
-        "from-emerald-500/10 to-teal-500/10 border-emerald-500/20 text-emerald-500",
     },
     {
-      id: "cloner" as ToolTabType,
-      title: "Clonar Usuário",
-      shortName: "Clonagem",
+      id: "cloner",
+      title: "Clonar Usuario",
+      description:
+        "Recriacao limpa de contas de usuario para resolucao de falhas de permissoes.",
       icon: UserCheck,
-      category: "Permissões & Acessos",
-      description:
-        "Duplique perfis de acesso, visibilidade e permissões entre contas de usuários de forma automatizada e rápida.",
-      tags: ["Usuários", "Permissões", "Automação"],
-      color: "from-cyan-500/10 to-blue-500/10 border-cyan-500/20 text-cyan-500",
     },
     {
-      id: "history" as ToolTabType,
-      title: "Histórico & Auditoria",
-      shortName: "Auditoria",
-      icon: HistoryIcon,
-      category: "Rastreabilidade & Logs",
+      id: "history",
+      title: "Historico e Auditoria",
       description:
-        "Consulte o histórico detalhado de operações executadas na plataforma com filtros avançados e logs de auditoria.",
-      tags: ["Auditoria", "Logs", "Rastreabilidade"],
-      color:
-        "from-slate-500/10 to-gray-500/10 border-slate-500/20 text-slate-500",
+        "Rastreabilidade completa de todas as execucoes e acoes realizadas no sistema.",
+      icon: HistoryIcon,
     },
   ];
 
   return (
-    <div className="space-y-10">
-      {/* Hero Welcome Banner */}
-      <section className="rounded-2xl bg-card border border-border/40 p-6 sm:p-8">
-        <div className="space-y-4 max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-semibold border border-primary/20"></div>
-
-          <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground">
-            {getGreeting()}
-            {username ? `, ${username}!` : "!"}
+    <div className="space-y-8">
+      {/* Header Direto */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-border/40">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+            Central de Ferramentas
           </h1>
-
-          <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
-            Bem-vindo ao portal MDM Hub. Selecione os utilitários de gestão de
-            chamados ou de automação abaixo para começar.
+          <p className="text-xs text-muted-foreground mt-0.5">
+            {username ? `Conectado como ${username}` : "Painel operacional MDM"} {isRootUser && "• Perfil Root"}
           </p>
+        </div>
 
-          <div className="flex flex-wrap gap-3 pt-2">
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={onStartTour}
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs gap-1.5 cursor-pointer"
+          >
+            <HelpCircle size={13} />
+            Tour do Sistema
+          </Button>
+          <a href="#release-notes">
             <Button
-              onClick={onStartTour}
-              variant="outline"
-              className="rounded-xl gap-2 cursor-pointer border-border/60 hover:bg-muted"
+              variant="ghost"
+              size="sm"
+              className="h-8 text-xs gap-1.5 text-muted-foreground hover:text-foreground cursor-pointer"
             >
-              <HelpCircle size={16} />
-              Iniciar Tour Guiado
+              <FileText size={13} />
+              Notas de Versao
             </Button>
-            <a href="#release-notes">
-              <Button
-                variant="ghost"
-                className="rounded-xl gap-2 cursor-pointer text-muted-foreground hover:text-foreground"
-              >
-                <Sparkles size={16} className="text-primary" />
-                Ver Lançamentos & Release Notes
-              </Button>
-            </a>
-          </div>
+          </a>
         </div>
-      </section>
+      </div>
 
-      {/* Quick Overview Highlights */}
-      <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-2xl bg-card border border-border/40 flex items-center gap-3.5 shadow-sm">
-          <div className="p-2.5 rounded-xl bg-blue-500/10 text-blue-500 shrink-0">
-            <ShieldCheck size={22} />
-          </div>
-          <div>
-            <div className="text-sm font-bold text-foreground">
-              {isRootUser ? "Gestão & Automação" : "Automação MDM"}
-            </div>
-            <div className="text-xs text-muted-foreground">
-              {isRootUser
-                ? "Chamados e Utilitários"
-                : "Ações em lote e diagnósticos"}
-            </div>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-card border border-border/40 flex items-center gap-3.5 shadow-sm">
-          <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-500 shrink-0">
-            <FileSpreadsheet size={22} />
-          </div>
-          <div>
-            <div className="text-sm font-bold text-foreground">
-              Suporte a Excel (.xlsx)
-            </div>
-            <div className="text-xs text-muted-foreground">
-              Importação e exportação ágil
-            </div>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-card border border-border/40 flex items-center gap-3.5 shadow-sm">
-          <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-500 shrink-0">
-            <Zap size={22} />
-          </div>
-          <div>
-            <div className="text-sm font-bold text-foreground">
-              Logs em Tempo Real
-            </div>
-            <div className="text-xs text-muted-foreground">
-              Acompanhamento e auditoria
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Section 1: Gestão de Chamados (Exclusivo Root) */}
+      {/* Seção Chamados (Root) */}
       {isRootUser && (
-        <section className="space-y-5">
-          <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-2">
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-                  Gestão de Chamados & Suporte
-                </h2>
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-primary/15 text-primary px-2 py-0.5 rounded-full border border-primary/20">
-                  Exclusivo Root
-                </span>
-              </div>
-              <p className="text-xs sm:text-sm text-muted-foreground">
-                Módulo restrito para triagem, cadastro manual de Chamados e
-                deduplicação de chamados.
-              </p>
-            </div>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Modulo de Chamados
+            </h2>
+            <span className="text-[9px] font-bold uppercase bg-primary/10 text-primary px-1.5 py-px rounded border border-primary/20">
+              Root
+            </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {supportTools.map((tool) => {
-              const Icon = tool.icon;
-              return (
-                <div
-                  key={tool.id}
-                  onClick={() => onNavigate(tool.id)}
-                  className="group relative rounded-2xl border border-primary/30 bg-card p-5 sm:p-6 transition-all duration-200 hover:border-primary hover:shadow-md hover:scale-[1.01] cursor-pointer flex flex-col justify-between"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`p-3 rounded-2xl bg-gradient-to-br border ${tool.color}`}
-                        >
-                          <Icon size={22} />
-                        </div>
-                        <div>
-                          <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-                            {tool.category}
-                          </span>
-                          <h3 className="text-base sm:text-lg font-bold text-foreground group-hover:text-primary transition-colors">
-                            {tool.title}
-                          </h3>
-                        </div>
-                      </div>
-                    </div>
-
-                    <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                      {tool.description}
-                    </p>
-                  </div>
-
-                  <div className="pt-4 mt-2 border-t border-border/30 flex items-center justify-between gap-2">
-                    <div className="flex flex-wrap gap-1.5">
-                      {tool.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-primary/10 text-primary"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-
-                    <span className="text-xs font-semibold text-primary flex items-center gap-1 group-hover:translate-x-1 transition-transform shrink-0">
-                      Acessar Módulo
-                      <ArrowRight size={14} />
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {supportTools.map((tool) => (
+              <ToolCard key={tool.id} tool={tool} onNavigate={onNavigate} />
+            ))}
           </div>
-        </section>
+        </div>
       )}
 
-      {/* Section 2: Automação & Utilitários MDM */}
-      <section className="space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/40 pb-2">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
-              Módulo de Automação & Utilitários MDM
-            </h2>
-            <p className="text-xs sm:text-sm text-muted-foreground">
-              Utilitários para gerenciamento em lote, inspeção de pacotes e
-              ações operacionais.
-            </p>
-          </div>
+      {/* Seção Automações */}
+      <div className="space-y-3">
+        <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          Automacoes e Utilitarios MDM
+        </h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {automationTools.map((tool) => (
+            <ToolCard key={tool.id} tool={tool} onNavigate={onNavigate} />
+          ))}
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {automationTools.map((tool) => {
-            const Icon = tool.icon;
-            return (
-              <div
-                key={tool.id}
-                onClick={() => onNavigate(tool.id)}
-                className="group relative rounded-2xl border border-border/50 bg-card p-5 sm:p-6 transition-all duration-200 hover:border-primary/50 hover:shadow-md hover:scale-[1.01] cursor-pointer flex flex-col justify-between"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className={`p-3 rounded-2xl bg-gradient-to-br border ${tool.color}`}
-                      >
-                        <Icon size={22} />
-                      </div>
-                      <div>
-                        <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-                          {tool.category}
-                        </span>
-                        <h3 className="text-base sm:text-lg font-bold text-foreground group-hover:text-primary transition-colors">
-                          {tool.title}
-                        </h3>
-                      </div>
-                    </div>
-                  </div>
-
-                  <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                    {tool.description}
-                  </p>
-                </div>
-
-                <div className="pt-4 mt-2 border-t border-border/30 flex items-center justify-between gap-2">
-                  <div className="flex flex-wrap gap-1.5">
-                    {tool.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-muted/50 text-muted-foreground"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-
-                  <span className="text-xs font-semibold text-primary flex items-center gap-1 group-hover:translate-x-1 transition-transform shrink-0">
-                    Acessar
-                    <ArrowRight size={14} />
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Release Notes Section */}
-      <section id="release-notes" className="pt-6 border-t border-border/40">
+      {/* Release Notes */}
+      <section id="release-notes" className="pt-4 border-t border-border/40">
         <ReleaseNotes />
       </section>
     </div>
