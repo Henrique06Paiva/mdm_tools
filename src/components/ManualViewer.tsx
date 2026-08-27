@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, ChevronDown, ChevronUp } from 'lucide-react';
+import { HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent } from './ui/card';
 
 interface ManualViewerProps {
@@ -11,26 +11,29 @@ export const ManualViewer: React.FC<ManualViewerProps> = ({ title, content }) =>
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <Card className="mb-6 bg-muted/20 border-border/60 shadow-sm transition-all duration-300">
-      <div 
-        className="flex justify-between items-center px-6 py-4 cursor-pointer hover:bg-muted/30 transition-colors"
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        <div className="flex items-center gap-3 text-foreground">
-          <BookOpen size={18} className="text-primary" />
-          <span className="font-semibold text-sm">Manual de Uso: {title}</span>
-        </div>
-        <div className="text-muted-foreground transition-transform duration-300">
-          {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-        </div>
-      </div>
-      {isOpen && (
-        <CardContent className="px-6 py-5 border-t border-border/40 bg-background/50 text-sm leading-relaxed text-muted-foreground animate-in slide-in-from-top-2 fade-in duration-200">
-          <div className="space-y-3">
-            {content}
+    <div className="mt-10 pt-4 border-t border-border/40">
+      <Card className="bg-card/40 border-border/40 shadow-none transition-all duration-200">
+        <button 
+          type="button"
+          className="w-full flex justify-between items-center px-4 py-3 cursor-pointer hover:bg-muted/20 transition-colors text-left"
+          onClick={() => setIsOpen(!isOpen)}
+        >
+          <div className="flex items-center gap-2.5 text-muted-foreground hover:text-foreground transition-colors">
+            <HelpCircle size={15} className="text-primary/70 shrink-0" />
+            <span className="font-medium text-xs">Instruções & Ajuda: {title}</span>
           </div>
-        </CardContent>
-      )}
-    </Card>
+          <div className="text-muted-foreground/60 transition-transform duration-200">
+            {isOpen ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+          </div>
+        </button>
+        {isOpen && (
+          <CardContent className="px-5 py-4 border-t border-border/30 bg-muted/10 text-xs leading-relaxed text-muted-foreground animate-in slide-in-from-top-1 fade-in duration-150">
+            <div className="space-y-2.5 text-xs">
+              {content}
+            </div>
+          </CardContent>
+        )}
+      </Card>
+    </div>
   );
 };
