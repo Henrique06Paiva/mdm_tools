@@ -32,47 +32,6 @@ export default function Fetcher() {
 
   return (
     <>
-      <ManualViewer
-        title="Exportador de Terminais"
-        content={
-          <div>
-            <p style={{ marginBottom: "8px" }}>
-              <strong>Objetivo:</strong> Obter em lote a lista completa de todos os terminais registrados sob uma determinada Corporação, Empresa e/ou Filial, listando seus seriais, grupos de equipamento e status de ligado/desligado.
-            </p>
-            <p style={{ marginBottom: "8px" }}>
-              <strong>Como utilizar:</strong>
-            </p>
-            <ol
-              style={{
-                marginLeft: "20px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "4px",
-              }}
-            >
-              <li>
-                Insira o <strong>ID da Corporação</strong> no filtro correspondente (campo obrigatório).
-              </li>
-              <li>
-                Se desejar restringir a busca, insira opcionalmente o <strong>ID da Empresa</strong> e/ou o <strong>ID da Filial</strong>.
-              </li>
-              <li>
-                Clique em <strong>Iniciar Busca</strong>. A ferramenta irá paginar automaticamente pela API obtendo os terminais e montando a visualização.
-              </li>
-              <li>
-                Você pode acompanhar o progresso das páginas e o total de terminais encontrados nos cartões de status.
-              </li>
-              <li>
-                Você pode utilizar os botões de <strong>Pausar</strong> e <strong>Retomar</strong> a qualquer momento do processo.
-              </li>
-              <li>
-                Assim que finalizar (ou quando preferir), clique em <strong>Baixar Relatório</strong> para exportar todos os dados carregados até o momento em uma planilha <strong>.xlsx</strong>.
-              </li>
-            </ol>
-          </div>
-        }
-      />
-
       <ConfigPanel
         corporationId={corporationId}
         setCorporationId={setCorporationId}
@@ -103,6 +62,22 @@ export default function Fetcher() {
       />
 
       <LogPanel logs={logs} onClear={clearLogs} />
+
+      <ManualViewer
+        title="Exportador de Terminais"
+        content={
+          <div className="space-y-2">
+            <p>
+              <strong>Objetivo:</strong> Obter a lista completa de terminais registrados por Corporação, Empresa e Filial, exportando para Excel (.xlsx).
+            </p>
+            <ol className="list-decimal list-inside space-y-1 pl-1">
+              <li>Informe o <strong>ID da Corporação</strong> (e opcionalmente Empresa/Filial).</li>
+              <li>Personalize as colunas visíveis no painel lateral à direita.</li>
+              <li>Clique em <strong>Iniciar Busca</strong> e, ao concluir, exporte a planilha.</li>
+            </ol>
+          </div>
+        }
+      />
     </>
   );
 }

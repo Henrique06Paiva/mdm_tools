@@ -51,48 +51,6 @@ export default function Checker() {
 
   return (
     <>
-      <ManualViewer
-        title="Version Checker"
-        content={
-          <div>
-            <p style={{ marginBottom: "8px" }}>
-              <strong>Objetivo:</strong> Consultar em lote a versão de
-              aplicativos instalados em diversos equipamentos e o seu status de
-              conectividade (Energia, Conexão e Última Atualização).
-            </p>
-            <p style={{ marginBottom: "8px" }}>
-              <strong>Como utilizar:</strong>
-            </p>
-            <ol
-              style={{
-                marginLeft: "20px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "4px",
-              }}
-            >
-              <li>
-                Escolha o <strong>Aplicativo da Corporação</strong> via seletor (carregado automaticamente via API Report) ou digite o <strong>Package Name</strong> manualmente.
-              </li>
-              <li>
-                Escolha a fonte de dados na aba de seleção:
-                <ul style={{ marginLeft: "15px", listStyleType: "disc", marginTop: "4px" }}>
-                  <li>
-                    <strong>Filtros de Corporação:</strong> Insira o ID da Corporação (obrigatório). Os aplicativos disponíveis serão carregados instantaneamente via API Report.
-                  </li>
-                  <li>
-                    <strong>Importar Planilha:</strong> Clique para fazer o upload de uma planilha (<strong>.xlsx</strong> ou <strong>.csv</strong>) e selecione a coluna com os números de série.
-                  </li>
-                </ul>
-              </li>
-              <li>
-                Clique em <strong>Iniciar Consulta</strong>. A ferramenta trará os terminais e as versões instaladas.
-              </li>
-            </ol>
-          </div>
-        }
-      />
-
       <ConfigPanel
         packages={packages}
         setPackages={setPackages}
@@ -143,6 +101,22 @@ export default function Checker() {
       />
 
       <LogPanel logs={logs} onClear={clearLogs} />
+
+      <ManualViewer
+        title="Version Checker"
+        content={
+          <div className="space-y-2">
+            <p>
+              <strong>Objetivo:</strong> Consultar em lote a versão de aplicativos instalados nos terminais e o status de conectividade (Energia, Conexão e Última Atualização).
+            </p>
+            <ol className="list-decimal list-inside space-y-1 pl-1">
+              <li>Selecione o <strong>Aplicativo da Corporação</strong> via lista ou digite o <strong>Package Name</strong>.</li>
+              <li>Escolha se deseja buscar por <strong>Filtros de Corporação</strong> ou <strong>Importar Planilha</strong>.</li>
+              <li>Clique em <strong>Iniciar Consulta</strong> para acompanhar o progresso em tempo real.</li>
+            </ol>
+          </div>
+        }
+      />
     </>
   );
 }

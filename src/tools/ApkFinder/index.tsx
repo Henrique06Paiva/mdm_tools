@@ -32,48 +32,6 @@ export default function ApkFinder() {
 
   return (
     <>
-      <ManualViewer
-        title="APK Finder"
-        content={
-          <div>
-            <p style={{ marginBottom: "8px" }}>
-              <strong>Objetivo:</strong> Procurar os APKs e versões de aplicativos cadastrados em uma determinada corporação no MDM, permitindo obter informações e links diretos para download dos arquivos.
-            </p>
-            <p style={{ marginBottom: "8px" }}>
-              <strong>Como utilizar:</strong>
-            </p>
-            <ol
-              style={{
-                marginLeft: "20px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "4px",
-              }}
-            >
-              <li>
-                Insira o <strong>ID da Corporação</strong> (obrigatório).
-              </li>
-              <li>
-                (Opcional) Defina os <strong>Package Names</strong> e as{" "}
-                <strong>Versões</strong> exatas que você deseja encontrar (ex:{" "}
-                <code>com.br.octostore</code> e <code>1.5.1</code>). Se deixados em branco, todos os aplicativos e versões da corporação serão listados.
-              </li>
-              <li>
-                Você pode adicionar múltiplos pacotes e versões se quiser buscar
-                combinações específicas.
-              </li>
-              <li>
-                Clique em <strong>Buscar APK</strong>. A ferramenta irá listar as correspondências com os links diretos para download.
-              </li>
-              <li>
-                Acompanhe o painel de resultados e o log de execução. A tabela
-                listará todos os APKs encontrados.
-              </li>
-            </ol>
-          </div>
-        }
-      />
-
       <SearchForm
         corpId={corpId}
         setCorpId={setCorpId}
@@ -100,6 +58,22 @@ export default function ApkFinder() {
       <ResultsTable results={results} />
 
       <LogPanel logs={logs} onClear={clearLogs} />
+
+      <ManualViewer
+        title="Busca de APKs"
+        content={
+          <div className="space-y-2">
+            <p>
+              <strong>Objetivo:</strong> Localizar pacotes e versões de aplicativos cadastrados em uma corporação no MDM com links diretos de download.
+            </p>
+            <ol className="list-decimal list-inside space-y-1 pl-1">
+              <li>Insira o <strong>ID da Corporação</strong>.</li>
+              <li>(Opcional) Filtre por <strong>Package Name</strong> ou <strong>Versão</strong> específica.</li>
+              <li>Clique em <strong>Buscar APK</strong> para visualizar e baixar os arquivos.</li>
+            </ol>
+          </div>
+        }
+      />
     </>
   );
 }

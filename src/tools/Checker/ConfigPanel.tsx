@@ -1,5 +1,5 @@
 import { type RefObject, type ChangeEvent, memo } from "react";
-import { Plus, X, Upload } from "lucide-react";
+import { Plus, X, Upload, RefreshCw } from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -81,82 +81,71 @@ export const ConfigPanel = memo(function ConfigPanel({
   restrictions,
 }: ConfigPanelProps) {
   return (
-    <Card className="mb-6 border-border/60 shadow-sm">
-      <CardHeader className="bg-muted/10 pb-4 border-b border-border/40">
-        <CardTitle className="text-foreground">
-          Configurações e Fonte de Dados
+    <Card className="mb-6 border-border/50 shadow-sm">
+      <CardHeader className="bg-muted/10 py-3.5 px-5 border-b border-border/40">
+        <CardTitle className="text-foreground text-xs font-bold tracking-wider uppercase">
+          Configuração da Consulta
         </CardTitle>
       </CardHeader>
-      <CardContent className="pt-6">
-        {/* APK Packages Setup */}
-        <div className="space-y-4 mb-8">
-          <div className="flex flex-col gap-4 p-4 bg-muted/20 border border-border/40 rounded-xl max-w-xl">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex flex-col">
-                <span className="text-sm font-semibold text-foreground">
-                  Trazer todos os aplicativos instalados no terminal
-                </span>
-                <span className="text-xs text-muted-foreground mt-0.5">
-                  Consulta todos os pacotes presentes no terminal em vez de pacotes específicos.
-                </span>
-              </div>
+
+      <CardContent className="p-5 space-y-6">
+        {/* Top Controls: Options & Filters */}
+        <div className="space-y-4">
+          <div className="flex flex-wrap items-center gap-6 p-3 bg-muted/20 border border-border/30 rounded-lg">
+            <div className="flex items-center gap-3">
               <button
                 type="button"
                 role="switch"
                 aria-checked={fetchAllApps}
                 disabled={isProcessing}
                 onClick={() => setFetchAllApps(!fetchAllApps)}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                  fetchAllApps ? "bg-primary" : "bg-muted/80"
+                className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 ${
+                  fetchAllApps ? "bg-primary" : "bg-muted-foreground/30"
                 }`}
               >
                 <span
-                  aria-hidden="true"
-                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-background shadow-md ring-0 transition duration-200 ease-in-out ${
-                    fetchAllApps ? "translate-x-5" : "translate-x-0"
+                  className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow ring-0 transition duration-200 ease-in-out ${
+                    fetchAllApps ? "translate-x-4" : "translate-x-0"
                   }`}
                 />
               </button>
+              <span className="text-xs font-semibold text-foreground">
+                Trazer todos os aplicativos instalados
+              </span>
             </div>
 
             {fetchAllApps && (
-              <div className="flex items-center justify-between gap-4 pl-4 border-l-2 border-border/40 py-1 animate-in fade-in slide-in-from-left-2 duration-200">
-                <div className="flex flex-col">
-                  <span className="text-sm font-semibold text-foreground">
-                    Incluir aplicativos de sistema (boSystem)
-                  </span>
-                  <span className="text-xs text-muted-foreground mt-0.5">
-                    Também trará pacotes nativos do sistema (pode tornar a consulta mais lenta).
-                  </span>
-                </div>
+              <div className="flex items-center gap-3 pl-4 border-l border-border/40 animate-in fade-in duration-150">
                 <button
                   type="button"
                   role="switch"
                   aria-checked={includeSystemApps}
                   disabled={isProcessing}
                   onClick={() => setIncludeSystemApps(!includeSystemApps)}
-                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                    includeSystemApps ? "bg-primary" : "bg-muted/80"
+                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 ${
+                    includeSystemApps ? "bg-primary" : "bg-muted-foreground/30"
                   }`}
                 >
                   <span
-                    aria-hidden="true"
-                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-background shadow-md ring-0 transition duration-200 ease-in-out ${
-                      includeSystemApps ? "translate-x-5" : "translate-x-0"
+                    className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-background shadow ring-0 transition duration-200 ease-in-out ${
+                      includeSystemApps ? "translate-x-4" : "translate-x-0"
                     }`}
                   />
                 </button>
+                <span className="text-xs text-muted-foreground">
+                  Incluir apps de sistema (boSystem)
+                </span>
               </div>
             )}
           </div>
 
-          {!fetchAllApps ? (
-            <div className="space-y-4">
-              {/* Corporation App Selector (API Report) */}
-              <div className="space-y-2 p-3.5 bg-muted/20 border border-border/40 rounded-xl">
-                <div className="flex items-center justify-between gap-2">
-                  <Label className="font-semibold text-foreground text-xs uppercase tracking-wider flex items-center gap-1.5">
-                    📱 Selecionar Aplicativo da Corporação (via API Report)
+          {!fetchAllApps && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Corporation App Selector */}
+              <div className="p-3.5 bg-muted/20 border border-border/30 rounded-lg space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    Aplicativo da Corporação
                   </Label>
                   {loadCorpApps && (
                     <Button
@@ -165,16 +154,17 @@ export const ConfigPanel = memo(function ConfigPanel({
                       size="sm"
                       disabled={isLoadingCorpApps || isProcessing || !corporationId.trim()}
                       onClick={() => loadCorpApps(corporationId)}
-                      className="text-xs text-primary h-7 px-2 cursor-pointer"
+                      className="text-xs text-primary h-6 px-2 cursor-pointer gap-1"
                     >
-                      {isLoadingCorpApps ? "Carregando..." : "Atualizar Lista"}
+                      <RefreshCw size={11} className={isLoadingCorpApps ? "animate-spin" : ""} />
+                      {isLoadingCorpApps ? "Carregando..." : "Atualizar"}
                     </Button>
                   )}
                 </div>
 
                 <select
                   disabled={isProcessing || isLoadingCorpApps || availableCorpApps.length === 0}
-                  className="w-full bg-background border border-border/60 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
+                  className="w-full bg-background border border-border/60 rounded-md px-3 py-2 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-ring text-foreground"
                   onChange={(e) => {
                     const selectedPkg = e.target.value;
                     if (selectedPkg) {
@@ -185,8 +175,8 @@ export const ConfigPanel = memo(function ConfigPanel({
                 >
                   <option value="">
                     {availableCorpApps.length > 0
-                      ? `-- Selecione um aplicativo (${availableCorpApps.length} encontrados) --`
-                      : "-- Digite a corporação para carregar aplicativos --"}
+                      ? `-- Selecione (${availableCorpApps.length} encontrados) --`
+                      : "-- Informe a corporação para listar os apps --"}
                   </option>
                   {availableCorpApps.map((app, i) => (
                     <option key={i} value={app.packageName}>
@@ -196,43 +186,38 @@ export const ConfigPanel = memo(function ConfigPanel({
                 </select>
 
                 {setOnlyWithApp && (
-                  <div className="flex items-center justify-between gap-4 pt-2 border-t border-border/20 mt-2">
-                    <div className="flex flex-col">
-                      <span className="text-xs font-semibold text-foreground">
-                        Exibir apenas terminais que possuem o aplicativo instalado
-                      </span>
-                      <span className="text-[11px] text-muted-foreground mt-0.5">
-                        Filtra a lista ocultando equipamentos onde o aplicativo não for encontrado.
-                      </span>
-                    </div>
+                  <div className="flex items-center gap-2.5 pt-1">
                     <button
                       type="button"
                       role="switch"
                       aria-checked={onlyWithApp}
                       disabled={isProcessing}
                       onClick={() => setOnlyWithApp(!onlyWithApp)}
-                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed ${
-                        onlyWithApp ? "bg-primary" : "bg-muted/80"
+                      className={`relative inline-flex h-4 w-7 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 ${
+                        onlyWithApp ? "bg-primary" : "bg-muted-foreground/30"
                       }`}
                     >
                       <span
-                        aria-hidden="true"
-                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-background shadow-md ring-0 transition duration-200 ease-in-out ${
-                          onlyWithApp ? "translate-x-5" : "translate-x-0"
+                        className={`pointer-events-none inline-block h-3 w-3 transform rounded-full bg-background shadow ring-0 transition duration-200 ease-in-out ${
+                          onlyWithApp ? "translate-x-3" : "translate-x-0"
                         }`}
                       />
                     </button>
+                    <span className="text-[11px] text-muted-foreground">
+                      Filtrar apenas terminais com o app instalado
+                    </span>
                   </div>
                 )}
               </div>
 
-              <div className="space-y-3">
-                <Label htmlFor="pkg-input-0" className="font-semibold text-foreground">
-                  Package Names dos Apps a Verificar (Personalizados)
+              {/* Package names list */}
+              <div className="p-3.5 bg-muted/20 border border-border/30 rounded-lg space-y-2.5">
+                <Label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground block">
+                  Package Name Personalizado
                 </Label>
-                <div className="space-y-3">
+                <div className="space-y-2 max-h-[140px] overflow-y-auto pr-1">
                   {packages.map((pkg, idx) => (
-                    <div className="flex gap-2 items-center" key={idx}>
+                    <div className="flex gap-1.5 items-center" key={idx}>
                       <Input
                         id={`pkg-input-${idx}`}
                         type="text"
@@ -244,7 +229,7 @@ export const ConfigPanel = memo(function ConfigPanel({
                         }}
                         placeholder="Ex: com.mdmservice"
                         disabled={isProcessing}
-                        aria-label={`Package Name do Aplicativo ${idx + 1}`}
+                        className="h-8 text-xs font-mono"
                       />
                       <Button
                         variant="ghost"
@@ -260,10 +245,9 @@ export const ConfigPanel = memo(function ConfigPanel({
                           }
                         }}
                         disabled={isProcessing}
-                        className="shrink-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10 cursor-pointer"
-                        aria-label={`Remover package name do aplicativo ${idx + 1}`}
+                        className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive cursor-pointer"
                       >
-                        <X size={16} />
+                        <X size={14} />
                       </Button>
                     </div>
                   ))}
@@ -273,69 +257,65 @@ export const ConfigPanel = memo(function ConfigPanel({
                   size="sm"
                   onClick={() => setPackages([...packages, ""])}
                   disabled={isProcessing}
-                  className="mt-2 cursor-pointer"
+                  className="h-7 text-xs cursor-pointer gap-1"
                 >
-                  <Plus size={14} className="mr-2" /> Adicionar Pacote
+                  <Plus size={12} /> Adicionar Pacote
                 </Button>
               </div>
             </div>
-          ) : (
-            <p className="text-xs text-muted-foreground italic">
-              * Nota: A consulta trará todos os pacotes instalados em cada terminal.
-            </p>
           )}
         </div>
 
-        <hr className="border-border/40 mb-6" />
-
-        {/* Search Source Selector */}
-        <div className="space-y-2 mb-4">
-          <Label className="font-semibold text-foreground">Como deseja selecionar os terminais?</Label>
-          <div className="grid grid-cols-2 gap-2 bg-muted/30 p-1 rounded-lg max-w-md">
-            <button
-              type="button"
-              onClick={() => setSearchSource("filters")}
-              disabled={isProcessing}
-              className={`py-2 px-3 text-sm font-medium rounded-md transition-all cursor-pointer ${
-                searchSource === "filters"
-                  ? "bg-background text-foreground shadow-sm font-semibold"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Filtros de Corporação
-            </button>
-            <button
-              type="button"
-              onClick={() => setSearchSource("file")}
-              disabled={isProcessing}
-              className={`py-2 px-3 text-sm font-medium rounded-md transition-all cursor-pointer ${
-                searchSource === "file"
-                  ? "bg-background text-foreground shadow-sm font-semibold"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Importar Planilha (.xlsx, .csv)
-            </button>
+        {/* Source Selection */}
+        <div className="pt-2 border-t border-border/30 space-y-3">
+          <div className="flex items-center justify-between">
+            <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Seleção de Terminais
+            </Label>
+            <div className="flex bg-muted/30 p-0.5 rounded-lg border border-border/30">
+              <button
+                type="button"
+                onClick={() => setSearchSource("filters")}
+                disabled={isProcessing}
+                className={`py-1 px-3 text-xs font-medium rounded-md transition-all cursor-pointer ${
+                  searchSource === "filters"
+                    ? "bg-card text-foreground shadow-sm font-semibold"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Filtros de Corporação
+              </button>
+              <button
+                type="button"
+                onClick={() => setSearchSource("file")}
+                disabled={isProcessing}
+                className={`py-1 px-3 text-xs font-medium rounded-md transition-all cursor-pointer ${
+                  searchSource === "file"
+                    ? "bg-card text-foreground shadow-sm font-semibold"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Importar Planilha
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* Conditional Search Source Fields */}
-        {searchSource === "filters" ? (
-          <div className="space-y-6 mt-4">
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="corp-id">ID da Corporação *</Label>
+          {searchSource === "filters" ? (
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+              <div className="space-y-1">
+                <Label htmlFor="corp-id" className="text-xs font-medium">
+                  Corporação *
+                </Label>
                 {restrictions.allowedCorps.length > 1 ? (
                   <select
                     id="corp-id"
                     value={corporationId}
                     onChange={(e) => setCorporationId(e.target.value)}
                     disabled={isProcessing || restrictions.corpDisabled}
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-9 w-full rounded-lg border border-border bg-input px-3 text-xs font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
                     {restrictions.allowedCorps.map((id) => (
-                      <option key={id} value={id} className="bg-popover text-popover-foreground">
+                      <option key={id} value={id}>
                         Corporação {id}
                       </option>
                     ))}
@@ -349,27 +329,27 @@ export const ConfigPanel = memo(function ConfigPanel({
                     onChange={(e) => setCorporationId(e.target.value.replace(/\D/g, ""))}
                     placeholder="Ex: 33"
                     disabled={isProcessing || restrictions.corpDisabled}
+                    className="h-9 text-xs"
                     required
                   />
                 )}
-                <p className="text-[11px] text-muted-foreground mt-1.5">
-                  Obrigatório. Determina a corporação principal dos equipamentos.
-                </p>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="comp-id">ID da Empresa (Opcional)</Label>
+              <div className="space-y-1">
+                <Label htmlFor="comp-id" className="text-xs font-medium">
+                  Empresa (Opcional)
+                </Label>
                 {restrictions.allowedCompanies.length > 1 ? (
                   <select
                     id="comp-id"
                     value={companyId}
                     onChange={(e) => setCompanyId(e.target.value)}
                     disabled={isProcessing || restrictions.companyDisabled}
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-9 w-full rounded-lg border border-border bg-input px-3 text-xs font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <option value="" className="bg-popover text-popover-foreground">Selecione uma empresa...</option>
+                    <option value="">Todas as Empresas</option>
                     {restrictions.allowedCompanies.map((id) => (
-                      <option key={id} value={id} className="bg-popover text-popover-foreground">
+                      <option key={id} value={id}>
                         Empresa {id}
                       </option>
                     ))}
@@ -383,26 +363,26 @@ export const ConfigPanel = memo(function ConfigPanel({
                     onChange={(e) => setCompanyId(e.target.value.replace(/\D/g, ""))}
                     placeholder="Ex: 425"
                     disabled={isProcessing || restrictions.companyDisabled}
+                    className="h-9 text-xs"
                   />
                 )}
-                <p className="text-[11px] text-muted-foreground mt-1.5">
-                  Opcional. Filtra os terminais vinculados a essa empresa.
-                </p>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="sub-id">ID da Filial (Opcional)</Label>
+              <div className="space-y-1">
+                <Label htmlFor="sub-id" className="text-xs font-medium">
+                  Filial (Opcional)
+                </Label>
                 {restrictions.allowedSubsidiaries.length > 1 ? (
                   <select
                     id="sub-id"
                     value={subsidiaryId}
                     onChange={(e) => setSubsidiaryId(e.target.value)}
                     disabled={isProcessing || restrictions.subsidiaryDisabled}
-                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex h-9 w-full rounded-lg border border-border bg-input px-3 text-xs font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    <option value="" className="bg-popover text-popover-foreground">Selecione uma filial...</option>
+                    <option value="">Todas as Filiais</option>
                     {restrictions.allowedSubsidiaries.map((id) => (
-                      <option key={id} value={id} className="bg-popover text-popover-foreground">
+                      <option key={id} value={id}>
                         Filial {id}
                       </option>
                     ))}
@@ -415,82 +395,72 @@ export const ConfigPanel = memo(function ConfigPanel({
                     value={subsidiaryId}
                     onChange={(e) => setSubsidiaryId(e.target.value.replace(/\D/g, ""))}
                     placeholder="Ex: 806"
-                  disabled={isProcessing || restrictions.subsidiaryDisabled}
-                />
-              )}
-              <p className="text-[11px] text-muted-foreground mt-1.5">
-                Opcional. Filtra os terminais vinculados a essa filial específica.
-              </p>
-            </div>
-          </div>
-        </div>
-      ) : (
-          <div className="space-y-4 mt-4">
-            <div
-              className={`border-2 border-dashed border-border/60 bg-muted/5 hover:bg-muted/10 focus-visible:bg-muted/10 transition-colors p-8 text-center rounded-xl cursor-pointer ${
-                isProcessing ? "opacity-50 cursor-not-allowed" : ""
-              }`}
-              onClick={() => !isProcessing && fileInputRef.current?.click()}
-              tabIndex={isProcessing ? -1 : 0}
-              role="button"
-              aria-label="Selecionar planilha contendo números de série dos terminais"
-              onKeyDown={(e) => {
-                if (!isProcessing && (e.key === "Enter" || e.key === " ")) {
-                  e.preventDefault();
-                  fileInputRef.current?.click();
-                }
-              }}
-            >
-              <Upload size={28} className="mx-auto text-muted-foreground mb-3" />
-              <input
-                type="file"
-                ref={fileInputRef}
-                hidden
-                onChange={handleFile}
-                accept=".xlsx,.xls,.csv"
-                disabled={isProcessing}
-                aria-hidden="true"
-              />
-              <p className="font-medium text-foreground text-sm">
-                Selecione a planilha de seriais
-              </p>
-              <div className="text-xs text-muted-foreground mt-1">
-                Formatos: .xlsx, .csv (Limite de 10.000 terminais)
+                    disabled={isProcessing || restrictions.subsidiaryDisabled}
+                    className="h-9 text-xs"
+                  />
+                )}
               </div>
-              {serials.length > 0 && (
-                <div className="mt-4">
-                  <Badge
-                    variant="secondary"
-                    className="px-3 py-1 text-sm font-normal"
+            </div>
+          ) : (
+            <div className="pt-1">
+              <div
+                className={`border-2 border-dashed border-border/60 bg-muted/5 hover:bg-muted/15 transition-colors p-6 text-center rounded-lg cursor-pointer ${
+                  isProcessing ? "opacity-50 cursor-not-allowed" : ""
+                }`}
+                onClick={() => !isProcessing && fileInputRef.current?.click()}
+                tabIndex={isProcessing ? -1 : 0}
+                role="button"
+                onKeyDown={(e) => {
+                  if (!isProcessing && (e.key === "Enter" || e.key === " ")) {
+                    e.preventDefault();
+                    fileInputRef.current?.click();
+                  }
+                }}
+              >
+                <Upload size={22} className="mx-auto text-muted-foreground mb-2" />
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  hidden
+                  onChange={handleFile}
+                  accept=".xlsx,.xls,.csv"
+                  disabled={isProcessing}
+                />
+                <p className="font-medium text-foreground text-xs">
+                  Clique para selecionar planilha (.xlsx, .csv)
+                </p>
+                {serials.length > 0 && (
+                  <div className="mt-3">
+                    <Badge variant="secondary" className="px-2.5 py-0.5 text-xs font-normal">
+                      {serials.length} seriais carregados
+                    </Badge>
+                  </div>
+                )}
+              </div>
+
+              {columns.length > 0 && (
+                <div className="mt-3 space-y-1.5 max-w-xs">
+                  <Label htmlFor="serial-col-select" className="text-xs">
+                    Coluna de Seriais:
+                  </Label>
+                  <select
+                    id="serial-col-select"
+                    value={selectedCol}
+                    disabled={isProcessing}
+                    onChange={(e) => applyColumn(rawData, parseInt(e.target.value))}
+                    className="flex h-9 w-full rounded-lg border border-border bg-input px-3 text-xs font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   >
-                    {serials.length} seriais carregados da planilha.
-                  </Badge>
+                    {columns.map((col, idx) => (
+                      <option key={idx} value={idx}>
+                        {col || `Coluna ${idx + 1}`}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               )}
             </div>
-
-            {columns.length > 0 && (
-              <div className="mt-6 space-y-2 max-w-sm">
-                <Label htmlFor="serial-col-select">
-                  Selecione a coluna dos Seriais:
-                </Label>
-                <select
-                  id="serial-col-select"
-                  value={selectedCol}
-                  disabled={isProcessing}
-                  onChange={(e) => applyColumn(rawData, parseInt(e.target.value))}
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors disabled:opacity-50"
-                >
-                  {columns.map((col, idx) => (
-                    <option key={idx} value={idx}>
-                      {col || `Coluna ${idx + 1}`}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-          </div>
-        )}
+          )}
+        </div>
       </CardContent>
     </Card>
   );

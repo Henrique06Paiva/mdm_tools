@@ -28,7 +28,6 @@ export default function Deleter() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const cancelBtnRef = useRef<HTMLButtonElement>(null);
 
-  // Close modal on Escape key press
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isConfirmOpen) {
@@ -39,7 +38,6 @@ export default function Deleter() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isConfirmOpen]);
 
-  // Focus the cancel button when the modal opens for safety
   useEffect(() => {
     if (isConfirmOpen) {
       setTimeout(() => {
@@ -50,55 +48,6 @@ export default function Deleter() {
 
   return (
     <>
-      <ManualViewer
-        title="Deleção em Massa"
-        content={
-          <div>
-            <p style={{ marginBottom: "8px" }}>
-              <strong>Objetivo:</strong> Inativar e deletar definitivamente
-              múltiplos equipamentos do MDM a partir de uma lista de seriais.
-            </p>
-            <p style={{ marginBottom: "8px" }}>
-              <strong>Como utilizar:</strong>
-            </p>
-            <ol
-              style={{
-                marginLeft: "20px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "4px",
-              }}
-            >
-              <li>
-                Clique na área pontilhada para fazer o upload de uma planilha (
-                <strong>.xlsx</strong> ou <strong>.csv</strong>, limite de 10.000 terminais).
-              </li>
-              <li>
-                A planilha deve conter os seriais dos equipamentos na{" "}
-                <strong>primeira coluna</strong>. A leitura inicia a partir da
-                segunda linha (assumindo que a primeira linha é o cabeçalho).
-              </li>
-              <li>
-                Verifique a quantidade de seriais carregados que será exibida na
-                tela.
-              </li>
-              <li>
-                Clique em <strong>Iniciar Processo</strong>.{" "}
-                <span style={{ color: "var(--red)", fontWeight: 600 }}>
-                  CUIDADO:
-                </span>{" "}
-                Esta ação inativará e excluirá permanentemente os dispositivos.
-                A ação é irreversível.
-              </li>
-              <li>
-                Acompanhe o progresso na tabela e o log de eventos para
-                verificar falhas ou seriais não encontrados (N/E).
-              </li>
-            </ol>
-          </div>
-        }
-      />
-
       <ConfigPanel
         fileInputRef={fileInputRef}
         handleFile={handleFile}
@@ -119,6 +68,22 @@ export default function Deleter() {
       />
 
       <LogPanel logs={logs} onClear={clearLogs} />
+
+      <ManualViewer
+        title="Deleção em Massa"
+        content={
+          <div className="space-y-2">
+            <p>
+              <strong>Objetivo:</strong> Inativar e excluir permanentemente múltiplos equipamentos do MDM a partir de uma planilha de seriais.
+            </p>
+            <ol className="list-decimal list-inside space-y-1 pl-1">
+              <li>Faça o upload de uma planilha (<strong>.xlsx</strong> ou <strong>.csv</strong>) contendo os seriais na primeira coluna.</li>
+              <li>Confira a quantidade de seriais carregados.</li>
+              <li>Clique em <strong>Iniciar Processo</strong> e confirme a exclusão. <em>(Ação irreversível)</em>.</li>
+            </ol>
+          </div>
+        }
+      />
 
       {/* Confirmation Modal */}
       {isConfirmOpen && (

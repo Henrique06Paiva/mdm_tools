@@ -45,31 +45,29 @@ export const ConfigPanel = memo(function ConfigPanel({
   moveColumn,
 }: ConfigPanelProps) {
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-      <Card className="lg:col-span-2 border-border/60 shadow-sm">
-        <CardHeader className="bg-muted/10 pb-4 border-b border-border/40">
-          <CardTitle className="text-foreground font-semibold">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
+      <Card className="lg:col-span-2 border-border/50 shadow-sm">
+        <CardHeader className="bg-muted/10 py-3.5 px-5 border-b border-border/40">
+          <CardTitle className="text-foreground text-xs font-bold tracking-wider uppercase">
             Filtros de Busca
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="corp-id">ID da Corporação *</Label>
+        <CardContent className="p-5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="corp-id" className="text-xs font-medium">
+                Corporação *
+              </Label>
               {restrictions.allowedCorps.length > 1 ? (
                 <select
                   id="corp-id"
                   value={corporationId}
                   onChange={(e) => setCorporationId(e.target.value)}
                   disabled={isProcessing || restrictions.corpDisabled}
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex h-9 w-full rounded-lg border border-border bg-input px-3 text-xs font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   {restrictions.allowedCorps.map((id) => (
-                    <option
-                      key={id}
-                      value={id}
-                      className="bg-popover text-popover-foreground"
-                    >
+                    <option key={id} value={id}>
                       Corporação {id}
                     </option>
                   ))}
@@ -80,42 +78,30 @@ export const ConfigPanel = memo(function ConfigPanel({
                   type="text"
                   pattern="[0-9]*"
                   value={corporationId}
-                  onChange={(e) =>
-                    setCorporationId(e.target.value.replace(/\D/g, ""))
-                  }
+                  onChange={(e) => setCorporationId(e.target.value.replace(/\D/g, ""))}
                   placeholder="Ex: 33"
                   disabled={isProcessing || restrictions.corpDisabled}
+                  className="h-9 text-xs"
                   required
                 />
               )}
-              <p className="text-[11px] text-muted-foreground mt-1.5">
-                Obrigatório. Determina a corporação principal de origem dos
-                equipamentos.
-              </p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="comp-id">ID da Empresa (Opcional)</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="comp-id" className="text-xs font-medium">
+                Empresa (Opcional)
+              </Label>
               {restrictions.allowedCompanies.length > 1 ? (
                 <select
                   id="comp-id"
                   value={companyId}
                   onChange={(e) => setCompanyId(e.target.value)}
                   disabled={isProcessing || restrictions.companyDisabled}
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex h-9 w-full rounded-lg border border-border bg-input px-3 text-xs font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <option
-                    value=""
-                    className="bg-popover text-popover-foreground"
-                  >
-                    Selecione uma empresa...
-                  </option>
+                  <option value="">Todas as Empresas</option>
                   {restrictions.allowedCompanies.map((id) => (
-                    <option
-                      key={id}
-                      value={id}
-                      className="bg-popover text-popover-foreground"
-                    >
+                    <option key={id} value={id}>
                       Empresa {id}
                     </option>
                   ))}
@@ -126,40 +112,29 @@ export const ConfigPanel = memo(function ConfigPanel({
                   type="text"
                   pattern="[0-9]*"
                   value={companyId}
-                  onChange={(e) =>
-                    setCompanyId(e.target.value.replace(/\D/g, ""))
-                  }
+                  onChange={(e) => setCompanyId(e.target.value.replace(/\D/g, ""))}
                   placeholder="Ex: 425"
                   disabled={isProcessing || restrictions.companyDisabled}
+                  className="h-9 text-xs"
                 />
               )}
-              <p className="text-[11px] text-muted-foreground mt-1.5">
-                Opcional. Filtra os terminais vinculados a essa empresa.
-              </p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="sub-id">ID da Filial (Opcional)</Label>
+            <div className="space-y-1.5">
+              <Label htmlFor="sub-id" className="text-xs font-medium">
+                Filial (Opcional)
+              </Label>
               {restrictions.allowedSubsidiaries.length > 1 ? (
                 <select
                   id="sub-id"
                   value={subsidiaryId}
                   onChange={(e) => setSubsidiaryId(e.target.value)}
                   disabled={isProcessing || restrictions.subsidiaryDisabled}
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                  className="flex h-9 w-full rounded-lg border border-border bg-input px-3 text-xs font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  <option
-                    value=""
-                    className="bg-popover text-popover-foreground"
-                  >
-                    Selecione uma filial...
-                  </option>
+                  <option value="">Todas as Filiais</option>
                   {restrictions.allowedSubsidiaries.map((id) => (
-                    <option
-                      key={id}
-                      value={id}
-                      className="bg-popover text-popover-foreground"
-                    >
+                    <option key={id} value={id}>
                       Filial {id}
                     </option>
                   ))}
@@ -170,34 +145,25 @@ export const ConfigPanel = memo(function ConfigPanel({
                   type="text"
                   pattern="[0-9]*"
                   value={subsidiaryId}
-                  onChange={(e) =>
-                    setSubsidiaryId(e.target.value.replace(/\D/g, ""))
-                  }
+                  onChange={(e) => setSubsidiaryId(e.target.value.replace(/\D/g, ""))}
                   placeholder="Ex: 806"
                   disabled={isProcessing || restrictions.subsidiaryDisabled}
+                  className="h-9 text-xs"
                 />
               )}
-              <p className="text-[11px] text-muted-foreground mt-1.5">
-                Opcional. Filtra os terminais vinculados a essa filial
-                específica.
-              </p>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="border-border/60 shadow-sm flex flex-col justify-between">
-        <CardHeader className="bg-muted/10 pb-4 border-b border-border/40">
-          <CardTitle className="text-foreground font-semibold text-sm tracking-wide uppercase">
+      <Card className="border-border/50 shadow-sm flex flex-col justify-between">
+        <CardHeader className="bg-muted/10 py-3.5 px-5 border-b border-border/40">
+          <CardTitle className="text-foreground text-xs font-bold tracking-wider uppercase">
             Colunas do Relatório
           </CardTitle>
         </CardHeader>
-        <CardContent className="pt-5 flex-1 flex flex-col justify-between gap-4">
-          <p className="text-[12px] text-muted-foreground leading-relaxed">
-            Selecione e ordene as colunas na ordem desejada. A alteração afeta a
-            tabela de visualização e a planilha final.
-          </p>
-          <div className="space-y-2 max-h-[250px] overflow-y-auto pr-1 flex-1 scrollbar">
+        <CardContent className="p-4 flex-1 flex flex-col justify-between gap-3">
+          <div className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1 flex-1">
             {columns.map((col, index) => {
               const isFirst = index === 0;
               const isLast = index === columns.length - 1;
@@ -205,44 +171,38 @@ export const ConfigPanel = memo(function ConfigPanel({
               return (
                 <div
                   key={col.id}
-                  className={`flex items-center justify-between p-2.5 rounded-lg border transition-all duration-200 ${
+                  className={`flex items-center justify-between p-2 rounded-lg border transition-all duration-150 ${
                     col.enabled
-                      ? "border-primary/20 bg-primary/5 hover:border-primary/30"
-                      : "border-border/40 bg-muted/5 opacity-60 hover:opacity-80"
+                      ? "border-primary/20 bg-primary/5"
+                      : "border-border/30 bg-muted/10 opacity-60"
                   }`}
                 >
-                  <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                    <span
-                      className="text-muted-foreground/30 hover:text-muted-foreground/50 transition-colors cursor-grab active:cursor-grabbing flex items-center justify-center p-0.5 shrink-0"
-                      aria-hidden="true"
-                    >
-                      <GripVertical size={14} />
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    <span className="text-muted-foreground/40 shrink-0">
+                      <GripVertical size={13} />
                     </span>
-
-                    <label className="flex items-center gap-3 cursor-pointer text-xs font-semibold text-foreground select-none truncate flex-1 py-1">
+                    <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-foreground select-none truncate flex-1">
                       <input
                         type="checkbox"
                         checked={col.enabled}
                         onChange={() => toggleColumn(col.id)}
                         disabled={isProcessing}
-                        className="h-4 w-4 rounded border-input bg-background text-primary focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none transition-shadow disabled:cursor-not-allowed shrink-0"
+                        className="h-3.5 w-3.5 rounded border-input text-primary focus-visible:ring-1 focus-visible:ring-primary shrink-0"
                       />
                       <span className="truncate">{col.label}</span>
                     </label>
                   </div>
 
-                  <div className="flex items-center gap-1 shrink-0">
+                  <div className="flex items-center gap-0.5 shrink-0">
                     <Button
                       type="button"
                       variant="ghost"
                       size="icon"
                       onClick={() => moveColumn(index, "up")}
                       disabled={isProcessing || isFirst}
-                      className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-20 disabled:hover:bg-transparent rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none transition-shadow cursor-pointer"
-                      aria-label={`Mover coluna ${col.label} para cima`}
-                      title={`Mover coluna ${col.label} para cima`}
+                      className="h-6 w-6 text-muted-foreground hover:text-foreground disabled:opacity-20 rounded"
                     >
-                      <ChevronUp size={16} />
+                      <ChevronUp size={13} />
                     </Button>
                     <Button
                       type="button"
@@ -250,11 +210,9 @@ export const ConfigPanel = memo(function ConfigPanel({
                       size="icon"
                       onClick={() => moveColumn(index, "down")}
                       disabled={isProcessing || isLast}
-                      className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-20 disabled:hover:bg-transparent rounded-md focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none transition-shadow cursor-pointer"
-                      aria-label={`Mover coluna ${col.label} para baixo`}
-                      title={`Mover coluna ${col.label} para baixo`}
+                      className="h-6 w-6 text-muted-foreground hover:text-foreground disabled:opacity-20 rounded"
                     >
-                      <ChevronDown size={16} />
+                      <ChevronDown size={13} />
                     </Button>
                   </div>
                 </div>

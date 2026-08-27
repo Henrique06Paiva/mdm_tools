@@ -28,7 +28,6 @@ export default function Forcer() {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const cancelBtnRef = useRef<HTMLButtonElement>(null);
 
-  // Close modal on Escape key press
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isConfirmOpen) {
@@ -39,7 +38,6 @@ export default function Forcer() {
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isConfirmOpen]);
 
-  // Focus the cancel button when the modal opens for safety
   useEffect(() => {
     if (isConfirmOpen) {
       setTimeout(() => {
@@ -50,52 +48,6 @@ export default function Forcer() {
 
   return (
     <>
-      <ManualViewer
-        title="Force Data em Massa"
-        content={
-          <div>
-            <p style={{ marginBottom: "8px" }}>
-              <strong>Objetivo:</strong> Forçar o envio de comandos de
-              sincronização e atualização de dados (Force Data) para múltiplos
-              equipamentos cadastrados no MDM.
-            </p>
-            <p style={{ marginBottom: "8px" }}>
-              <strong>Como utilizar:</strong>
-            </p>
-            <ol
-              style={{
-                marginLeft: "20px",
-                display: "flex",
-                flexDirection: "column",
-                gap: "4px",
-              }}
-            >
-              <li>
-                Clique na área pontilhada para fazer o upload de uma planilha (
-                <strong>.xlsx</strong> ou <strong>.csv</strong>, limite de 10.000 terminais).
-              </li>
-              <li>
-                A planilha deve conter os seriais dos equipamentos na{" "}
-                <strong>primeira coluna</strong>. A leitura inicia a partir da
-                segunda linha (assumindo que a primeira linha é o cabeçalho).
-              </li>
-              <li>
-                Verifique a quantidade de seriais carregados que será exibida na
-                tela.
-              </li>
-              <li>
-                Clique em <strong>Iniciar Processo</strong> e confirme.
-              </li>
-              <li>
-                Acompanhe o progresso na tabela em tempo real para verificar se
-                os envios foram realizados com sucesso ou se apresentaram
-                falhas.
-              </li>
-            </ol>
-          </div>
-        }
-      />
-
       <ConfigPanel
         fileInputRef={fileInputRef}
         handleFile={handleFile}
@@ -116,6 +68,22 @@ export default function Forcer() {
       />
 
       <LogPanel logs={logs} onClear={clearLogs} />
+
+      <ManualViewer
+        title="Force Data em Massa"
+        content={
+          <div className="space-y-2">
+            <p>
+              <strong>Objetivo:</strong> Forçar comandos de sincronização e atualização de dados para múltiplos equipamentos cadastrados.
+            </p>
+            <ol className="list-decimal list-inside space-y-1 pl-1">
+              <li>Faça o upload de uma planilha (<strong>.xlsx</strong> ou <strong>.csv</strong>) contendo os seriais na primeira coluna.</li>
+              <li>Confira a quantidade de seriais carregados.</li>
+              <li>Clique em <strong>Iniciar Processo</strong> e confirme o envio.</li>
+            </ol>
+          </div>
+        }
+      />
 
       {/* Confirmation Modal */}
       {isConfirmOpen && (
@@ -146,9 +114,8 @@ export default function Forcer() {
               </p>
 
               <div className="bg-primary/5 border border-primary/20 rounded-lg p-3.5 mb-6 text-sm text-primary font-medium leading-relaxed">
-                <p className="font-semibold mb-1">Ação:</p>O sistema fará
-                requisições de atualização para cada terminal na lista em lotes
-                paralelos.
+                <p className="font-semibold mb-1">Ação:</p>
+                O sistema fará requisições de atualização para cada terminal na lista em lotes paralelos.
               </div>
 
               <div className="flex justify-end gap-3">
@@ -165,7 +132,6 @@ export default function Forcer() {
                     setIsConfirmOpen(false);
                     startProcess();
                   }}
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   Confirmar Envio
                 </Button>
