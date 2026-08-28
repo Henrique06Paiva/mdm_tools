@@ -16,12 +16,31 @@ export interface ReleaseNote {
 
 export const releaseNotesData: ReleaseNote[] = [
   {
+    version: "v1.6.1",
+    date: "28 de Agosto de 2026",
+    title: "Automação e Numeração Sequencial de Bugs Conhecidos",
+    summary:
+      "Geração automática do Código do Bug no padrão sequencial anual e bloqueio do campo contra digitação manual, prevenindo inconsistências e duplicidades.",
+    isLatest: true,
+    changes: [
+      {
+        type: "feat",
+        description:
+          "Geração automática e sequencial do Código do Bug (ex: BUG-2026-001) calculada dinamicamente a partir dos registros existentes do ano vigente.",
+      },
+      {
+        type: "improvement",
+        description:
+          "Bloqueio seguro (disabled) do campo Código do Bug no formulário de cadastro de bugs conhecidos, eliminando erros manuais de preenchimento.",
+      },
+    ],
+  },
+  {
     version: "v1.6.0",
     date: "27 de Agosto de 2026",
     title: "Redesign de UI/UX, Paleta Azul Cobalto e Simplificação Operacional",
     summary:
       "Identidade visual corporativa renovada com paleta Azul Cobalto de alto contraste, sidebar expandida e responsiva, telas despoluídas e realocação dos manuais de uso para o rodapé.",
-    isLatest: true,
     changes: [
       {
         type: "feat",
