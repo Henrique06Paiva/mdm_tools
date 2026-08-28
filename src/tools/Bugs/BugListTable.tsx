@@ -125,7 +125,7 @@ export const BugListTable: React.FC<BugListTableProps> = ({
               </th>
               <th className="px-3.5 py-2.5 min-w-[180px]">Título</th>
               <th className="px-3.5 py-2.5 whitespace-nowrap w-[100px]">
-                Severidade
+                Prioridade
               </th>
               <th className="px-3.5 py-2.5 whitespace-nowrap w-[140px]">
                 Status

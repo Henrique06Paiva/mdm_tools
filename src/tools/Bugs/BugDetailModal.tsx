@@ -88,7 +88,7 @@ export const BugDetailModal: React.FC<BugDetailModalProps> = ({
                   bug.severity,
                 )}`}
               >
-                Severidade: {formatBugSeverity(bug.severity)}
+                Prioridade: {formatBugSeverity(bug.severity)}
               </span>
               <span
                 className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold border ${getStatusBadge(

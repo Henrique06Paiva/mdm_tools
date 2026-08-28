@@ -128,7 +128,7 @@ export const NewBugForm: React.FC<NewBugFormProps> = ({
       <Card className="border-border/50 shadow-sm mb-6">
         <CardHeader className="bg-muted/10 py-3.5 px-5 border-b border-border/40">
           <CardTitle className="text-foreground text-xs font-bold tracking-wider uppercase">
-            Cadastro de Bug Conhecido (Corpo Único)
+            Cadastro de Bug
           </CardTitle>
         </CardHeader>
 
@@ -150,7 +150,7 @@ export const NewBugForm: React.FC<NewBugFormProps> = ({
 
               <div className="space-y-1.5">
                 <Label htmlFor="bug-severity" className="text-xs">
-                  Severidade
+                  Prioridade
                 </Label>
                 <select
                   id="bug-severity"

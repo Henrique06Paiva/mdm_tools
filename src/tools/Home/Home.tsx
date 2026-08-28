@@ -81,7 +81,7 @@ export default function Home({
       tag: "Triagem",
       service: "Supabase / N1-N3",
       description:
-        "Consulta consolidada com filtros rápidos por corporação, severidade e status.",
+        "Consulta consolidada com filtros rápidos por corporação, Prioridade e status.",
       icon: ListFilter,
       shortcut: "Alt+2",
     },

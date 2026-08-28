@@ -101,7 +101,7 @@ export function BugListTool({
     const dataToExport = filteredBugs.map((b) => ({
       "Código do Bug": b.bug_code,
       "Título do Bug": b.title,
-      Severidade: formatBugSeverity(b.severity),
+      Prioridade: formatBugSeverity(b.severity),
       Status: formatBugStatus(b.status),
       "Descrição da Falha": b.description,
       "Instruções de Contorno / Solução": b.workaround_instructions || "",
@@ -130,12 +130,8 @@ export function BugListTool({
         <CardHeader className="bg-muted/10 py-3.5 px-5 border-b border-border/40 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="space-y-0.5">
             <CardTitle className="text-foreground text-xs font-bold tracking-wider uppercase">
-              Catálogo de Bugs Conhecidos
+              Lista de Bugs
             </CardTitle>
-            <p className="text-xs text-muted-foreground">
-              Consulte detalhes completos, edite causas-raiz, soluções de
-              contorno e exporte relatórios para validações operacionais.
-            </p>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">
@@ -191,7 +187,7 @@ export function BugListTool({
                   value={severityFilter}
                   onChange={(e) => handleSeverityChange(e.target.value)}
                 >
-                  <option value="ALL">Todas as Severidades</option>
+                  <option value="ALL">Todas as Prioridades</option>
                   <option value="CRITICAL">Crítica</option>
                   <option value="HIGH">Alta</option>
                   <option value="MEDIUM">Média</option>
@@ -386,7 +382,7 @@ export function BugListTool({
               </li>
               <li>
                 Utilize a opção <strong>Editar</strong> para atualizar título,
-                descrição, solução de contorno, severidade e status.
+                descrição, solução de contorno, prioridade e status.
               </li>
               <li>
                 O <strong>Código do Bug</strong> e a{" "}

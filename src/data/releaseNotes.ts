@@ -16,18 +16,54 @@ export interface ReleaseNote {
 
 export const releaseNotesData: ReleaseNote[] = [
   {
+    version: "v1.8.0",
+    date: "28 de Agosto de 2026",
+    title:
+      "Lista de Chamados com Gestão de Status e Feed de Atividades Estilo Jira",
+    summary:
+      "Redesenho da Lista de Chamados no padrão do sistema com paginação de 10 itens, exportação para Excel (.xlsx), menu de 3 pontinhos via Portal, transições ágeis de status e card de detalhes com feed de comentários, fotos, vídeos, links externos e menções (@).",
+    isLatest: true,
+    changes: [
+      {
+        type: "feat",
+        description:
+          "Ciclo de vida ágil de status para chamados: Aberto, Em Análise, Time de Desenvolvimento, Resolvido e Cancelado, com atualização em tempo real.",
+      },
+      {
+        type: "feat",
+        description:
+          "Feed de atividades e discussões técnicas estilo Jira dentro do modal de detalhes, com suporte a fotos, vídeos (Loom/Drive), links externos e menções (@).",
+      },
+      {
+        type: "feat",
+        description:
+          "Exportação consolidada da listagem de chamados para planilhas Excel (.xlsx) com métricas de atividades.",
+      },
+      {
+        type: "improvement",
+        description:
+          "Tabela de chamados refinada com paginação de 10 registros por página, contador de resultados no rodapé e menu de 3 pontinhos flutuante via React Portal.",
+      },
+      {
+        type: "improvement",
+        description:
+          "Proteção dos dados estruturais de chamados contra edições manuais acidentais, mantendo o histórico de auditoria seguro.",
+      },
+    ],
+  },
+  {
     version: "v1.7.0",
     date: "28 de Agosto de 2026",
     title:
       "Módulo Dedicado de Bugs Conhecidos, Edição Completa e Exportação Excel",
     summary:
       "Separação dos fluxos de cadastro e listagem de bugs, inclusão de paginação de 10 itens por página, modal de detalhes expandidos sem truncamento, menu flutuante de ações, tradução completa para PT-BR e exportação para Excel (.xlsx).",
-    isLatest: true,
+    isLatest: false,
     changes: [
       {
         type: "feat",
         description:
-          "Criação de ferramenta dedicada 'Lista de Bugs Conhecidos' na sidebar e na Home com busca rápida e filtros por severidade e status de correção.",
+          "Criação de ferramenta dedicada 'Lista de Bugs Conhecidos' na sidebar e na Home com busca rápida e filtros por prioridade e status de correção.",
       },
       {
         type: "feat",
@@ -57,7 +93,7 @@ export const releaseNotesData: ReleaseNote[] = [
       {
         type: "improvement",
         description:
-          "Tradução integral de todos os enums de Severidade (Crítica, Alta, Média, Baixa) e Status de Correção (Em Análise, Contorno Pronto, Em Correção, Aguardando Deploy, Resolvido, Encerrado) para Português (Brasil).",
+          "Tradução integral de todos os enums de Prioridade (Crítica, Alta, Média, Baixa) e Status de Correção (Em Análise, Contorno Pronto, Em Correção, Aguardando Deploy, Resolvido, Encerrado) para Português (Brasil).",
       },
     ],
   },

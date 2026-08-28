@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import type { CreateIncidentPayload } from "../../types/incidents";
+import type { BugIncident, CreateIncidentPayload } from "../../types/incidents";
 import type { KnownBug } from "../../types/bugs";
 import { formatBugSeverity, formatBugStatus } from "../../types/bugs";
 import {
@@ -19,7 +19,7 @@ import { Button } from "../../components/ui/button";
 
 interface NewIncidentFormProps {
   knownBugs: KnownBug[];
-  onSubmit: (payload: CreateIncidentPayload) => Promise<void>;
+  onSubmit: (payload: CreateIncidentPayload) => Promise<BugIncident | void>;
   isLoading?: boolean;
   onGoToBugsHub?: () => void;
 }
@@ -534,7 +534,7 @@ export const NewIncidentForm: React.FC<NewIncidentFormProps> = ({
               className="cursor-pointer gap-2 h-10 px-6 font-semibold"
             >
               <CheckCircle2 size={16} />
-              {isLoading ? "Registrando..." : "Registrar Chamado Padronizado"}
+              {isLoading ? "Registrando..." : "Novo"}
             </Button>
           </div>
         </form>
