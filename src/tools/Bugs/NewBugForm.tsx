@@ -1,21 +1,35 @@
-import React, { useState } from "react";
-import type { CreateBugPayload, BugSeverity, BugStatus } from "../../types/bugs";
-import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
+import React, { useState, useMemo } from "react";
+import type {
+  CreateBugPayload,
+  BugSeverity,
+  BugStatus,
+  KnownBug,
+} from "../../types/bugs";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "../../components/ui/card";
 import { Input, Label } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import { PlusCircle } from "lucide-react";
+import { generateNextBugCode } from "../../utils/bugsService";
 
 interface NewBugFormProps {
   onSubmit: (payload: CreateBugPayload) => Promise<void>;
   isLoading?: boolean;
+  existingBugs?: KnownBug[];
 }
 
 export const NewBugForm: React.FC<NewBugFormProps> = ({
   onSubmit,
   isLoading = false,
+  existingBugs = [],
 }) => {
-  const [bugCode, setBugCode] = useState(
-    `BUG-2026-${Math.floor(100 + Math.random() * 900)}`
+  const bugCode = useMemo(
+    () => generateNextBugCode(existingBugs),
+    [existingBugs],
   );
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -69,8 +83,10 @@ export const NewBugForm: React.FC<NewBugFormProps> = ({
       return;
     }
 
+    const currentCode = bugCode || generateNextBugCode(existingBugs);
+
     const payload: CreateBugPayload = {
-      bug_code: bugCode,
+      bug_code: currentCode,
       title: title.trim(),
       description: description.trim(),
       symptoms: [],
@@ -84,7 +100,6 @@ export const NewBugForm: React.FC<NewBugFormProps> = ({
 
     await onSubmit(payload);
 
-    setBugCode(`BUG-2026-${Math.floor(100 + Math.random() * 900)}`);
     setTitle("");
     setDescription("");
     setSeverity("MEDIUM");
@@ -112,9 +127,9 @@ export const NewBugForm: React.FC<NewBugFormProps> = ({
               <Input
                 id="bug-code"
                 type="text"
-                className="h-9 text-xs font-mono"
+                disabled
+                className="h-9 text-xs font-mono font-semibold bg-muted text-muted-foreground border-border/60 cursor-not-allowed select-all"
                 value={bugCode}
-                onChange={(e) => setBugCode(e.target.value)}
               />
             </div>
 
@@ -146,9 +161,15 @@ export const NewBugForm: React.FC<NewBugFormProps> = ({
                 onChange={(e) => setStatus(e.target.value as BugStatus)}
               >
                 <option value="INVESTIGATING">Em Análise (N3/Dev)</option>
-                <option value="WORKAROUND_READY">Contorno / Workaround Pronto</option>
-                <option value="IN_DEVELOPMENT">Em Correção na Engenharia</option>
-                <option value="AWAITING_RELEASE">Aguardando Deploy (Staging)</option>
+                <option value="WORKAROUND_READY">
+                  Contorno / Workaround Pronto
+                </option>
+                <option value="IN_DEVELOPMENT">
+                  Em Correção na Engenharia
+                </option>
+                <option value="AWAITING_RELEASE">
+                  Aguardando Deploy (Staging)
+                </option>
                 <option value="RESOLVED">Resolvido em Produção</option>
                 <option value="CLOSED">Encerrado e Validado</option>
               </select>
