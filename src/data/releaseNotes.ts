@@ -18,7 +18,8 @@ export const releaseNotesData: ReleaseNote[] = [
   {
     version: "v1.7.0",
     date: "28 de Agosto de 2026",
-    title: "Módulo Dedicado de Bugs Conhecidos, Edição Completa e Exportação Excel",
+    title:
+      "Módulo Dedicado de Bugs Conhecidos, Edição Completa e Exportação Excel",
     summary:
       "Separação dos fluxos de cadastro e listagem de bugs, inclusão de paginação de 10 itens por página, modal de detalhes expandidos sem truncamento, menu flutuante de ações, tradução completa para PT-BR e exportação para Excel (.xlsx).",
     isLatest: true,
