@@ -2,7 +2,17 @@ import React, { useState } from "react";
 import { api } from "../api";
 import { Button } from "./ui/button";
 import { Input, Label } from "./ui/input";
-import { Lock, User, Loader2, ShieldAlert, Sun, Moon, Eye, EyeOff, Terminal } from "lucide-react";
+import {
+  Lock,
+  User,
+  Loader2,
+  ShieldAlert,
+  Sun,
+  Moon,
+  Eye,
+  EyeOff,
+  Terminal,
+} from "lucide-react";
 import { useTheme } from "../ThemeContext";
 
 interface LoginProps {
@@ -11,13 +21,21 @@ interface LoginProps {
   onCancel?: () => void;
 }
 
-export default function Login({ onLoginSuccess, isOverlay = false, onCancel }: LoginProps) {
+export default function Login({
+  onLoginSuccess,
+  isOverlay = false,
+  onCancel,
+}: LoginProps) {
   const { theme, toggleTheme } = useTheme();
-  const [username, setUsername] = useState(() => (isOverlay ? (api.getUsername() || "") : ""));
+  const [username, setUsername] = useState(() =>
+    isOverlay ? api.getUsername() || "" : "",
+  );
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [hasInitialUsername] = useState(() => !!(isOverlay && api.getUsername()));
+  const [hasInitialUsername] = useState(
+    () => !!(isOverlay && api.getUsername()),
+  );
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,7 +69,9 @@ export default function Login({ onLoginSuccess, isOverlay = false, onCancel }: L
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-md px-4">
         <div
           className="w-full max-w-[400px] rounded-xl border border-border/60 bg-card shadow-2xl overflow-hidden"
-          style={{ animation: "slide-up-fade 0.3s cubic-bezier(0.16,1,0.3,1) both" }}
+          style={{
+            animation: "slide-up-fade 0.3s cubic-bezier(0.16,1,0.3,1) both",
+          }}
         >
           {/* Header bar */}
           <div className="flex items-center gap-3 px-5 py-4 border-b border-border/40 bg-muted/20">
@@ -59,8 +79,12 @@ export default function Login({ onLoginSuccess, isOverlay = false, onCancel }: L
               <Lock size={15} className="text-destructive" />
             </div>
             <div>
-              <p className="text-sm font-semibold text-foreground">Sessão Expirada</p>
-              <p className="text-[11px] text-muted-foreground">Confirme sua senha para continuar</p>
+              <p className="text-sm font-semibold text-foreground">
+                Sessão Expirada
+              </p>
+              <p className="text-[11px] text-muted-foreground">
+                Confirme sua senha para continuar
+              </p>
             </div>
           </div>
 
@@ -76,7 +100,10 @@ export default function Login({ onLoginSuccess, isOverlay = false, onCancel }: L
               <div className="space-y-1.5">
                 <Label htmlFor="ov-username">Usuário</Label>
                 <div className="relative">
-                  <User size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
+                  <User
+                    size={14}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60"
+                  />
                   <Input
                     id="ov-username"
                     type="text"
@@ -93,7 +120,10 @@ export default function Login({ onLoginSuccess, isOverlay = false, onCancel }: L
               <div className="space-y-1.5">
                 <Label htmlFor="ov-password">Senha</Label>
                 <div className="relative">
-                  <Lock size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
+                  <Lock
+                    size={14}
+                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/60"
+                  />
                   <Input
                     id="ov-password"
                     type={showPassword ? "text" : "password"}
@@ -118,12 +148,29 @@ export default function Login({ onLoginSuccess, isOverlay = false, onCancel }: L
 
               <div className="flex gap-2.5 pt-1">
                 {onCancel && (
-                  <Button type="button" variant="outline" onClick={onCancel} disabled={loading} className="flex-1 cursor-pointer">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={onCancel}
+                    disabled={loading}
+                    className="flex-1 cursor-pointer"
+                  >
                     Desconectar
                   </Button>
                 )}
-                <Button type="submit" disabled={loading} className="flex-1 cursor-pointer gap-2">
-                  {loading ? <><Loader2 size={14} className="animate-spin" /><span>Verificando...</span></> : "Confirmar"}
+                <Button
+                  type="submit"
+                  disabled={loading}
+                  className="flex-1 cursor-pointer gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 size={14} className="animate-spin" />
+                      <span>Verificando...</span>
+                    </>
+                  ) : (
+                    "Confirmar"
+                  )}
                 </Button>
               </div>
             </form>
@@ -136,7 +183,6 @@ export default function Login({ onLoginSuccess, isOverlay = false, onCancel }: L
   /* ── Login Principal — Layout Assimétrico ────────────────── */
   return (
     <div className="relative min-h-screen flex bg-background overflow-hidden">
-
       {/* ── Painel Esquerdo — Branding ───────────────────────── */}
       <div
         className="hidden lg:flex flex-col justify-between w-[42%] min-h-screen bg-primary relative overflow-hidden p-10"
@@ -146,7 +192,8 @@ export default function Login({ onLoginSuccess, isOverlay = false, onCancel }: L
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
-            backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px)",
+            backgroundImage:
+              "radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px)",
             backgroundSize: "28px 28px",
           }}
         />
@@ -167,20 +214,24 @@ export default function Login({ onLoginSuccess, isOverlay = false, onCancel }: L
               <span className="text-primary-foreground font-mono font-bold text-xl tracking-tight leading-none block">
                 MDM Hub
               </span>
-              <span className="text-primary-foreground/70 font-mono text-xs tracking-widest uppercase">
+              {/* <span className="text-primary-foreground/70 font-mono text-xs tracking-widest uppercase">
                 Tools Platform
-              </span>
+              </span> */}
             </div>
           </div>
         </div>
 
         <div className="relative z-10 space-y-5">
           <h2 className="text-3xl font-black text-primary-foreground leading-tight tracking-tight">
-            Gestao de dispositivos,<br />
-            <span className="text-primary-foreground/75 font-extrabold">sem complexidade.</span>
+            Gestao de dispositivos,
+            <br />
+            <span className="text-primary-foreground/75 font-extrabold">
+              sem complexidade.
+            </span>
           </h2>
           <p className="text-sm text-primary-foreground/70 leading-relaxed max-w-xs">
-            Automacoes em lote, inspecao de versoes, exportacao de dados e controle de chamados - tudo em um so lugar.
+            Automacoes em lote, inspecao de versoes, exportacao de dados e
+            controle de chamados - tudo em um so lugar.
           </p>
         </div>
 
@@ -200,7 +251,6 @@ export default function Login({ onLoginSuccess, isOverlay = false, onCancel }: L
 
       {/* ── Painel Direito — Formulário ───────────────────────── */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 relative">
-
         {/* Theme toggle */}
         <div className="absolute top-5 right-5">
           <Button
@@ -219,13 +269,17 @@ export default function Login({ onLoginSuccess, isOverlay = false, onCancel }: L
           <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
             <Terminal size={16} className="text-primary-foreground" />
           </div>
-          <span className="font-mono font-bold text-lg text-foreground tracking-tight">MDM Hub</span>
+          <span className="font-mono font-bold text-lg text-foreground tracking-tight">
+            MDM Hub
+          </span>
         </div>
 
         {/* Card do formulário */}
         <div
           className="w-full max-w-[400px] space-y-7"
-          style={{ animation: "slide-up-fade 0.5s cubic-bezier(0.16,1,0.3,1) both" }}
+          style={{
+            animation: "slide-up-fade 0.5s cubic-bezier(0.16,1,0.3,1) both",
+          }}
         >
           {/* Cabeçalho */}
           <div className="space-y-1.5">
@@ -249,7 +303,10 @@ export default function Login({ onLoginSuccess, isOverlay = false, onCancel }: L
             <div className="space-y-2">
               <Label htmlFor="username">Usuário ou E-mail</Label>
               <div className="relative">
-                <User size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
+                <User
+                  size={16}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60"
+                />
                 <Input
                   id="username"
                   type="text"
@@ -267,7 +324,10 @@ export default function Login({ onLoginSuccess, isOverlay = false, onCancel }: L
             <div className="space-y-2">
               <Label htmlFor="password">Senha</Label>
               <div className="relative">
-                <Lock size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60" />
+                <Lock
+                  size={16}
+                  className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/60"
+                />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}

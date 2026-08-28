@@ -41,6 +41,7 @@ import Home from "./tools/Home/Home";
 import { Button } from "./components/ui/button";
 import Login from "./components/Login";
 import FeedbackModal from "./components/FeedbackModal";
+import ReleaseNotesButton from "./components/ReleaseNotesButton";
 import SystemTour from "./components/SystemTour";
 
 // Mobile Header component (shown only below md breakpoint)
@@ -65,7 +66,10 @@ const MobileHeader = ({
         </h1>
       </div>
 
-      <div className="flex items-center gap-1 flex-shrink-0" data-tour="header-controls">
+      <div
+        className="flex items-center gap-1 flex-shrink-0"
+        data-tour="header-controls"
+      >
         <Button
           variant="ghost"
           size="icon"
@@ -145,9 +149,7 @@ const SubNavButton = ({
       size={17}
       className={`shrink-0 ${isActive ? "text-primary" : "text-muted-foreground/70"}`}
     />
-    {!isCollapsed && (
-      <span className="whitespace-nowrap text-sm">{label}</span>
-    )}
+    {!isCollapsed && <span className="whitespace-nowrap text-sm">{label}</span>}
   </button>
 );
 
@@ -198,9 +200,15 @@ const AccordionGroup = ({
           )}
         </div>
         {isOpen ? (
-          <ChevronUp size={14} className="text-muted-foreground/50 shrink-0 ml-1" />
+          <ChevronUp
+            size={14}
+            className="text-muted-foreground/50 shrink-0 ml-1"
+          />
         ) : (
-          <ChevronDown size={14} className="text-muted-foreground/50 shrink-0 ml-1" />
+          <ChevronDown
+            size={14}
+            className="text-muted-foreground/50 shrink-0 ml-1"
+          />
         )}
       </button>
 
@@ -241,7 +249,12 @@ const MobileTabButton = ({
       }
     `}
   >
-    <Icon size={17} className={isActive ? "text-primary-foreground" : "text-muted-foreground/70"} />
+    <Icon
+      size={17}
+      className={
+        isActive ? "text-primary-foreground" : "text-muted-foreground/70"
+      }
+    />
     <span className="hidden md:inline ml-2 text-sm">{label}</span>
   </button>
 );
@@ -325,7 +338,6 @@ const MainApp = ({
 
   return (
     <div className="min-h-screen bg-background md:flex">
-
       {/* Desktop Sidebar */}
       <aside
         className={`hidden md:flex flex-col fixed inset-y-0 left-0 z-30 justify-between transition-all duration-300 sidebar-glow
@@ -338,7 +350,9 @@ const MainApp = ({
       >
         <div className="space-y-5">
           {/* Brand and toggle */}
-          <div className={`flex items-center gap-2.5 py-1 ${isSidebarCollapsed ? "justify-center" : "justify-between"}`}>
+          <div
+            className={`flex items-center gap-2.5 py-1 ${isSidebarCollapsed ? "justify-center" : "justify-between"}`}
+          >
             {!isSidebarCollapsed && (
               <div className="flex items-center gap-2.5 min-w-0">
                 <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shrink-0 shadow-sm">
@@ -348,9 +362,9 @@ const MainApp = ({
                   <p className="text-base font-bold text-foreground font-mono tracking-tight leading-tight whitespace-nowrap">
                     MDM Hub
                   </p>
-                  <p className="text-[10px] text-muted-foreground/60 font-mono uppercase tracking-widest leading-tight">
+                  {/* <p className="text-[10px] text-muted-foreground/60 font-mono uppercase tracking-widest leading-tight">
                     Tools Platform
-                  </p>
+                  </p> */}
                 </div>
               </div>
             )}
@@ -361,7 +375,11 @@ const MainApp = ({
               title={isSidebarCollapsed ? "Expandir Menu" : "Recolher Menu"}
               className="text-muted-foreground hover:text-foreground rounded-lg cursor-pointer h-8 w-8 shrink-0"
             >
-              {isSidebarCollapsed ? <PanelLeftOpen size={16} /> : <PanelLeftClose size={16} />}
+              {isSidebarCollapsed ? (
+                <PanelLeftOpen size={16} />
+              ) : (
+                <PanelLeftClose size={16} />
+              )}
             </Button>
           </div>
 
@@ -487,7 +505,9 @@ const MainApp = ({
         </div>
 
         {/* Sidebar footer */}
-        <div className={`space-y-3 pt-4 border-t border-border/30 ${isSidebarCollapsed ? "flex flex-col items-center gap-1.5" : ""}`}>
+        <div
+          className={`space-y-3 pt-4 border-t border-border/30 ${isSidebarCollapsed ? "flex flex-col items-center gap-1.5" : ""}`}
+        >
           {username && !isSidebarCollapsed && (
             <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-accent/40 border border-border/30">
               <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center shrink-0">
@@ -495,7 +515,9 @@ const MainApp = ({
                   {userInitial}
                 </span>
               </div>
-              <span className="font-mono text-sm font-medium text-foreground truncate">{username}</span>
+              <span className="font-mono text-sm font-medium text-foreground truncate">
+                {username}
+              </span>
             </div>
           )}
           {username && isSidebarCollapsed && (
@@ -547,9 +569,10 @@ const MainApp = ({
       </aside>
 
       {/* Main content area */}
-      <div className={`flex-1 transition-all duration-300 ${isSidebarCollapsed ? "md:pl-[68px]" : "md:pl-[280px]"}`}>
+      <div
+        className={`flex-1 transition-all duration-300 ${isSidebarCollapsed ? "md:pl-[68px]" : "md:pl-[280px]"}`}
+      >
         <div className="w-full max-w-6xl mx-auto px-4 sm:px-8 pt-6 pb-32 sm:pt-8 sm:pb-12">
-
           {/* Mobile header */}
           <div className="md:hidden">
             <MobileHeader
@@ -571,7 +594,9 @@ const MainApp = ({
             {activeTab === "incidents" && isRootUser && (
               <Incidents onGoToBugsHub={() => setActiveTab("bugs_hub")} />
             )}
-            {activeTab === "incidents_list" && isRootUser && <IncidentsListTool />}
+            {activeTab === "incidents_list" && isRootUser && (
+              <IncidentsListTool />
+            )}
             {activeTab === "bugs_hub" && isRootUser && <BugsHub />}
             {activeTab === "checker" && <Checker />}
             {activeTab === "deleter" && <Deleter />}
@@ -647,7 +672,7 @@ const MainApp = ({
             onClick={() => setActiveTab("history")}
           />
         </div>,
-        document.body
+        document.body,
       )}
 
       <SystemTour
@@ -725,6 +750,7 @@ function App() {
         <Login onLoginSuccess={handleLoginSuccess} />
       )}
       <FeedbackModal isAuthenticated={isAuthenticated} username={username} />
+      <ReleaseNotesButton />
     </ThemeProvider>
   );
 }
