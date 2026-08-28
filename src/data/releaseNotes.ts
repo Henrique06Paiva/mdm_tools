@@ -16,13 +16,44 @@ export interface ReleaseNote {
 
 export const releaseNotesData: ReleaseNote[] = [
   {
+    version: "v1.9.0",
+    date: "28 de Agosto de 2026",
+    title:
+      "Configuração do Framework de Testes Automatizados (Vitest + jsdom)",
+    summary:
+      "Instalação e configuração completa do ambiente de testes automatizados com Vitest, jsdom e React Testing Library, e implementação dos primeiros testes unitários de formatadores e testes de renderização de tabela.",
+    isLatest: true,
+    changes: [
+      {
+        type: "feat",
+        description:
+          "Instalação e configuração do framework Vitest, jsdom e React Testing Library para execução de testes unitários e de interface rápidos.",
+      },
+      {
+        type: "feat",
+        description:
+          "Implementação de testes unitários abrangentes para formatadores e tradutores de status/severidade de bugs e chamados.",
+      },
+      {
+        type: "feat",
+        description:
+          "Criação de teste de renderização da tabela de chamados (IncidentListTable) validando visualização e cenários de fallback.",
+      },
+      {
+        type: "improvement",
+        description:
+          "Configuração de scripts npm run test e npm run test:watch na automação de validações do desenvolvedor.",
+      },
+    ],
+  },
+  {
     version: "v1.8.0",
     date: "28 de Agosto de 2026",
     title:
       "Lista de Chamados com Gestão de Status e Feed de Atividades Estilo Jira",
     summary:
       "Redesenho da Lista de Chamados no padrão do sistema com paginação de 10 itens, exportação para Excel (.xlsx), menu de 3 pontinhos via Portal, transições ágeis de status e card de detalhes com feed de comentários, fotos, vídeos, links externos e menções (@).",
-    isLatest: true,
+    isLatest: false,
     changes: [
       {
         type: "feat",
