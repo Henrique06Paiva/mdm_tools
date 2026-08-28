@@ -41,6 +41,7 @@ export const releaseNotesData: ReleaseNote[] = [
     title: "Redesign de UI/UX, Paleta Azul Cobalto e Simplificação Operacional",
     summary:
       "Identidade visual corporativa renovada com paleta Azul Cobalto de alto contraste, sidebar expandida e responsiva, telas despoluídas e realocação dos manuais de uso para o rodapé.",
+    isLatest: true,
     changes: [
       {
         type: "feat",
