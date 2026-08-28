@@ -1,9 +1,13 @@
 import { useBugs } from "./useBugs";
 import { NewBugForm } from "./NewBugForm";
-import { BugListTable } from "./BugListTable";
 import { ManualViewer } from "../../components/ManualViewer";
+import type { KnownBug } from "../../types/bugs";
 
-export default function BugsHub() {
+interface BugsHubProps {
+  onGoToBugsList?: (bug?: KnownBug) => void;
+}
+
+export default function BugsHub({ onGoToBugsList }: BugsHubProps) {
   const { bugs, isLoading, createBug } = useBugs();
 
   return (
@@ -12,17 +16,11 @@ export default function BugsHub() {
         onSubmit={createBug}
         isLoading={isLoading}
         existingBugs={bugs}
+        onViewInList={onGoToBugsList}
       />
 
-      <div className="space-y-3">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          Bugs Conhecidos Cadastrados ({bugs.length})
-        </h4>
-        <BugListTable bugs={bugs} />
-      </div>
-
       <ManualViewer
-        title="Catálogo de Bugs Conhecidos"
+        title="Cadastro de Bugs Conhecidos"
         content={
           <div className="space-y-2">
             <p>
@@ -31,14 +29,18 @@ export default function BugsHub() {
               em uma única causa raiz.
             </p>
             <ol className="list-decimal list-inside space-y-1 pl-1">
-              <li>Cadastre o código e a severidade da falha identificada.</li>
               <li>
-                Insira instruções de contorno (workaround) para orientar o time
-                de atendimento.
+                O <strong>Código do Bug</strong> é gerado automaticamente em
+                formato sequencial anual (<code>BUG-YYYY-XXX</code>).
               </li>
               <li>
-                Acompanhe o status do bug conforme a equipe de engenharia
-                realiza os deploys de correção.
+                Insira o título, a descrição técnica e as instruções de contorno
+                (workaround) para orientar a equipe de atendimento.
+              </li>
+              <li>
+                Após o cadastro, visualize o bug na{" "}
+                <strong>Lista de Bugs Conhecidos</strong> para edições e
+                acompanhamento de status.
               </li>
             </ol>
           </div>

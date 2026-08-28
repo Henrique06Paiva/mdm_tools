@@ -26,3 +26,20 @@ Este arquivo documenta os padrões e diretrizes de design de interface (UI/UX) e
 ## 4. Design do Cabeçalho (Header)
 - **Compacto e Clean:** Evite badges de status estáticos longos ou pesados que consumam muito espaço horizontal útil do cabeçalho.
 - **Título Resiliente:** O título principal (`MDM Hub - Tools`) deve usar a classe `whitespace-nowrap` e dimensionamento responsivo (`text-lg sm:text-2xl`) para garantir o alinhamento em linha única com os controles no topo, prevenindo quebras de linha em viewports de 360px a 430px.
+
+## 5. Padrão Obrigatório de Git, Branches, Commits e Releases
+- **Feature Branches:** Toda nova funcionalidade, módulo ou refatoração deve ser criada em uma branch com prefixo semântico:
+  - `feature/<nome-da-feature>` (ex: `feature/bugs-catalog-module`)
+  - `fix/<nome-do-fix>` (ex: `fix/table-scrollbars-dropdown`)
+- **Commits Convencionais:** Mensagens de commit estruturadas seguindo o padrão Conventional Commits:
+  - `feat(bugs): descrição da funcionalidade`
+  - `fix(bugs): correção de bug ou layout`
+  - `refactor(bugs): refatoração de código ou componentes`
+- **Fluxo de Release e Merge:**
+  1. Atualizar a versão correspondente no `package.json` (Semantic Versioning: `MAJOR.MINOR.PATCH`).
+  2. Registrar o histórico completo de novidades e melhorias em `src/data/releaseNotes.ts` marcando `isLatest: true`.
+  3. Criar a branch de release: `git checkout -b release/vX.Y.Z`.
+  4. Realizar o commit das alterações na branch de release.
+  5. Executar o teste de build do projeto: `npm run build` (garantindo 100% de sucesso e 0 erros de TypeScript/Vite).
+  6. Realizar o merge da branch de release na `main`: `git checkout main && git merge release/vX.Y.Z`.
+  7. Criar a tag correspondente: `git tag -a vX.Y.Z -m "Release vX.Y.Z"`.

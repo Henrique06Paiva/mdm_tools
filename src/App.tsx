@@ -37,6 +37,7 @@ import HistoryTool from "./tools/History";
 import Incidents from "./tools/Incidents";
 import { IncidentsListTool } from "./tools/Incidents/IncidentsListTool";
 import BugsHub from "./tools/Bugs/index";
+import { BugListTool } from "./tools/Bugs/BugListTool";
 import Home from "./tools/Home/Home";
 import { Button } from "./components/ui/button";
 import Login from "./components/Login";
@@ -270,7 +271,8 @@ type ActiveTab =
   | "history"
   | "incidents"
   | "incidents_list"
-  | "bugs_hub";
+  | "bugs_hub"
+  | "bugs_list";
 
 // Main authenticated application
 const MainApp = ({
@@ -304,7 +306,8 @@ const MainApp = ({
       !isRootUser &&
       (activeTab === "incidents" ||
         activeTab === "incidents_list" ||
-        activeTab === "bugs_hub")
+        activeTab === "bugs_hub" ||
+        activeTab === "bugs_list")
     ) {
       setActiveTab("home");
     }
@@ -425,12 +428,20 @@ const MainApp = ({
                     data-tour="tab-incidents-list"
                   />
                   <SubNavButton
-                    label="Bugs Conhecidos"
-                    icon={Bug}
+                    label="Cadastrar Bug"
+                    icon={PlusCircle}
                     isActive={activeTab === "bugs_hub"}
                     onClick={() => setActiveTab("bugs_hub")}
                     isCollapsed={isSidebarCollapsed}
                     data-tour="tab-bugs-hub"
+                  />
+                  <SubNavButton
+                    label="Lista de Bugs"
+                    icon={Bug}
+                    isActive={activeTab === "bugs_list"}
+                    onClick={() => setActiveTab("bugs_list")}
+                    isCollapsed={isSidebarCollapsed}
+                    data-tour="tab-bugs-list"
                   />
                 </AccordionGroup>
               </div>
@@ -597,7 +608,12 @@ const MainApp = ({
             {activeTab === "incidents_list" && isRootUser && (
               <IncidentsListTool />
             )}
-            {activeTab === "bugs_hub" && isRootUser && <BugsHub />}
+            {activeTab === "bugs_hub" && isRootUser && (
+              <BugsHub onGoToBugsList={() => setActiveTab("bugs_list")} />
+            )}
+            {activeTab === "bugs_list" && isRootUser && (
+              <BugListTool onGoToNewBug={() => setActiveTab("bugs_hub")} />
+            )}
             {activeTab === "checker" && <Checker />}
             {activeTab === "deleter" && <Deleter />}
             {activeTab === "apk" && <ApkFinder />}

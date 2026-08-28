@@ -1,8 +1,19 @@
 import React, { useState, useRef } from "react";
 import type { CreateIncidentPayload } from "../../types/incidents";
 import type { KnownBug } from "../../types/bugs";
-import { Image as ImageIcon, Link as LinkIcon, Trash2, CheckCircle2 } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "../../components/ui/card";
+import { formatBugSeverity, formatBugStatus } from "../../types/bugs";
+import {
+  Image as ImageIcon,
+  Link as LinkIcon,
+  Trash2,
+  CheckCircle2,
+} from "lucide-react";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "../../components/ui/card";
 import { Input, Label } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 
@@ -345,7 +356,9 @@ export const NewIncidentForm: React.FC<NewIncidentFormProps> = ({
               <option value="">Nenhum bug vinculado (Opcional)</option>
               {knownBugs.map((bug) => (
                 <option key={bug.id} value={bug.id}>
-                  [{bug.bug_code}] {bug.title} ({bug.severity}) - {bug.status}
+                  [{bug.bug_code}] {bug.title} (
+                  {formatBugSeverity(bug.severity)}) -{" "}
+                  {formatBugStatus(bug.status)}
                 </option>
               ))}
             </select>
@@ -475,8 +488,13 @@ export const NewIncidentForm: React.FC<NewIncidentFormProps> = ({
                             </div>
                           ) : (
                             <div className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs max-w-[180px]">
-                              <LinkIcon size={12} className="text-primary shrink-0" />
-                              <span className="truncate text-muted-foreground">{url}</span>
+                              <LinkIcon
+                                size={12}
+                                className="text-primary shrink-0"
+                              />
+                              <span className="truncate text-muted-foreground">
+                                {url}
+                              </span>
                               <button
                                 type="button"
                                 onClick={() => handleRemoveEvidence(i)}

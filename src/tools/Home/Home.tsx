@@ -16,6 +16,7 @@ import {
   Shield,
   Activity,
   X,
+  PlusCircle,
 } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { CONFIG } from "../../api";
@@ -31,7 +32,8 @@ export type ToolTabType =
   | "history"
   | "incidents"
   | "incidents_list"
-  | "bugs_hub";
+  | "bugs_hub"
+  | "bugs_list";
 
 interface HomeProps {
   username: string | null;
@@ -67,7 +69,8 @@ export default function Home({
       category: "support",
       tag: "Registro",
       service: "Supabase / N1-N3",
-      description: "Abertura padronizada com validação de campos, evidências e vínculo a bugs.",
+      description:
+        "Abertura padronizada com validação de campos, evidências e vínculo a bugs.",
       icon: AlertCircle,
       shortcut: "Alt+1",
     },
@@ -77,19 +80,32 @@ export default function Home({
       category: "support",
       tag: "Triagem",
       service: "Supabase / N1-N3",
-      description: "Consulta consolidada com filtros rápidos por corporação, severidade e status.",
+      description:
+        "Consulta consolidada com filtros rápidos por corporação, severidade e status.",
       icon: ListFilter,
       shortcut: "Alt+2",
     },
     {
       id: "bugs_hub",
-      title: "Bugs Conhecidos",
+      title: "Cadastrar Bug",
+      category: "support",
+      tag: "Registro",
+      service: "Base de Conhecimento",
+      description:
+        "Cadastro de falhas sistêmicas com código automático e instruções de contorno.",
+      icon: PlusCircle,
+      shortcut: "Alt+3",
+    },
+    {
+      id: "bugs_list",
+      title: "Lista de Bugs Conhecidos",
       category: "support",
       tag: "Catálogo",
       service: "Base de Conhecimento",
-      description: "Soluções de contorno (workarounds), causas-raiz e clientes impactados.",
+      description:
+        "Consulta, edição de causas-raiz, acompanhamento e exportação para Excel (.xlsx).",
       icon: Bug,
-      shortcut: "Alt+3",
+      shortcut: "Alt+4",
     },
     // Automações MDM
     {
@@ -98,7 +114,8 @@ export default function Home({
       category: "automation",
       tag: "Auditoria",
       service: "api-eqp & api-report",
-      description: "Comparação em lote de versões de apps instalados, firmware e telemetria.",
+      description:
+        "Comparação em lote de versões de apps instalados, firmware e telemetria.",
       icon: Smartphone,
     },
     {
@@ -107,7 +124,8 @@ export default function Home({
       category: "automation",
       tag: "Repositório",
       service: "api-application",
-      description: "Localização de versões cadastradas e geração de links diretos para download.",
+      description:
+        "Localização de versões cadastradas e geração de links diretos para download.",
       icon: Package,
     },
     {
@@ -116,7 +134,8 @@ export default function Home({
       category: "automation",
       tag: "Batch .xlsx",
       service: "api-eqp",
-      description: "Inativação e remoção permanente de terminais por planilha ou lista de seriais.",
+      description:
+        "Inativação e remoção permanente de terminais por planilha ou lista de seriais.",
       icon: Trash2,
     },
     {
@@ -125,7 +144,8 @@ export default function Home({
       category: "automation",
       tag: "Sincronização",
       service: "api-eqp (Force)",
-      description: "Envio de comandos em lote para forçar sincronização imediata dos aparelhos.",
+      description:
+        "Envio de comandos em lote para forçar sincronização imediata dos aparelhos.",
       icon: RefreshCw,
     },
     {
@@ -134,7 +154,8 @@ export default function Home({
       category: "automation",
       tag: "Relatório .xlsx",
       service: "api-report",
-      description: "Extração estruturada de todo o parque da corporação para arquivo Excel.",
+      description:
+        "Extração estruturada de todo o parque da corporação para arquivo Excel.",
       icon: List,
     },
     {
@@ -143,7 +164,8 @@ export default function Home({
       category: "automation",
       tag: "Gestão ACL",
       service: "api-acl",
-      description: "Duplicação e recriação de perfis de acesso para resolução de permissões.",
+      description:
+        "Duplicação e recriação de perfis de acesso para resolução de permissões.",
       icon: UserCheck,
     },
     {
@@ -152,7 +174,8 @@ export default function Home({
       category: "automation",
       tag: "Logs & Trilha",
       service: "Supabase Logs",
-      description: "Rastreabilidade de execuções em lote e consulta de ações executadas.",
+      description:
+        "Rastreabilidade de execuções em lote e consulta de ações executadas.",
       icon: HistoryIcon,
     },
   ];
@@ -173,7 +196,9 @@ export default function Home({
   }, [allTools, isRootUser, search]);
 
   const supportGroup = filteredTools.filter((t) => t.category === "support");
-  const automationGroup = filteredTools.filter((t) => t.category === "automation");
+  const automationGroup = filteredTools.filter(
+    (t) => t.category === "automation",
+  );
 
   return (
     <div className="space-y-6">
@@ -191,9 +216,19 @@ export default function Home({
           </div>
 
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground font-mono">
-            <span>tenant: <strong className="text-foreground font-medium">{CONFIG.TENANT}</strong></span>
+            <span>
+              tenant:{" "}
+              <strong className="text-foreground font-medium">
+                {CONFIG.TENANT}
+              </strong>
+            </span>
             <span>•</span>
-            <span>operador: <strong className="text-foreground font-medium">{username || "anônimo"}</strong></span>
+            <span>
+              operador:{" "}
+              <strong className="text-foreground font-medium">
+                {username || "anônimo"}
+              </strong>
+            </span>
             {isRootUser && (
               <>
                 <span>•</span>
@@ -305,7 +340,10 @@ export default function Home({
       <div className="pt-4 border-t border-border/30 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] font-mono text-muted-foreground/70">
         <div className="flex items-center gap-1.5">
           <Activity size={12} className="text-primary/70" />
-          <span>Microserviços: api-eqp · api-report · api-application · api-acl · supabase</span>
+          <span>
+            Microserviços: api-eqp · api-report · api-application · api-acl ·
+            supabase
+          </span>
         </div>
         <div>
           <span>MDM Support Hub v1.6</span>

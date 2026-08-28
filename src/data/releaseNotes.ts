@@ -16,22 +16,47 @@ export interface ReleaseNote {
 
 export const releaseNotesData: ReleaseNote[] = [
   {
-    version: "v1.6.1",
+    version: "v1.7.0",
     date: "28 de Agosto de 2026",
-    title: "Automação e Numeração Sequencial de Bugs Conhecidos",
+    title: "Módulo Dedicado de Bugs Conhecidos, Edição Completa e Exportação Excel",
     summary:
-      "Geração automática do Código do Bug no padrão sequencial anual e bloqueio do campo contra digitação manual, prevenindo inconsistências e duplicidades.",
+      "Separação dos fluxos de cadastro e listagem de bugs, inclusão de paginação de 10 itens por página, modal de detalhes expandidos sem truncamento, menu flutuante de ações, tradução completa para PT-BR e exportação para Excel (.xlsx).",
     isLatest: true,
     changes: [
       {
         type: "feat",
         description:
-          "Geração automática e sequencial do Código do Bug (ex: BUG-2026-001) calculada dinamicamente a partir dos registros existentes do ano vigente.",
+          "Criação de ferramenta dedicada 'Lista de Bugs Conhecidos' na sidebar e na Home com busca rápida e filtros por severidade e status de correção.",
+      },
+      {
+        type: "feat",
+        description:
+          "Modal de detalhes expandidos para leitura integral de descrições e soluções de contorno (workarounds) sem limites de caracteres ou truncamento.",
+      },
+      {
+        type: "feat",
+        description:
+          "Modal pós-cadastro com confirmação imediata e atalho rápido para visualizar o registro diretamente na lista de bugs conhecidos.",
+      },
+      {
+        type: "feat",
+        description:
+          "Exportação consolidada da listagem filtrada para planilhas Excel (.xlsx) com colunas estruturadas para auditoria.",
       },
       {
         type: "improvement",
         description:
-          "Bloqueio seguro (disabled) do campo Código do Bug no formulário de cadastro de bugs conhecidos, eliminando erros manuais de preenchimento.",
+          "Menu flutuante de 3 pontinhos (...) via React Portal, sobrepondo o conteúdo sem gerar barras de rolagem desnecessárias na tabela.",
+      },
+      {
+        type: "improvement",
+        description:
+          "Paginação padrão de 10 itens por página com controle de navegação e indicador 'X - Y de Z Resultados' no rodapé.",
+      },
+      {
+        type: "improvement",
+        description:
+          "Tradução integral de todos os enums de Severidade (Crítica, Alta, Média, Baixa) e Status de Correção (Em Análise, Contorno Pronto, Em Correção, Aguardando Deploy, Resolvido, Encerrado) para Português (Brasil).",
       },
     ],
   },
@@ -41,7 +66,7 @@ export const releaseNotesData: ReleaseNote[] = [
     title: "Redesign de UI/UX, Paleta Azul Cobalto e Simplificação Operacional",
     summary:
       "Identidade visual corporativa renovada com paleta Azul Cobalto de alto contraste, sidebar expandida e responsiva, telas despoluídas e realocação dos manuais de uso para o rodapé.",
-    isLatest: true,
+    isLatest: false,
     changes: [
       {
         type: "feat",

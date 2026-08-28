@@ -1,12 +1,12 @@
 export type BugStatus =
-  | 'INVESTIGATING'
-  | 'WORKAROUND_READY'
-  | 'IN_DEVELOPMENT'
-  | 'AWAITING_RELEASE'
-  | 'RESOLVED'
-  | 'CLOSED';
+  | "INVESTIGATING"
+  | "WORKAROUND_READY"
+  | "IN_DEVELOPMENT"
+  | "AWAITING_RELEASE"
+  | "RESOLVED"
+  | "CLOSED";
 
-export type BugSeverity = 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
+export type BugSeverity = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
 
 export interface KnownBug {
   id: string;
@@ -30,5 +30,31 @@ export interface KnownBug {
 
 export type CreateBugPayload = Omit<
   KnownBug,
-  'id' | 'created_at' | 'updated_at' | 'dev_lead_time_hours'
+  "id" | "created_at" | "updated_at" | "dev_lead_time_hours"
 >;
+
+export const BUG_SEVERITY_LABELS: Record<BugSeverity, string> = {
+  CRITICAL: "Crítica",
+  HIGH: "Alta",
+  MEDIUM: "Média",
+  LOW: "Baixa",
+};
+
+export const BUG_STATUS_LABELS: Record<BugStatus, string> = {
+  INVESTIGATING: "Em Análise",
+  WORKAROUND_READY: "Contorno Pronto",
+  IN_DEVELOPMENT: "Em Correção",
+  AWAITING_RELEASE: "Aguardando Deploy",
+  RESOLVED: "Resolvido",
+  CLOSED: "Encerrado",
+};
+
+export function formatBugSeverity(sev?: BugSeverity | null): string {
+  if (!sev) return "";
+  return BUG_SEVERITY_LABELS[sev] || sev;
+}
+
+export function formatBugStatus(status?: BugStatus | null): string {
+  if (!status) return "";
+  return BUG_STATUS_LABELS[status] || status;
+}
