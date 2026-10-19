@@ -18,8 +18,7 @@ export const releaseNotesData: ReleaseNote[] = [
   {
     version: "v1.9.0",
     date: "28 de Agosto de 2026",
-    title:
-      "Configuração do Framework de Testes Automatizados (Vitest + jsdom)",
+    title: "Configuração do Framework de Testes Automatizados (Vitest + jsdom)",
     summary:
       "Instalação e configuração completa do ambiente de testes automatizados com Vitest, jsdom e React Testing Library, e implementação dos primeiros testes unitários de formatadores e testes de renderização de tabela.",
     isLatest: true,

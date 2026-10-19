@@ -32,7 +32,7 @@ describe("IncidentListTable Component", () => {
   it("should render fallback text when incidents list is empty", () => {
     render(<IncidentListTable incidents={[]} knownBugs={[]} />);
     expect(
-      screen.getByText("Nenhum chamado encontrado com os filtros aplicados.")
+      screen.getByText("Nenhum chamado encontrado com os filtros aplicados."),
     ).toBeInTheDocument();
   });
 
@@ -42,7 +42,7 @@ describe("IncidentListTable Component", () => {
         incidents={mockIncidents}
         knownBugs={[]}
         onViewIncident={vi.fn()}
-      />
+      />,
     );
 
     // Check header columns
